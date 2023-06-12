@@ -4,12 +4,10 @@ from datetime import datetime
 from dateutil.relativedelta import relativedelta
 
 
-# @pytest.fixture
-# def dog():
-#     return Dog('Luna',datetime(2017,04,18))
+@pytest.fixture
+def Luna():
+    return Dog('Luna',datetime(2017,4,18))
 
-def test_calculate_dog_age():
-    today=datetime.today()
-    dog=Dog('test_dog_1',today + relativedelta(years=-1,months=-6))
-    
-    assert dog.calculate_dog_age() == 1.5
+def test_calculate_dog_age(Luna): 
+    date='2023/04/18'   
+    assert Luna.calculate_dog_age(date) == 6
