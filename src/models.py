@@ -1,47 +1,49 @@
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
+from dataclasses import dataclass
+from . import constants as c
+from . import calculation_helpers as ch
 
-import constants as c
-import calculation_helpers as ch
+@dataclass(unsafe_hash=True)
 class Kennel:
-
-    def __init__(self, name: str):
-        self.name=name
+        kennel_name: str
 
 class Dog:
 
-    def __init__ (self, name: str, DOB: datetime, kennel: Kennel ):
-        self.name=name
-        self.DOB=DOB.date()
-        self.kennel=kennel
+    def __init__ (self, name: str, DOB: datetime, kennel: Kennel, breed: str):
+        self.dog_name=name
+        self.date_of_birth=DOB.date()
+        self.kennel_name=kennel
+        self.breed=breed
 
     def calculate_dog_age(self, date: str)  -> float:
 
         date=datetime.strptime(date, '%Y/%m/%d')
-        self.age=(c.MONTHS_IN_YEAR*relativedelta(date, self.DOB).years+relativedelta(date, self.DOB).months)/c.MONTHS_IN_YEAR
+        self.age=(c.MONTHS_IN_YEAR*relativedelta(date, self.date_of_birth).years+relativedelta(date, self.date_of_birth).months)/c.MONTHS_IN_YEAR
         return self.age
 
 class Runner:
 
     def __init__(self, name: str, kennel: Kennel):
-        self.name=name
-        self.kennel=kennel
+        self.runner_name=name
+        self.kennel_name=kennel.kennel_name
 
 #could make use of descriptors for validation? True for most classes below
 class Dog_Weight:
 
     def __init__(self, dog: Dog, date: str, weight: float):
         dog.calculate_dog_age(date)
-        self.dog_name=Dog.name
+        self.dog_name=Dog.dog_name
         self.dog_age=Dog.age
         self.weight=weight
 
 
-class Weather:
+class Weather_Entry:
 
-    def __init__(self, temperature, humidity, sky_condition = None):
+    def __init__(self, timestamp, temperature, humidity, sky_condition):
+        self.timestamp = timestamp
         self.temperature = temperature
-        self.humidity=humidity/100
+        self.humidity=humidity/c.TO_PERCENT
         if sky_condition:
             if sky_condition in c.SKY_CONDITION_LIST:
                 self.sky_condition=sky_condition
@@ -50,9 +52,8 @@ class Weather:
 
 class Training_Log:
     #assumes that pace has the following format "00:00:00" --> need data validation
-    def __init__(self, timestamps, dog1:Dog, sport, runner:Runner, location, distance, rating, speed=None, pace=None, dog2= None, workout = False ) -> None:
-        self.date=timestamps.date()
-        self.time=timestamps.time()
+    def __init__(self, timestamp, temperature, humidity, dog1:Dog, sport, runner:Runner, location, distance, rating, speed=None, pace=None, dog2= None, workout = False, sky_condition=None ) -> None:
+        self.timestamp=timestamp
         self.dog1=dog1
         self.runner=runner
         self.sport=sport
@@ -60,6 +61,8 @@ class Training_Log:
         self.distance=distance
         self.rating = rating
         self.workout=workout
+        self.__create_weather_entry()
+
 
         if speed == None and pace == None:
             raise ValueError ("One of {speed} or {pace} must be entered for the training")
@@ -78,5 +81,6 @@ class Training_Log:
             self.dog2=dog2
         
         
-
+    def __create_weather_entry(self, timestamp, temperature, humidity, sky_condition):
+        self.weather_entry=Weather_Entry(timestamp, temperature, humidity, sky_condition)
         
