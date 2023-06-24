@@ -13,7 +13,7 @@ class Dog:
     def __init__ (self, name: str, DOB: datetime, kennel: Kennel, breed: str):
         self.dog_name=name
         self.date_of_birth=DOB.date()
-        self.kennel_name=kennel
+        self.kennel=kennel
         self.breed=breed
 
     def calculate_dog_age(self, date: str)  -> float:
@@ -21,6 +21,9 @@ class Dog:
         date=datetime.strptime(date, '%Y/%m/%d')
         self.age=(c.MONTHS_IN_YEAR*relativedelta(date, self.date_of_birth).years+relativedelta(date, self.date_of_birth).months)/c.MONTHS_IN_YEAR
         return self.age
+
+    def __eq__(self, other) : 
+        return self.__dict__ == other.__dict__
 
 class Runner:
 
@@ -40,12 +43,12 @@ class Dog_Weight:
 
 class Weather_Entry:
 
-    def __init__(self, timestamp, temperature, humidity, sky_condition):
+    def __init__(self, timestamp, temperature, humidity, sky_condition=None):
         self.timestamp = timestamp
         self.temperature = temperature
         self.humidity=humidity/c.TO_PERCENT
         if sky_condition:
-            if sky_condition in c.SKY_CONDITION_LIST:
+            if sky_condition in c.SKY_CONDITION_LIST or None:
                 self.sky_condition=sky_condition
             else:
                 raise ValueError(f'The sky condition must be one of the following: {c.SKY_CONDITION_LIST}')
@@ -61,7 +64,7 @@ class Training_Log:
         self.distance=distance
         self.rating = rating
         self.workout=workout
-        self.__create_weather_entry()
+        self.__create_weather_entry(timestamp, temperature, humidity, sky_condition)
 
 
         if speed == None and pace == None:
