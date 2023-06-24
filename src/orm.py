@@ -1,4 +1,4 @@
-from sqlalchemy import Table, MetaData, Column, Integer, Boolean, String, DateTime, Float, ForeignKey
+from sqlalchemy import Table, MetaData, Column, Integer, Boolean, String, DateTime, Float, ForeignKey, Date
 from sqlalchemy.orm import registry, relationship
 from . import models
 
@@ -21,7 +21,7 @@ dog=Table(
     mapper_reg.metadata,
     Column("id",Integer,primary_key=True,autoincrement=True),
     Column("dog_name",String(50)),
-    Column("date_of_birth", DateTime),
+    Column("date_of_birth", Date),
     Column("breed",String(50)),
     Column("kennel_id", Integer, ForeignKey("kennel.id")),
     
@@ -40,7 +40,6 @@ dog_weigth_entry=Table(
     "weight_entry",
     mapper_reg.metadata,
     Column("id",Integer,primary_key=True,autoincrement=True),
-    Column("timestamp", DateTime),
     Column("dog_age", Float),
     Column("weight",Float),
     Column("dog_id",Integer, ForeignKey("dog.id")),
@@ -51,10 +50,9 @@ weather_entry=Table(
     mapper_reg.metadata,
     Column("id",Integer,primary_key=True,autoincrement=True),
     Column("timestamp", DateTime),
-    Column("runner_name",String(50)),
-    Column("kennel_id", Integer, ForeignKey("kennel.id")),
-
-
+    Column("temperature",Float),
+    Column("humidity",Float),
+    Column("sky_condition",String(25)),
 )
 
 #what happens if dog2 is not set?
@@ -85,5 +83,25 @@ def start_mappers():
     dog_mapper=mapper_reg.map_imperatively(
         models.Dog,
         dog,
+        properties={"kennel":relationship(models.Kennel)}
+    )
+
+    runner_mapper=mapper_reg.map_imperatively(
+        models.Runner,
+        runner,
         properties={"kennel_name":relationship(models.Kennel)}
     )
+
+    dog_weigth_mapper=mapper_reg.map_imperatively(
+        models.Dog_Weight,
+        dog_weigth_entry,
+        properties={"dog_name":relationship(models.Dog)}
+    )
+
+    weather_mapper=mapper_reg.map_imperatively(
+        models.Weather_Entry,
+        weather_entry,
+    )
+
+    
+
