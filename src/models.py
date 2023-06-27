@@ -54,7 +54,7 @@ class Weather_Entry:
 
 class Training_Log:
     #assumes that pace has the following format "00:00:00" --> need data validation
-    def __init__(self, timestamp, temperature, humidity, dog1:Dog, sport, runner:Runner, location, distance, rating, dog2=None, speed=None, pace=None, workout = False, sky_condition=None ) -> None:
+    def __init__(self, timestamp, temperature, humidity, dog1:Dog, dog2:Dog, sport, runner:Runner, location, distance, rating, speed=None, pace=None, workout = False, sky_condition=None ) -> None:
         self.timestamp=timestamp
         self.dog1_name=dog1
         self.runner_name=runner
@@ -81,6 +81,7 @@ class Training_Log:
         if not dog2:
             #this is useful if training dogs as a team
             self.dog2_name=dog2
+            
         
         
     def __create_weather_entry(self, timestamp, temperature, humidity, sky_condition):

@@ -98,19 +98,19 @@ def test_can_add_training_entry(session):
    
     #session.add(models.Dog('Luna',datetime(2017,4,18),kennel,'Husky'))
     
-    training_entry= models.Training_Log(datetime.now(), 20,77, luna,"Canicross",JC,\
-                                        "Christie", 2.4, 3, pace="0:03:20",dog2=bolt)
+    training_entry= models.Training_Log(datetime.now(), 20,77, luna,None,"Canicross",JC,\
+                                        "Christie", 2.4, 3, pace="0:03:20")
 
-    
+    print(training_entry.dog1_name.dog_name)
     
     session.add(training_entry)
     session.commit()
 
-    query=text(""" SELECT "dog1_id", "runner_id", "sport","speed", "pace" FROM "training_log" """)
+    query=text(""" SELECT "dog1_id", "dog2_id", "runner_id", "sport","speed", "pace" FROM "training_log" """)
     
     rows=list(session.execute(query))
     print(rows)
-    expected=[(luna.id, JC.id, "Canicross", 18, "0:03:20"),]
+    expected=[(luna.id, bolt.id, JC.id, "Canicross", 18, "0:03:20"),]
     assert rows==expected
 
 def test_dog_weight_entry_mapper_can_add_line(session, Luna):
