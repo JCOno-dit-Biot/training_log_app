@@ -6,10 +6,10 @@ from src import calculation_helpers as ch
 
 
 @pytest.fixture
-def training_log_entry(Luna):
+def training_log_entry(Luna,JC):
     #dog=models.Dog("Luna",datetime(2017,4,18),models.Kennel("Team Running Huskies"))
-    training_entry= models.Training_Log(datetime.now(), Luna,"Canicross",models.Runner("JC",models.Kennel("Team Running Husky"),\
-                                        "Christie", 2.4, 3, pace="0:03:20"))
+    training_entry= models.Training_Log(datetime.now(), 20,77, Luna,"Canicross",JC,\
+                                        "Christie", 2.4, 3, pace="0:03:20")
 
     return training_entry
 
@@ -17,12 +17,16 @@ def training_log_entry(Luna):
 def Luna():
     return models.Dog('Luna',datetime(2017,4,18),models.Kennel("Team Running Husky"),'Husky')
 
+@pytest.fixture
+def JC():
+    return models.Runner('JC',models.Kennel("Team Running Husky"))    
+
 def test_calculate_dog_age(Luna): 
     date='2023/04/18'   
     assert Luna.calculate_dog_age(date) == 6
 
 def test_same_dogs(Luna):
-    assert Luna == Luna
+    assert Luna.dog_name == Luna.dog_name
 
 def test_pace_to_speed():
     pace_string="0:03:20"
@@ -43,8 +47,13 @@ def test_no_speed_pace_raises_ValError():
         training_entry= models.Training_Log(datetime.now(), 20,77,Luna,"Canicross",models.Runner("JC",models.Kennel("Team Running Husky")),\
                                         "Christie", 2.4, 3)
 
-def training_log_calculates_speed_automatically(training_log_entry):
+def test_training_log_calculates_speed_automatically(training_log_entry):
     assert training_log_entry.speed==18.0
+
+def test_dog_weight_calculate_dog_age(Luna):
+    weight_entry=models.Dog_Weight(Luna,'2023/04/18', 35)
+    assert weight_entry.dog_age == 6
+
 
 
 

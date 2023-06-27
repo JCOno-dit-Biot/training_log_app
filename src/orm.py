@@ -20,7 +20,7 @@ dog=Table(
     "dog",
     mapper_reg.metadata,
     Column("id",Integer,primary_key=True,autoincrement=True),
-    Column("dog_name",String(50)),
+    Column("dog_name",String(50), unique = True),
     Column("date_of_birth", Date),
     Column("breed",String(50)),
     Column("kennel_id", Integer, ForeignKey("kennel.id")),
@@ -31,7 +31,7 @@ runner=Table(
     "runner",
     mapper_reg.metadata,
     Column("id",Integer,primary_key=True,autoincrement=True),
-    Column("runner_name",String(50)),
+    Column("runner_name",String(50), unique = True),
     Column("kennel_id", Integer, ForeignKey("kennel.id")),
     
 )
@@ -83,7 +83,7 @@ def start_mappers():
     dog_mapper=mapper_reg.map_imperatively(
         models.Dog,
         dog,
-        properties={"kennel":relationship(models.Kennel)}
+        properties={"kennel_name":relationship(models.Kennel)}
     )
 
     runner_mapper=mapper_reg.map_imperatively(
@@ -100,8 +100,18 @@ def start_mappers():
 
     weather_mapper=mapper_reg.map_imperatively(
         models.Weather_Entry,
-        weather_entry,
+        weather_entry
+    )
+
+    training_log_mapper=mapper_reg.map_imperatively(
+        models.Training_Log,
+        training_log,
+        properties={"runner_name":relationship(models.Runner),
+                    "dog1_name":relationship(models.Dog, foreign_keys='Training_Log.dog1_id'),
+                    "dog2_name":relationship(models.Dog,foreign_keys='Training_Log.dog2_id')}
+        #             "runner_name":relationship(models.Runner)
+        # }
     )
 
     
-
+#foreign_keys="[dog1_id]"

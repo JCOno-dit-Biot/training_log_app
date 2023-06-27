@@ -8,7 +8,7 @@ import pytest
 from src import models
 from src.orm import mapper_reg,start_mappers
 
-from tests.test_models import Luna
+from tests.test_models import Luna, training_log_entry, JC
 
 @pytest.fixture
 def in_memory_db():
@@ -47,6 +47,8 @@ def test_dog_mapper_can_add_line(session,Luna):
     # luna_kennel=session.query(models.Kennel).all()
 
     #session.add(models.Dog('Luna',datetime(2017,4,18),kennel,'Husky'))
+    
+
     session.add(Luna)
     session.commit()
 
@@ -55,19 +57,77 @@ def test_dog_mapper_can_add_line(session,Luna):
     print(list(session.query(models.Kennel).all()))
     assert rows==expected
 
+def test_runner_mapper_can_add_line(session,JC):
+    
+    session.add(JC)
+    session.commit()
+
+    rows=list(session.execute(text(""" SELECT "runner_name", "kennel_id" FROM "runner" """)))
+    expected=[(JC.runner_name,1)]
+    print(list(session.query(models.Kennel).all()))
+    assert rows==expected
+
 def test_dog_mapper_can_retrive_entry(session,Luna):
     kennel=models.Kennel('Team Running Husky')
 
     session.add(kennel)
+    
     query=text(""" INSERT INTO "dog" ("dog_name", "date_of_birth", "breed", "kennel_id") VALUES (:dogname,:dob,:breed,:kennel_id)""")
     param={"dogname": 'Luna','dob':datetime(2017,4,18).date(),'breed':'Husky','kennel_id':1}
     session.execute(query,param)
     session.flush()
+    
 
     expected=Luna
     
     assert list(session.query(models.Dog).all())[0].date_of_birth == expected.date_of_birth
     assert list(session.query(models.Dog).all())[0].breed == expected.breed
     assert list(session.query(models.Dog).all())[0].dog_name == expected.dog_name
-    assert list(session.query(models.Dog).all())[0].kennel == expected.kennel
+    assert list(session.query(models.Dog).all())[0].kennel_name == expected.kennel_name
+
+
+def test_can_add_training_entry(session):
+    kennel=models.Kennel('Team Running Husky')
+
+    session.add(kennel)
+    TRH_kennel=session.query(models.Kennel).all()[0]
+
+    luna=models.Dog('Luna',datetime(2017,4,18),TRH_kennel,'Husky')
+    JC= models.Runner('JC', TRH_kennel)
+    bolt=models.Dog('Bolt',datetime(2018,6,12),TRH_kennel,'Husky')
+   
+    #session.add(models.Dog('Luna',datetime(2017,4,18),kennel,'Husky'))
+    
+    training_entry= models.Training_Log(datetime.now(), 20,77, luna,"Canicross",JC,\
+                                        "Christie", 2.4, 3, pace="0:03:20",dog2=bolt)
+
+    
+    
+    session.add(training_entry)
+    session.commit()
+
+    query=text(""" SELECT "dog1_id", "runner_id", "sport","speed", "pace" FROM "training_log" """)
+    
+    rows=list(session.execute(query))
+    print(rows)
+    expected=[(luna.id, JC.id, "Canicross", 18, "0:03:20"),]
+    assert rows==expected
+
+def test_dog_weight_entry_mapper_can_add_line(session, Luna):
+    # session.add(Luna)
+    # session.flush()
+    luna=models.Dog('Luna',datetime(2017,4,18),models.Kennel('Team Running Husky'),'Husky')
+    
+    weight_entry=models.Dog_Weight(luna, datetime.now().strftime('%Y/%m/%d'), 35)
+
+    session.add(weight_entry)
+    session.commit()
+
+    query=text(""" SELECT "dog_id", "dog_age", "weight" FROM "weight_entry" """)
+    
+    rows=list(session.execute(query).all())
+    print(rows)
+    expected=[(luna.id, luna.age, 35.0),]
+    assert rows==expected
+
 
