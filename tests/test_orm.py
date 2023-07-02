@@ -1,7 +1,7 @@
 from sqlalchemy.orm import sessionmaker,clear_mappers
 from sqlalchemy import create_engine
 from sqlalchemy.sql import text
-
+import sqlalchemy
 from datetime import datetime
 import pytest
 
@@ -56,6 +56,16 @@ def test_dog_mapper_can_add_line(session,Luna):
     expected=[(Luna.dog_name,1)]
     print(list(session.query(models.Kennel).all()))
     assert rows==expected
+
+def test_unique_constraint_on_dog_table(session,Luna):
+    session.add(Luna)
+    session.commit()
+    query=text(""" INSERT INTO "dog" ("dog_name", "date_of_birth", "breed", "kennel_id") VALUES (:dogname,:dob,:breed,:kennel_id)""")
+    param={"dogname": 'Luna','dob':datetime(2017,4,18).date(),'breed':'Husky','kennel_id':1}
+    with pytest.raises(sqlalchemy.exc.IntegrityError):
+        session.execute(query,param)
+        session.flush()
+    
 
 def test_runner_mapper_can_add_line(session,JC):
     
