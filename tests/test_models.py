@@ -8,7 +8,8 @@ from src import calculation_helpers as ch
 @pytest.fixture
 def training_log_entry(Luna,JC):
     #dog=models.Dog("Luna",datetime(2017,4,18),models.Kennel("Team Running Huskies"))
-    training_entry= models.Training_Log(datetime.now(), 20,77, Luna,"Canicross",JC,\
+    training_entry= models.Training_Log(datetime.now(), 20,77, Luna,models.Dog('Bolt',datetime(2018,6,12),models.Kennel("Team Running Husky"),'Husky'),\
+                                        "Canicross",JC,\
                                         "Christie", 2.4, 3, pace="0:03:20")
 
     return training_entry
@@ -44,7 +45,8 @@ def test_weather_raises_ValError_if_not_in_list():
         
 def test_no_speed_pace_raises_ValError():
     with pytest.raises(ValueError):
-        training_entry= models.Training_Log(datetime.now(), 20,77,Luna,"Canicross",models.Runner("JC",models.Kennel("Team Running Husky")),\
+        training_entry= models.Training_Log(datetime.now(), 20,77,Luna,models.Dog('Bolt',datetime(2018,6,12),models.Kennel("Team Running Husky"),'Husky'),\
+                                        "Canicross",models.Runner("JC",models.Kennel("Team Running Husky")),\
                                         "Christie", 2.4, 3)
 
 def test_training_log_calculates_speed_automatically(training_log_entry):
