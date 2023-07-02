@@ -49,6 +49,7 @@ weather_entry=Table(
     "weather_entry",
     mapper_reg.metadata,
     Column("id",Integer,primary_key=True,autoincrement=True),
+    Column("training_log_entry_id", Integer, ForeignKey("training_log.id")),
     Column("timestamp", DateTime),
     Column("temperature",Float),
     Column("humidity",Float),
@@ -70,6 +71,7 @@ training_log=Table(
     Column("speed",Float),
     Column("pace",String(10)),
     Column("rating",Integer),
+    Column('weather_id',Integer, ForeignKey("weather_entry.id")),
     Column("workout",Boolean)
 )
 
@@ -98,20 +100,23 @@ def start_mappers():
         properties={"dog_name":relationship(models.Dog)}
     )
 
-    weather_mapper=mapper_reg.map_imperatively(
-        models.Weather_Entry,
-        weather_entry
-    )
 
     training_log_mapper=mapper_reg.map_imperatively(
         models.Training_Log,
         training_log,
         properties={"runner_name":relationship(models.Runner),
                     "dog1_name":relationship(models.Dog, foreign_keys='Training_Log.dog1_id'),
-                    "dog2_name":relationship(models.Dog,foreign_keys='Training_Log.dog2_id')}
-        #             "runner_name":relationship(models.Runner)
-        # }
+                    "dog2_name":relationship(models.Dog,foreign_keys='Training_Log.dog2_id'),
+                    "weather_entry": relationship(models.Weather_Entry,foreign_keys='Training_Log.weather_id')}
+
     )
 
+    weather_mapper=mapper_reg.map_imperatively(
+        models.Weather_Entry,
+        weather_entry,
+    )
+
+#properties={"timestamp": relationship(models.Training_Log,foreign_keys='Weather_Entry.training_log_entry_id')}
+    
     
 #foreign_keys="[dog1_id]"
