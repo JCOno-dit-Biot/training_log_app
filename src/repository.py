@@ -10,11 +10,15 @@ class abstract_repository(abc.ABC):
         raise NotImplementedError
     
     @abc.abstractmethod
-    def get_runner (self, dog:models.Dog):
+    def get_runner (self, runner_name: str):
         raise NotImplementedError
     
     @abc.abstractmethod
     def add_weight_entry(self, dog_weigth_entry: models.Dog_Weight):
+        raise NotImplementedError
+    
+    @abc.abstractmethod
+    def add_training_entry(self, training_entry: models.Training_Log):
         raise NotImplementedError
 
 
