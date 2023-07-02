@@ -45,7 +45,7 @@ class sql_alchemy_repository(abstract_repository):
         self.session.commit()
 
     def add_training_entry(self, training_entry: models.Training_Log):
-        self.session.add(dog_weigth_entry)
+        self.session.add(training_entry)
         self.session.commit()
 
         #should make sure that runners and dogs are not added multiple times
