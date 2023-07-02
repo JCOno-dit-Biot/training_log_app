@@ -1,6 +1,7 @@
 from sqlalchemy import Table, MetaData, Column, Integer, Boolean, String, DateTime, Float, ForeignKey, Date
 from sqlalchemy.orm import registry, relationship
 from . import models
+from sqlalchemy import UniqueConstraint
 
 SCHEMA='public'
 
@@ -20,10 +21,11 @@ dog=Table(
     "dog",
     mapper_reg.metadata,
     Column("id",Integer,primary_key=True,autoincrement=True),
-    Column("dog_name",String(50), unique = True),
+    Column("dog_name",String(50)),
     Column("date_of_birth", Date),
     Column("breed",String(50)),
     Column("kennel_id", Integer, ForeignKey("kennel.id")),
+    UniqueConstraint("dog_name", "kennel_id")
     
 )
 
@@ -33,6 +35,7 @@ runner=Table(
     Column("id",Integer,primary_key=True,autoincrement=True),
     Column("runner_name",String(50), unique = True),
     Column("kennel_id", Integer, ForeignKey("kennel.id")),
+    UniqueConstraint("runner_name", "kennel_id")
     
 )
 
