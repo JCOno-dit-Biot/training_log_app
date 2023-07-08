@@ -20,7 +20,10 @@ class Dog:
     def calculate_dog_age(self, date: str)  -> float:
 
         date=datetime.strptime(date, '%Y/%m/%d')
-        self.age=(c.MONTHS_IN_YEAR*relativedelta(date, self.date_of_birth).years+relativedelta(date, self.date_of_birth).months)/c.MONTHS_IN_YEAR
+        self.age=(c.DAYS_IN_YEAR*relativedelta(date, self.date_of_birth).years+\
+                  c.DAYS_IN_MONTH * relativedelta(date, self.date_of_birth).months+\
+                  c.DAYS_IN_WEEK * relativedelta(date, self.date_of_birth).weeks+\
+                  relativedelta(date, self.date_of_birth).days)/c.DAYS_IN_YEAR
         return self.age
 
     
