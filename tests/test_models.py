@@ -24,7 +24,7 @@ def JC():
 
 def test_calculate_dog_age(Luna): 
     date='2023/04/18'   
-    assert Luna.calculate_dog_age(date) == 6
+    assert int(Luna.calculate_dog_age(date)*100)/100 == 6.00
 
 def test_same_dogs(Luna):
     assert Luna.dog_name == Luna.dog_name
@@ -52,9 +52,10 @@ def test_no_speed_pace_raises_ValError():
 def test_training_log_calculates_speed_automatically(training_log_entry):
     assert training_log_entry.speed==18.0
 
+
 def test_dog_weight_calculate_dog_age(Luna):
-    weight_entry=models.Dog_Weight(Luna,'2023/04/18', 35)
-    assert weight_entry.dog_age == 6
+    weight_entry=models.Dog_Weight(Luna,'2023/03/27', 35)
+    assert int(weight_entry.dog_age*100)/100 == 5.95
 
 
 

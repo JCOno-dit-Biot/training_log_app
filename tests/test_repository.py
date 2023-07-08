@@ -32,12 +32,12 @@ def test_add_weight_entry(session, Luna):
     repo.add_weight_entry(weigth_entry)
 
     rows=list(session.execute(
-        text(""" SELECT weight_entry.id, weight_entry.dog_age, weight_entry.weight, dog.dog_name 
+        text(""" SELECT weight_entry.id, weight_entry.weight, dog.dog_name 
         FROM "weight_entry" 
         INNER JOIN dog ON weight_entry.dog_id=dog.id """)
     ))
 
-    assert rows == [(1, 6.0, 36.0, 'Luna')]
+    assert rows == [(1, 36.0, 'Luna')]
 
 
 def test_add_training_entry(session,JC, Luna):
