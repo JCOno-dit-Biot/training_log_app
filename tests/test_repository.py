@@ -103,3 +103,5 @@ def test_training_entry_creates_weather_entry(session,JC, Luna):
     
     now_string=datetime(2023,7,3,13,20,0,90).strftime('%Y-%m-%d %H:%M:%S.%f')
     assert rows == [(1, now_string, 15.0, 0.77, 'Sunny')]
+
+

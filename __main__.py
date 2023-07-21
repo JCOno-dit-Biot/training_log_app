@@ -32,14 +32,22 @@ def setup_sessionmakeSQL():
     start_mappers()
     return sessionmaker(bind=engine)
 
-def add_new_weight_entry(session):
+def add_new_weight_entry(controller,dog, date, weight):
 
-    #find latest entry
-    pass
-
-
-
-
+    try:
+        #find latest entry
+        latest_entry_luna = controller.get_most_recent_weight_entry(dog)
+        #create weight entry
+        weight_entry=models.Dog_Weight(dog, 
+                                   date, 
+                                   weight)
+    
+        #add only if more recent that the latest entry
+        if weight_entry.dog_age > latest_entry_luna.dog_age:
+            controller.add_weight_entry(weight_entry)
+    except ValueError as e:
+            print(f'No weight entry for {dog.dog_name}')
+        
 
 
 
@@ -51,23 +59,22 @@ def main():
 
     luna_weight_df=pd.read_csv('/Users/jcono-dit-biot/Documents/Python/Python_repos/data_csv/lunaweight.csv')
   
-
     luna_weight_df['Date']=pd.to_datetime(luna_weight_df['Date'],dayfirst=True).dt.strftime('%Y/%m/%d')
     
     if session_pool:
         with session_pool() as session:
-           
+            #initialize controller
             controller = Controller(repository.sql_alchemy_repository(session))
 
+            #find dog in database
             dog = controller.get_dog('Luna')
             
-
             for index, rows in luna_weight_df.iterrows():
+                add_new_weight_entry(controller, dog, rows['Date'],rows['Weight (lbs)'])
              
-                weight_entry=models.Dog_Weight(dog, rows['Date'], rows['Weight (lbs)'])
                 
-                if index > 0:
-                    controller.add_weight_entry(weight_entry)
+                
+                    
 
 
 if __name__=="__main__":

@@ -12,6 +12,9 @@ class Controller:
     def get_runner (self, runner_name):
         return self.repo.get_runner(runner_name)
     
+    def get_most_recent_weight_entry(self, dog_name):
+        return self.repo.get_most_recent_weight_entry(dog_name)
+    
     def add_weight_entry(self, dog_weigth_entry: models.Dog_Weight):
         self.repo.add_weight_entry(dog_weigth_entry)
     
