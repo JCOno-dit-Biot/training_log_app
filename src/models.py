@@ -48,12 +48,15 @@ class Weather_Entry:
     def __init__(self, timestamp, temperature, humidity, sky_condition=None):
         self.timestamp = timestamp
         self.temperature = temperature
-        self.humidity=humidity/c.TO_PERCENT
-        if sky_condition:
-            if sky_condition in c.SKY_CONDITION_LIST or None:
-                self.sky_condition=sky_condition
-            else:
-                raise ValueError(f'The sky condition must be one of the following: {c.SKY_CONDITION_LIST}')
+        if humidity:
+            self.humidity=humidity/c.TO_PERCENT
+        else:
+            self.humidity = None
+        
+        if sky_condition == None or sky_condition in list(map(str.lower,c.SKY_CONDITION_LIST)):
+            self.sky_condition=sky_condition
+        else:
+            raise ValueError(f'The sky condition {self.sky_condition} must be one of the following: {c.SKY_CONDITION_LIST}')
 
 class Training_Log:
     #assumes that pace has the following format "00:00:00" --> need data validation
