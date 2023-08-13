@@ -15,6 +15,9 @@ class Controller:
     def get_most_recent_weight_entry(self, dog_name):
         return self.repo.get_most_recent_weight_entry(dog_name)
     
+    def get_latest_training_entry(self):
+        return self.repo.get_latest_training_entry()
+    
     def add_weight_entry(self, dog_weigth_entry: models.Dog_Weight):
         self.repo.add_weight_entry(dog_weigth_entry)
     

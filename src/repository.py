@@ -62,8 +62,14 @@ class sql_alchemy_repository(abstract_repository):
         else:
             raise ValueError(f"No weight entry for {dog_name}")
 
-    def get_latest_training_entry():
-        pass
+    def get_latest_training_entry(self):
+        latest_training_entry = self.session.query(models.Training_Log.timestamp).\
+                                order_by(models.Training_Log.timestamp.desc()).first()
+        
+        if latest_training_entry:
+            return latest_training_entry
+        else:
+            raise ValueError(f"No training entry found in database")
 
     def add_weight_entry(self, dog_weigth_entry: models.Dog_Weight):
         self.session.add(dog_weigth_entry)
