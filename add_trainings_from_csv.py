@@ -56,8 +56,8 @@ def main():
 
     #use column date and time to create a timestamp column
     training_df = pd.read_csv('/Users/jcono-dit-biot/Documents/Python/Python_repos/dog_training_log.csv', parse_dates={'timestamp': ['Date', 'Time']})
-    training_df['timestamp'] = pd.to_datetime(training_df['timestamp'])#.dt.strftime('%Y-%m-%d %I:%M %p')
-
+    training_df['timestamp'] = pd.to_datetime(training_df['timestamp'])
+    
     training_df['average pace'] = pd.to_datetime(training_df['average pace'], format = '%M:%S').dt.strftime('%H:%M:%S')
     training_df['average speed'] = training_df['average speed'].str.replace(',', '.').astype('float')
 
@@ -68,6 +68,14 @@ def main():
         with session_pool() as session:
             #initialize controller
             controller = Controller(repository.sql_alchemy_repository(session))
+            try:
+                latest_entry = controller.get_latest_training_entry()[0]
+
+            except ValueError as e:
+                print(e)
+
+            training_df = training_df[training_df['timestamp'] > latest_entry]
+
 
             for index, rows in training_df.iterrows():
 
