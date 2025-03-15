@@ -1,0 +1,16 @@
+[project]
+name = "training-log-app"
+version = "0.1.0"
+description = "App to record dog training activites with their owners"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "numpy>=2.2.3",
+    "psycopg2-binary>=2.9.10",
+    "pydantic>=2.10.6",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3.5",
+]
