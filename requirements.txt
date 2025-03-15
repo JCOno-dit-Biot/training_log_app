@@ -1,6 +1,0 @@
-annotated-types==0.7.0
-numpy==1.24.4
-psycopg2-binary==2.9.10
-pydantic==2.10.4
-pydantic_core==2.27.2
-typing_extensions==4.12.2
