@@ -84,6 +84,46 @@ def test_no_speed_pace_raises_ValError(JC):
         workout = False
     )
 
+def test_activity_workout_without_lap_raise():
+    with pytest.raises(ValueError):
+        training_entry= Activity (
+        timestamp = datetime.now(),
+        runner = JC,
+        sport = Sport(name= 'Canicross'),
+        location = 'Christie',
+        distance = 2.4,
+        workout = True,
+        laps=[]
+    )
+def test_activity_lap_no_speed_raise():
+ with pytest.raises(ValueError):
+    ActivityLaps(lap_number=1)
+
+def test_activity_workout_with_lap(JC):
+    workout = Activity (
+        timestamp = datetime.now(),
+        runner = JC,
+        sport = Sport(name= 'Canicross'),
+        location = 'Christie',
+        distance = 2.4,
+        workout = True,
+        speed = 18.0,
+        laps=[
+            ActivityLaps(
+                lap_number=1,
+                speed = 18.1
+            ),
+            ActivityLaps(
+                lap_number=2,
+                pace = "03:20"
+            )
+        ]
+    )
+    assert len(workout.laps) == 2
+    assert workout.laps[1].speed is not None
+    assert workout.laps[0].pace is not None
+    assert workout.laps[0].pace == "03:18"
+    assert workout.laps[1].speed == pytest.approx(18)
 
 
 
