@@ -119,11 +119,12 @@ celerybeat.pid
 # SageMath parsed files
 *.sage.py
 
-# Not adding sql scripts to github
-*.sql
+# Exclude certain data files
+data/
 
 # Environments
 config/
+.docker.env
 .env
 .venv
 env/
