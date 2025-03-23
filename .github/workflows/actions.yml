@@ -55,17 +55,16 @@ jobs:
 
       - name: Build the test database image
         run: |
-          docker-compose --env-file .env.test -f docker/docker-compose.test.yaml build
+          docker compose --env-file .env.test -f docker/docker-compose.test.yaml build
 
       - name: Start the test database
         run: |
-          docker-compose --env-file .env.test -f docker/docker-compose.test.yaml up -d
+          docker compose --env-file .env.test -f docker/docker-compose.test.yaml up -d
 
       - name: Wait for Postgres to be ready
         run: |
           echo "Waiting for Postgres..."
           until pg_isready -h localhost -p 5433 -U test_user; do sleep 2; done
-
 
       - name: Install uv
         uses: astral-sh/setup-uv@v5
@@ -89,4 +88,4 @@ jobs:
 
       - name: Tear down containers
         if: always()
-        run: docker-compose --env-file .env.test -f docker/docker-compose.test.yml down --volumes
+        run: docker compose --env-file .env.test -f docker/docker-compose.test.yaml down --volumes
