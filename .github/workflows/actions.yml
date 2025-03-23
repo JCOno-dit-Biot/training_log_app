@@ -62,7 +62,7 @@ jobs:
           docker compose --env-file .env.test -f docker/docker-compose.test.yaml up -d
 
       - name: Print Postgres logs
-        run: docker compose -f docker/docker-compose.test.yml logs postgres_test
+        run: docker compose -f docker/docker-compose.test.yaml logs postgres_test
 
       - name: Wait for Postgres to be ready
         run: |
