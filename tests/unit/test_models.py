@@ -1,4 +1,4 @@
-from src.models import *
+from src.models import Activity, Dog, Kennel, Runner, DogWeightEntry, Sport, ActivityLaps
 import pytest
 from datetime import datetime, date
 from src import calculation_helpers as ch

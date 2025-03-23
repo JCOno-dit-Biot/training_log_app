@@ -1,8 +1,8 @@
 from .test_orm import in_memory_db, session
-from .test_models import Luna,JC
+from .unit.test_models import Luna,JC
 import pytest
 from src import models
-from src.repository import sql_alchemy_repository
+from src.repositories.postgres_repository import sql_alchemy_repository
 
 from sqlalchemy.sql import text
 from datetime import datetime
