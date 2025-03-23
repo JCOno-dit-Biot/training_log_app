@@ -5,7 +5,5 @@ services:
       dockerfile: ./docker/Dockerfile.testdb
     container_name: postgres_test
     restart: always
-    env_file:
-      - ../config/.env.test
     ports:
       - "5433:5432"
