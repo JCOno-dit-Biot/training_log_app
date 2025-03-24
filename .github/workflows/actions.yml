@@ -46,12 +46,10 @@ jobs:
 
       - name: Generate .env.test from secrets
         run: |
-          cat <<EOF > .env.test
-          POSTGRES_USER=test_user
-          POSTGRES_PASSWORD=${{ secrets.TEST_DB_PASSWORD }}
-          POSTGRES_DB=test_db
-          POSTGRES_PORT=${{ secrets.TEST_DB_PORT || 5433 }}
-          EOF
+          echo "POSTGRES_USER=test_user" >> .env.test
+          echo "POSTGRES_PASSWORD=${{ secrets.TEST_DB_PASSWORD }}" >> .env.test
+          echo "POSTGRES_DB=test_db" >> .env.test
+          echo "POSTGRES_PORT=${{ secrets.TEST_DB_PORT || 5433 }}" >> .env.test
 
       - name: Build the test database image
         run: |
