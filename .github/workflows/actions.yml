@@ -83,7 +83,7 @@ jobs:
         run: uv sync --dev
 
       - name: Run integration tests
-        run: pytest tests/integration
+        run: uv run pytest tests/integration
         env:
           PORT: 5433
           POSTGRES_DB: test_db
