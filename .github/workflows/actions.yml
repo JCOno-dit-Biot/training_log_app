@@ -46,22 +46,24 @@ jobs:
 
       - name: Generate .env.test from secrets
         run: |
-          echo POSTGRES_USER=test_user >> .env.test
-          echo POSTGRES_PASSWORD=${{ secrets.TEST_DB_PASSWORD }} >> .env.test
-          echo POSTGRES_DB=test_db >> .env.test
-          echo POSTGRES_PORT=${{ secrets.TEST_DB_PORT || 5433 }} >> .env.test
-          cat .env.test
+          echo POSTGRES_USER=test_user >> docker/.env.test
+          echo POSTGRES_PASSWORD=${{ secrets.TEST_DB_PASSWORD }} >> docker/.env.test
+          echo POSTGRES_DB=test_db >> docker/.env.test
+          echo POSTGRES_PORT=${{ secrets.TEST_DB_PORT || 5433 }} >> docker/.env.test
 
       - name: Build the test database image
         run: |
-          docker compose --env-file .env.test -f docker/docker-compose.test.yaml build
+          docker compose --env-file .env.test -f docker-compose.test.yaml build
+        working-directory: docker
 
       - name: Start the test database
         run: |
-          docker compose --env-file .env.test -f docker/docker-compose.test.yaml up -d
+          docker compose --env-file .env.test -f docker-compose.test.yaml up -d
+        working-directory: docker
 
       - name: Print Postgres logs
-        run: docker compose -f docker/docker-compose.test.yaml logs postgres_test
+        run: docker compose -f docker-compose.test.yaml logs postgres_test
+        working-directory: docker
 
       - name: Wait for Postgres to be ready
         run: |
@@ -90,4 +92,5 @@ jobs:
 
       - name: Tear down containers
         if: always()
-        run: docker compose --env-file .env.test -f docker/docker-compose.test.yaml down --volumes
+        run: docker compose --env-file .env.test -f docker-compose.test.yaml down --volumes
+        working-directory: docker
