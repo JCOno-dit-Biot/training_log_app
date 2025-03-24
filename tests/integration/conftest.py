@@ -5,6 +5,9 @@ import os
 
 if os.getenv("CI") != "true":
     load_dotenv(dotenv_path="config/.env.test")
+else: 
+    load_dotenv()
+
 
 host = "localhost"
 db_user = os.getenv("POSTGRES_USER")
