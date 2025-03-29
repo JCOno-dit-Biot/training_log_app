@@ -7,6 +7,8 @@ import os
 if os.getenv("CI") != True:
     print("loading local .env file")
     load_dotenv(dotenv_path='config/.env.test', override= True)
+else:
+    load_dotenv()
 
 
 

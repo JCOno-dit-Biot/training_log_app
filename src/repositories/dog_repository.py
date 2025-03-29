@@ -1,4 +1,5 @@
 from src.models.dog import Dog
+from src.models.kennel import Kennel
 from .abstract_repository import abstract_repository
 from typing import List, Optional
 from psycopg2.extras import RealDictCursor
@@ -26,8 +27,15 @@ class dog_repository(abstract_repository):
                         """
             cur.execute(query, (dog_name,))
             row = cur.fetchone()
-
-        return Dog(**row) if row else None
+            
+        if row:
+            return Dog(
+                name=row['name'],
+                breed=row['breed'],
+                date_of_birth=row['date_of_birth'],
+                kennel=Kennel(name=row['kennel_name'])
+            )
+        return None
 
     def get_all(self, kennel_id: int) -> List[Dog]:
         with self._connection.cursor(cursor_factory= RealDictCursor) as cur:
@@ -46,7 +54,17 @@ class dog_repository(abstract_repository):
                             kennel_id = %s
                         """
             cur.execute(query, (kennel_id,))
-            return [Dog(**row) for row in cur.fetchall()]
+            dogs = []
+            for row in cur.fetchall():
+                dog = Dog(
+                    name=row['name'],
+                    breed=row['breed'],
+                    date_of_birth=row['date_of_birth'],
+                    kennel=Kennel(name=row['kennel_name'])
+                )
+                dogs.append(dog)
+
+            return dogs
 
     def create(self, dog: Dog, kennel_id: int) -> Dog:
         with self._connection.cursor(cursor_factory= RealDictCursor) as cur:
