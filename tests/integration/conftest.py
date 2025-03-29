@@ -14,7 +14,7 @@ host = "localhost"
 db_user = os.getenv("POSTGRES_USER")
 db_password = os.getenv("POSTGRES_PASSWORD")
 db = os.getenv("POSTGRES_DB")
-port = int(os.getenv("POSTGRES_PORT"))
+port = int(os.getenv("POSTGRES_PORT", "5433"))
 
 @pytest.fixture(scope="session")
 def test_db_conn():
