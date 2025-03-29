@@ -3,14 +3,12 @@ import pytest
 from dotenv import load_dotenv
 import os
 
+load_dotenv()
 print("CI env set to: " + os.getenv("CI"))
+
 if os.getenv("CI") != "true":
     print("loading local .env file")
     load_dotenv(dotenv_path='config/.env.test', override= True)
-else:
-    load_dotenv()
-
-
 
 host = "localhost"
 db_user = os.getenv("POSTGRES_USER")
