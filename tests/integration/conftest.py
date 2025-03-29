@@ -3,12 +3,12 @@ import pytest
 from dotenv import load_dotenv
 import os
 
-
-if os.getenv("CI") != True:
+print("CI env set to: " + os.getenv("CI"))
+if os.getenv("CI") != "true":
     print("loading local .env file")
     load_dotenv(dotenv_path='config/.env.test', override= True)
 else:
-    load_dotenv('.env.test')
+    load_dotenv()
 
 
 
