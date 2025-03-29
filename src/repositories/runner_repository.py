@@ -1,5 +1,6 @@
 from src.models.runner import Runner
-from abstract_repository import abstract_repository
+from src.models.kennel import Kennel
+from .abstract_repository import abstract_repository
 from typing import List, Optional
 from psycopg2.extras import RealDictCursor
 
@@ -11,38 +12,51 @@ class runner_repository(abstract_repository):
     def get_by_name(self, runner_name: str) -> Optional[Runner]:
         with self._connection.cursor(cursor_factory= RealDictCursor) as cur:
             query = """ SELECT 
-                            name,
+                            runners.name,
                             kennels.name as kennel_name
                         FROM 
                             runners
                         JOIN 
                             kennels 
                         ON
-                            runners.kennel_id == kennels.id
+                            runners.kennel_id = kennels.id
                         WHERE 
-                            name = %s
+                            runners.name = %s
                         """
-            cur.execute(query, (runner_name))
+            cur.execute(query, (runner_name,))
             row = cur.fetchone()
-        return Runner(**row) if row else None
+        if row:
+            return Runner(
+                name=row['name'],
+                kennel=Kennel(name=row['kennel_name'])
+            )
+        return None
 
     def get_all(self, kennel_id: int) -> List[Runner]:
         with self._connection.cursor(cursor_factory= RealDictCursor) as cur:
             query = """ SELECT 
-                            name,
+                            runners.name,
                             kennels.name as kennel_name
                         FROM 
                             runners
                         JOIN 
                             kennels 
                         ON
-                            runners.kennel_id == kennels.id
+                            runners.kennel_id = kennels.id
                         WHERE 
                             kennel_id = %s
                         """
-            cur.execute(query, (kennel_id))
+            cur.execute(query, (kennel_id,))
+            runners = []
+            for row in cur.fetchall():
+                runner = Runner(
+                    name=row['name'],
+                    kennel=Kennel(name=row['kennel_name'])
+                )
+                runners.append(runner)
+
+            return runners
             
-        return [Runner(**row) for row in cur.fetchall()]
 
     def create(self, runner: Runner, kennel_id) -> Runner:
         with self._connection.cursor(cursor_factory= RealDictCursor) as cur:
@@ -60,7 +74,7 @@ class runner_repository(abstract_repository):
 
     def delete(self, runner: Runner):
         with self._connection.cursor(cursor_factory= RealDictCursor) as cur:
-            cur.execute("""DELETE FROM runners WHERE name = %s AND kennel_id = SELECT id FROM kennel WHERE name = %s """,
+            cur.execute("""DELETE FROM runners WHERE name = %s AND kennel_id = (SELECT id FROM kennels WHERE name = %s); """,
                          (runner.name, runner.kennel.name))
             self._connection.commit()
 

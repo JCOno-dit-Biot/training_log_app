@@ -3,17 +3,18 @@ import pytest
 from dotenv import load_dotenv
 import os
 
-if os.getenv("CI") != "true":
-    load_dotenv(dotenv_path="config/.env.test")
-else: 
-    load_dotenv()
+
+if os.getenv("CI") != True:
+    print("loading local .env file")
+    load_dotenv(dotenv_path='config/.env.test', override= True)
+
 
 
 host = "localhost"
 db_user = os.getenv("POSTGRES_USER")
 db_password = os.getenv("POSTGRES_PASSWORD")
 db = os.getenv("POSTGRES_DB")
-port = os.getenv("PORT")
+port = int(os.getenv("POSTGRES_PORT"))
 
 @pytest.fixture(scope="session")
 def test_db_conn():

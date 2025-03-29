@@ -12,4 +12,5 @@ VALUES
 INSERT INTO "runners"("name", "kennel_id")
 VALUES
     ('Tintin', 1),
-    ('Obelix', 2);
+    ('Obelix', 2),
+    ('Asterix', 2);

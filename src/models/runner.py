@@ -4,4 +4,4 @@ from .kennel import Kennel
 
 class Runner(BaseModel):
     name: str
-    kennel: Optional[Kennel]
+    kennel: Optional[Kennel] = None

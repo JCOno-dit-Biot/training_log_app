@@ -21,7 +21,7 @@ def test_create_runner(runner_repo, test_kennel):
     runner_repo.create(runner, 1)
     
     with runner_repo._connection.cursor() as cur:
-        cur.execute(""" SELECT * FROM runner WHERE name = 'John' """)
+        cur.execute(""" SELECT * FROM runners WHERE name = 'John' """)
         results = cur.fetchall()
 
     print(results)
@@ -29,24 +29,38 @@ def test_create_runner(runner_repo, test_kennel):
     assert results[0][1] == "John"
     assert results[0][-1] == 1
 
-def test_get_dog_by_name(runner_repo):
+def test_get_runner_by_name(runner_repo):
     asterix = runner_repo.get_by_name("Asterix")
     assert asterix.name == "Asterix"
-    assert asterix.kennel == 'Gaulois'
+    assert asterix.kennel.name == 'Les Gaulois'
     
 
-def test_get_all_dogs(runner_repo):
+def test_get_all_runners(runner_repo):
     runner_list = runner_repo.get_all(2)
+    print(runner_list)
     assert len(runner_list) == 2
 
-def test_get_all_dogs_empty(runner_repo):
+def test_get_all_runners_empty(runner_repo):
     runner_empty_list = runner_repo.get_all(100)
     assert len(runner_empty_list) == 0
 
-def test_delete_dog(runner_repo, test_kennel):
+def test_does_not_delete_if_wrong_kennel(runner_repo, test_kennel):
+    runner = Runner(
+        name = "Obelix",
+        kennel = test_kennel
+    )
+    runner_repo.delete(runner)
+
+    with runner_repo._connection.cursor() as cur:
+        cur.execute(""" SELECT * FROM runners WHERE name = 'Obelix' """)
+        results = cur.fetchall()
+
+    assert len(results) == 1 
+
+def test_delete_runner(runner_repo):
     runner = Runner(
         name = "Asterix",
-        kennel = test_kennel
+        kennel = Kennel(name = 'Les Gaulois')
     )
     runner_repo.delete(runner)
 
