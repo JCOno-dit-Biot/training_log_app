@@ -5,6 +5,7 @@ from datetime import date
 
 
 class DogWeightEntry(BaseModel):
+    id: Optional[int]
     date: date
     dog: Dog
     weight: float
