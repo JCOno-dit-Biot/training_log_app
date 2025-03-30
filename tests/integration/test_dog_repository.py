@@ -20,22 +20,32 @@ def test_create_dog(dog_repo, test_kennel):
         date_of_birth = date.today() - timedelta(weeks = 52),
         kennel = test_kennel
     )
-    dog_repo.create(dog, 1)
     
+    id = dog_repo.create(dog, 1)
     with dog_repo._connection.cursor() as cur:
         cur.execute(""" SELECT * FROM dogs WHERE name = 'Buddy' """)
         results = cur.fetchall()
 
-    print(results)
+    assert dog.id is None
+    assert id == 4
+    #update dog
+    dog.id = id
+    assert dog.id is not None
     assert len(results) == 1
     assert results[0][1] == "Buddy"
     assert results[0][-1] == 1
 
 def test_get_dog_by_name(dog_repo):
-    Idefix = dog_repo.get_by_name("Milou")
+    Idefix = dog_repo.get_by_name("Milou")[0]
     assert Idefix.name == "Milou"
     assert Idefix.breed == "Terrier"
     assert Idefix.date_of_birth == date(2023, 1, 1)
+
+def test_get_dog_by_id(dog_repo):
+    dog = dog_repo.get_by_id(2)
+    assert dog.id == 2
+    assert dog.name == 'Fido'
+    assert dog.kennel.name== 'Les Gaulois'
 
 def test_get_all_dogs(dog_repo):
     dog_list = dog_repo.get_all(2)
@@ -50,7 +60,7 @@ def test_delete_dog(dog_repo, test_kennel):
         name = "Fido",
         breed = "Golden Retriever",
         date_of_birth = date.today(),
-        kennel = test_kennel
+        kennel = Kennel(name= 'Les Gaulois')
     )
     dog_repo.delete(dog)
 

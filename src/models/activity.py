@@ -8,7 +8,7 @@ import src.calculation_helpers as ch
 SPORT_PACE_DISPLAY = {'canicross', 'canihike'}
 
 class Activity(BaseModel):
-    id: Optional[int]
+    id: Optional[int] = None
     timestamp: datetime
     runner: Runner
     sport: Sport

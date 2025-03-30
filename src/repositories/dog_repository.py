@@ -10,9 +10,11 @@ class dog_repository(abstract_repository):
     def __init__(self, connection):
         self._connection = connection
 
-    def get_by_name(self, dog_name: str) -> Optional[Dog]:
+    # dog names are unique per kennel in the database but this method could return multiple dogs
+    def get_by_name(self, dog_name: str) -> List[Dog]:
         with self._connection.cursor(cursor_factory= RealDictCursor) as cur:
             query = """ SELECT 
+                            dogs.id,
                             dogs.name,
                             date_of_birth, 
                             breed, 
@@ -27,15 +29,40 @@ class dog_repository(abstract_repository):
                             dogs.name = %s
                         """
             cur.execute(query, (dog_name,))
+            dogs = []
+            for row in cur.fetchall():
+                dog = parse_dog_from_row(row)
+                dogs.append(dog)
+            return dogs
+  
+    # This method can only return a single entry
+    def get_by_id(self, id: int) -> Optional[Dog]:
+        with self._connection.cursor(cursor_factory= RealDictCursor) as cur:
+            query = """ SELECT 
+                            dogs.id,
+                            dogs.name,
+                            date_of_birth, 
+                            breed, 
+                            kennels.name as kennel_name
+                        FROM 
+                            dogs 
+                        JOIN 
+                            kennels 
+                        ON
+                            dogs.kennel_id = kennels.id
+                        WHERE 
+                            dogs.id = %s
+                        """
+            cur.execute(query, (id,))
             row = cur.fetchone()
-            
-        if row:
-            return parse_dog_from_row(row)
-        return None
+
+        return parse_dog_from_row(row)
+
 
     def get_all(self, kennel_id: int) -> List[Dog]:
         with self._connection.cursor(cursor_factory= RealDictCursor) as cur:
             query = """ SELECT 
+                            dogs.id,
                             dogs.name,
                             date_of_birth, 
                             breed, 
@@ -60,19 +87,22 @@ class dog_repository(abstract_repository):
         with self._connection.cursor(cursor_factory= RealDictCursor) as cur:
             try:
                 query = """
-                    INSERT INTO dogs(name, date_of_birth, breed, kennel_id) VALUES (%s, %s, %s, %s)
+                    INSERT INTO dogs(name, date_of_birth, breed, kennel_id) VALUES (%s, %s, %s, %s) RETURNING id
                 """
                 cur.execute(query, (dog.name, dog.date_of_birth, dog.breed, kennel_id,))
+                row = cur.fetchone()
             except Exception as e:
                 print(e)
                 self._connection.rollback()
+                
             finally:
                 self._connection.commit()
-        return dog
+            return row['id']
 
     def delete(self, dog):
         with self._connection.cursor(cursor_factory= RealDictCursor) as cur:
-            cur.execute("""DELETE FROM dogs WHERE name = %s""", (dog.name,))
+            cur.execute("""DELETE FROM dogs WHERE name = %s AND kennel_id = (SELECT id FROM kennels WHERE name = %s);""",
+                         (dog.name, dog.kennel.name))
             self._connection.commit()
 
 

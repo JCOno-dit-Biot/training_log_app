@@ -9,6 +9,10 @@ class abstract_repository(abc.ABC):
         raise NotImplementedError
 
     @abc.abstractmethod
+    def get_by_id(self, id: int):
+        raise NotImplementedError
+
+    @abc.abstractmethod
     def get_all(self) -> List:
         raise NotImplementedError
     

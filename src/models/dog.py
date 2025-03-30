@@ -4,7 +4,7 @@ from typing import Optional
 from .kennel import Kennel
 
 class Dog(BaseModel):
-    id: Optional[int]
+    id: Optional[int] = None
     name: str
     breed: str
     date_of_birth: date
