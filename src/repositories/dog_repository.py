@@ -1,5 +1,6 @@
 from src.models.dog import Dog
 from src.models.kennel import Kennel
+from src.parsers.dog_parser import parse_dog_from_row
 from .abstract_repository import abstract_repository
 from typing import List, Optional
 from psycopg2.extras import RealDictCursor
@@ -29,12 +30,7 @@ class dog_repository(abstract_repository):
             row = cur.fetchone()
             
         if row:
-            return Dog(
-                name=row['name'],
-                breed=row['breed'],
-                date_of_birth=row['date_of_birth'],
-                kennel=Kennel(name=row['kennel_name'])
-            )
+            return parse_dog_from_row(row)
         return None
 
     def get_all(self, kennel_id: int) -> List[Dog]:
@@ -56,14 +52,8 @@ class dog_repository(abstract_repository):
             cur.execute(query, (kennel_id,))
             dogs = []
             for row in cur.fetchall():
-                dog = Dog(
-                    name=row['name'],
-                    breed=row['breed'],
-                    date_of_birth=row['date_of_birth'],
-                    kennel=Kennel(name=row['kennel_name'])
-                )
+                dog = parse_dog_from_row(row)
                 dogs.append(dog)
-
             return dogs
 
     def create(self, dog: Dog, kennel_id: int) -> Dog:

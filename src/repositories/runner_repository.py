@@ -1,5 +1,5 @@
 from src.models.runner import Runner
-from src.models.kennel import Kennel
+from src.parsers.runner_parser import parse_runner_from_row
 from .abstract_repository import abstract_repository
 from typing import List, Optional
 from psycopg2.extras import RealDictCursor
@@ -26,10 +26,8 @@ class runner_repository(abstract_repository):
             cur.execute(query, (runner_name,))
             row = cur.fetchone()
         if row:
-            return Runner(
-                name=row['name'],
-                kennel=Kennel(name=row['kennel_name'])
-            )
+            runner = parse_runner_from_row(row)
+            return runner
         return None
 
     def get_all(self, kennel_id: int) -> List[Runner]:
@@ -49,10 +47,7 @@ class runner_repository(abstract_repository):
             cur.execute(query, (kennel_id,))
             runners = []
             for row in cur.fetchall():
-                runner = Runner(
-                    name=row['name'],
-                    kennel=Kennel(name=row['kennel_name'])
-                )
+                runner = parse_runner_from_row(row)
                 runners.append(runner)
 
             return runners

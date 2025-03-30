@@ -50,7 +50,7 @@ jobs:
           echo POSTGRES_USER=test_user >> docker/.env.test
           echo POSTGRES_PASSWORD=${{ secrets.TEST_DB_PASSWORD }} >> docker/.env.test
           echo POSTGRES_DB=test_db >> docker/.env.test
-          echo POSTGRES_PORT=${{ secrets.TEST_DB_PORT || 5433 }} >> docker/.env.test
+          echo POSTGRES_PORT=${{ secrets.TEST_DB_PORT }} >> docker/.env.test
 
       - name: Build the test database image
         run: |

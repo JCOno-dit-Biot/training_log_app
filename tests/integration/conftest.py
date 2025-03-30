@@ -4,7 +4,6 @@ from dotenv import load_dotenv
 import os
 
 load_dotenv()
-print("CI env set to: " + os.getenv("CI"))
 
 if os.getenv("CI") != "true":
     print("loading local .env file")
