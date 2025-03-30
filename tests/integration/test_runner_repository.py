@@ -18,22 +18,29 @@ def test_create_runner(runner_repo, test_kennel):
         name = "John",
         kennel = test_kennel
     )
-    runner_repo.create(runner, 1)
+    id = runner_repo.create(runner, 1)
     
     with runner_repo._connection.cursor() as cur:
-        cur.execute(""" SELECT * FROM runners WHERE name = 'John' """)
+        cur.execute(""" SELECT * FROM runners WHERE id = %s """, (id,))
         results = cur.fetchall()
 
-    print(results)
+    assert runner.id is None
+    assert id == 4
     assert len(results) == 1
     assert results[0][1] == "John"
     assert results[0][-1] == 1
 
 def test_get_runner_by_name(runner_repo):
     asterix = runner_repo.get_by_name("Asterix")
+    assert asterix.id == 3
     assert asterix.name == "Asterix"
     assert asterix.kennel.name == 'Les Gaulois'
     
+def test_get_runner_by_id(runner_repo):
+    obelix = runner_repo.get_by_id(2)
+    assert obelix.id == 2
+    assert obelix.name == 'Obelix'
+    assert obelix.kennel.name == 'Les Gaulois'
 
 def test_get_all_runners(runner_repo):
     runner_list = runner_repo.get_all(2)

@@ -4,6 +4,7 @@ from datetime import date
 
 def test_dog_parser():
     row = {
+        'id': 1,
         'name' : 'Fido',
         'breed' : 'labrador',
         'date_of_birth' : '2024-01-01',
@@ -12,6 +13,7 @@ def test_dog_parser():
 
     dog = parse_dog_from_row(row)
 
+    assert dog.id == 1
     assert dog.name == 'Fido'
     assert dog.breed == 'labrador'
     assert dog.date_of_birth == date(2024,1,1)
@@ -19,11 +21,13 @@ def test_dog_parser():
 
 def test_runner_parser():
     row = {
+        'id':2,
         'name' : 'John',
         'kennel_name' : 'test_kennel'
     }
 
     runner = parse_runner_from_row(row)
 
+    assert runner.id == 2
     assert runner.name == 'John'
     assert runner.kennel.name == 'test_kennel'
