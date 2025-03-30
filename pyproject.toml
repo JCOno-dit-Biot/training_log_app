@@ -5,10 +5,15 @@ description = "App to record dog training activites with their owners"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
+    "fastapi>=0.115.12",
+    "fastapi-utils>=0.8.0",
+    "httpx>=0.28.1",
     "numpy>=2.2.3",
     "psycopg2-binary>=2.9.10",
     "pydantic>=2.10.6",
     "python-dotenv>=1.0.1",
+    "typing-inspect>=0.9.0",
+    "uvicorn>=0.34.0",
 ]
 
 [dependency-groups]
