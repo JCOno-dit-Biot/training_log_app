@@ -3,6 +3,7 @@ from datetime import datetime
 from typing import Optional, List
 from .runner import Runner
 from .sport import Sport
+from .dog import Dog
 import src.calculation_helpers as ch
 
 SPORT_PACE_DISPLAY = {'canicross', 'canihike'}
@@ -15,6 +16,7 @@ class Activity(BaseModel):
     location: str #could modify and use GPS coordinates instead
     distance: float
     workout: bool = False
+    dogs: List["ActivityDogs"]
     laps: Optional[List["ActivityLaps"]] = Field([], description="list of laps with pace or speed")
     notes: Optional[str] = Field(None, description="Short comment regarding the training")
     speed: Optional[float] = Field(None, description="Speed in km per hours")
@@ -70,3 +72,8 @@ class ActivityLaps(BaseModel):
         if values.pace is None and values.speed is not None:
             values.pace = ch.calculate_pace_from_speed(values.speed)
         return values
+
+class ActivityDogs(BaseModel):
+    id: Optional[int] = None
+    dog: Dog
+    rating: int = Field(description="Training rating out of 10", ge=0, le=10)
