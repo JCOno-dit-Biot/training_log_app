@@ -99,3 +99,11 @@ def test_activity_parser_no_laps(default_activity_row):
     assert len(activity.laps) == 0
     assert len(activity.dogs) == 2
 
+def test_activity_parser_laps_none(default_activity_row):
+    default_activity_row['laps'] = None
+    default_activity_row['workout'] = False
+    activity = parse_activity_from_row(default_activity_row)
+    assert len(activity.laps) == 0
+    assert len(activity.dogs) == 2
+
+

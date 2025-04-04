@@ -7,12 +7,14 @@ from .dog_parser import parse_dog_from_row
 
 def parse_activity_from_row(row: dict) -> Dog:
     laps=[]
-    for lap in row['laps']:
-        laps.append(ActivityLaps(
-            lap_number=lap['lap_number'],
-            speed=lap['speed']
-        ))
+    if row['laps'] is not None and len(row['laps']) > 0:
+        for lap in row['laps']:
+            laps.append(ActivityLaps(
+                lap_number=lap['lap_number'],
+                speed=lap['speed']
+            ))
 
+    #there should always be at least one dog
     dogs=[]
     for dog in row['dogs']:
         dog['kennel_name'] = row['kennel_name']
