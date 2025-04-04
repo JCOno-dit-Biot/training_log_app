@@ -1,4 +1,4 @@
-from src.models import Activity, Dog, Kennel, Runner, DogWeightEntry, Sport, ActivityLaps
+from src.models import Activity, Dog, Kennel, Runner, DogWeightEntry, Sport, ActivityLaps, ActivityDogs
 import pytest
 from datetime import datetime, date
 from src import calculation_helpers as ch
@@ -14,7 +14,15 @@ def activity_entry(JC):
         location = 'Christie',
         distance = 2.4,
         workout = False,
-        speed = 18
+        speed = 18,
+        dogs = [ActivityDogs(
+            dog = Dog(
+            name = 'Luna',
+            date_of_birth= date(2017,4,18), 
+            kennel = Kennel(name = "Team Running Husky"),
+            breed = 'Husky'),
+            rating = 8
+        )]
     )
     return training_entry
 
@@ -61,7 +69,7 @@ def test_activity_calculates_pace_automatically_if_running(activity_entry):
     assert activity_entry.pace is not None 
     assert activity_entry.pace == '03:20'
 
-def test_activity_no_pace_if_not_running(JC):
+def test_activity_no_pace_if_not_running(JC, Luna):
     bike_activity = Activity (
         timestamp = datetime.now(),
         runner = JC,
@@ -69,7 +77,12 @@ def test_activity_no_pace_if_not_running(JC):
         speed = 21.9,
         location = 'Christie',
         distance = 2.4,
-        workout = False
+        workout = False,
+        dogs = [ActivityDogs(
+            dog = Luna,
+            rating = 8
+
+        )]
     )    
     assert bike_activity.pace is None
 
@@ -99,7 +112,7 @@ def test_activity_lap_no_speed_raise():
  with pytest.raises(ValueError):
     ActivityLaps(lap_number=1)
 
-def test_activity_workout_with_lap(JC):
+def test_activity_workout_with_lap(JC, Luna):
     workout = Activity (
         timestamp = datetime.now(),
         runner = JC,
@@ -117,7 +130,11 @@ def test_activity_workout_with_lap(JC):
                 lap_number=2,
                 pace = "03:20"
             )
-        ]
+        ],
+        dogs = [ActivityDogs(
+            dog = Luna,
+            rating = 8
+        )]
     )
     assert len(workout.laps) == 2
     assert workout.laps[1].speed is not None
