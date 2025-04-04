@@ -55,17 +55,19 @@ def test_get_all_dogs_empty(dog_repo):
     dog_empty_list = dog_repo.get_all(100)
     assert len(dog_empty_list) == 0
 
+# Not ideal as this means tests depend on each other but it prevents issues when running 
+# tests multiple times
 def test_delete_dog(dog_repo, test_kennel):
     dog = Dog(
-        name = "Fido",
-        breed = "Golden Retriever",
-        date_of_birth = date.today(),
-        kennel = Kennel(name= 'Les Gaulois')
+        name = "Buddy",
+        breed = "Labrador",
+        date_of_birth = date.today() - timedelta(weeks = 52),
+        kennel = test_kennel
     )
     dog_repo.delete(dog)
 
     with dog_repo._connection.cursor() as cur:
-        cur.execute(""" SELECT * FROM dogs WHERE name = 'Fido' """)
+        cur.execute(""" SELECT * FROM dogs WHERE name = %s """, (dog.name,))
         results = cur.fetchall()
 
     assert len(results) == 0    
