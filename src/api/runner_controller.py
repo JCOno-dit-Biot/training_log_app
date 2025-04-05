@@ -12,7 +12,9 @@ class RunnerController:
         self.repo = repo
 
     @router.get("/runners", response_model=list[Runner])
-    def list_runners(self, kennel_id: int):
+    def list_runners(self):
+        #for now hard code kennel_id, will get from JWT later
+        kennel_id = 1
         return self.repo.get_all(kennel_id)
 
     @router.post("/runners")
