@@ -31,7 +31,7 @@ class weight_repository(abstract_repository):
             row = cur.fetchone()
             return parse_weight_from_row(row)
 
-    def get_all(self, dog: Dog) -> List[DogWeightEntry]:
+    def get_all(self, dog_id: int) -> List[DogWeightEntry]:
         with self._connection.cursor(cursor_factory= RealDictCursor) as cur:
             query = """
                     SELECT 
@@ -47,7 +47,7 @@ class weight_repository(abstract_repository):
                     WHERE 
                         w.dog_id = %s
                 """
-            cur.execute(query, (dog.id,))
+            cur.execute(query, (dog_id,))
             rows = cur.fetchall()
             weight_entries = []
             for row in rows:

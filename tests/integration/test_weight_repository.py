@@ -21,7 +21,7 @@ def test_dog():
     )
 
 def test_get_all(weight_repo, test_dog):
-    weight_entries = weight_repo.get_all(test_dog)
+    weight_entries = weight_repo.get_all(test_dog.id)
     assert len(weight_entries) == 3
     assert all(x.dog.name == 'Milou' for x in weight_entries)
 
@@ -43,6 +43,8 @@ def test_create(weight_repo,test_dog):
         cur.execute("""SELECT * FROM weight_entries WHERE date = %s AND dog_id = %s;""", (today, test_dog.id,))
         entry = cur.fetchall()
     assert len(entry) == 1
+    assert entry[0][1]==1
+    assert entry[0][3] == 40.5
 
 def test_delete(weight_repo, test_dog):
     today = date.today()
