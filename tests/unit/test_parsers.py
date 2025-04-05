@@ -1,8 +1,11 @@
 from src.parsers.dog_parser import parse_dog_from_row
 from src.parsers.runner_parser import parse_runner_from_row
 from src.parsers.activity_parser import parse_activity_from_row
+from src.parsers.weight_parser import parse_weight_from_row
+from src.models import Dog, DogWeightEntry
 from datetime import date
 import pytest
+
 
 @pytest.fixture()
 def default_activity_row():
@@ -106,4 +109,20 @@ def test_activity_parser_laps_none(default_activity_row):
     assert len(activity.laps) == 0
     assert len(activity.dogs) == 2
 
+def test_weight_parser():
+    
+    row = {
+        'id':1,
+        'date': '2025-01-01',
+        'dog_id': 1,
+        'name': 'Fido',
+        'breed' : 'labrador',
+        'date_of_birth' : '2024-01-01',
+        'kennel_name' : 'test_kennel',
+        'weight': 40.3
+    }
+    weight_entry = parse_weight_from_row(row)
+    assert isinstance(weight_entry.dog, Dog)
+    assert weight_entry.weight == 40.3
+    assert weight_entry.date == date(2025,1,1)
 
