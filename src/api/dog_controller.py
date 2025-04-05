@@ -13,10 +13,8 @@ class DogController:
         self.repo = dog_repo
 
     @router.get("/dogs", response_model=list[Dog])
-    def list_dogs(self):
-        return self.repo.get_all()
-    
-    @router.get("/dogs/")
+    def list_dogs(self, kennel_id: int):
+        return self.repo.get_all(kennel_id)
 
     @router.post("/dogs")
     def create_dog(self, dog: Dog):

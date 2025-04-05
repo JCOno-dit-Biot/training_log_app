@@ -60,3 +60,13 @@ INSERT INTO activities (
 
 INSERT INTO activity_dogs (activity_id, dog_id, rating) VALUES 
 (3, 1, 8);
+
+
+-- add weight entries
+INSERT INTO weight_entries(
+    dog_id, date, weight
+) VALUES 
+    (1, '2025-01-02', 20.3),
+    (1, '2025-02-01' , 21.2),
+    (1, '2025-03-05', 19.8),
+    (2, '2025-01-03', 40.4);
