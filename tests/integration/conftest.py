@@ -3,6 +3,8 @@ from dotenv import load_dotenv
 import os
 
 load_dotenv()
+print(os.getenv("CI"))
+print(f"environment set to {os.getenv("ENV")}")
 
 if os.getenv("CI") != "true":
     print("loading local .env file")
