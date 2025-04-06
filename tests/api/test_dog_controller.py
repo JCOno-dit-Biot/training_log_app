@@ -27,8 +27,10 @@ def test_app(mock_repo):
     def override_repo():
         return mock_repo
 
-    app.dependency_overrides[dog_repository] = override_repo
+    from src.deps import get_dog_repo
+    app.dependency_overrides[get_dog_repo] = override_repo
     app.include_router(dog_router)
+
     return app
 
 def test_list_dogs_called(test_app, mock_repo):
