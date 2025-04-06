@@ -4,12 +4,13 @@ from fastapi_utils.cbv import cbv
 
 from src.repositories.activity_repository import activity_repository
 from src.models.activity import Activity
+from src.deps import get_activity_repo
 
 router = APIRouter()
 
 @cbv(router)
 class DogController:
-    def __init__(self, activity_repo: activity_repository = Depends()):
+    def __init__(self, activity_repo: activity_repository = Depends(get_activity_repo)):
         self.repo = activity_repo
 
     @router.get("/activities", response_model=list[Activity])

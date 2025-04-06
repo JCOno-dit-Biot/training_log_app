@@ -4,12 +4,15 @@ from fastapi_utils.cbv import cbv
 
 from src.repositories.weight_repository import weight_repository
 from src.models.dog_weight import DogWeightEntry
+from src.deps import (
+    get_weight_repo
+)
 
 router = APIRouter()
 
 @cbv(router)
 class DogController:
-    def __init__(self, weight_repo: weight_repository = Depends()):
+    def __init__(self, weight_repo: weight_repository = Depends(get_weight_repo)):
         self.repo = weight_repo
 
     @router.get("/dogs/{dog_id}/weights", response_model=list[DogWeightEntry])

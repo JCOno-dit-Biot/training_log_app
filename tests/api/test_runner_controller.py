@@ -24,9 +24,11 @@ def test_app(mock_repo):
     # Override the repository dependency
     def override_repo():
         return mock_repo
-
-    app.dependency_overrides[runner_repository] = override_repo
+    
+    from src.deps import get_runner_repo
+    app.dependency_overrides[get_runner_repo] = override_repo
     app.include_router(runner_router)
+    
     return app
 
 def test_list_runners_called(test_app, mock_repo):
