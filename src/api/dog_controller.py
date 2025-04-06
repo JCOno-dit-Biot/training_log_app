@@ -4,12 +4,15 @@ from fastapi_utils.cbv import cbv
 
 from src.repositories.dog_repository import dog_repository
 from src.models.dog import Dog
+from src.deps import (
+    get_dog_repo
+)
 
 router = APIRouter()
 
 @cbv(router)
 class DogController:
-    def __init__(self, dog_repo: dog_repository = Depends()):
+    def __init__(self, dog_repo: dog_repository = Depends(get_dog_repo)):
         self.repo = dog_repo
 
     @router.get("/dogs", response_model=list[Dog])
