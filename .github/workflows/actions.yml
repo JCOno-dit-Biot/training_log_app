@@ -86,9 +86,8 @@ jobs:
         run: uv sync --dev
 
       - name: Run integration tests
-        run: uv run pytest tests/integration
+        run: uv run pytest tests/integration -s
         env:
-          CI: True
           ENV: test
           TEST_DATABASE_URL: postgres://test_user:${{ secrets.TEST_DB_PASSWORD }}@localhost:5433/test_db
 
