@@ -90,9 +90,7 @@ jobs:
         env:
           CI: True
           ENV: test
-          TEST_DATABASE_URL: postgres://test_user:${{ secrets.TEST_DB_PASSWORD }}@localhost:5433/test_db >> docker/.env.test
-
-        
+          TEST_DATABASE_URL: postgres://test_user:${{ secrets.TEST_DB_PASSWORD }}@localhost:5433/test_db
 
       - name: Tear down containers
         if: always()
