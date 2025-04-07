@@ -24,6 +24,23 @@ CREATE TABLE IF NOT EXISTS "runners" (
     UNIQUE("name","kennel_id")
 );
 
+CREATE TABLE IF NOT EXISTS "images" (
+    "id" SERIAL,
+    "image_path" TEXT NOT NULL,
+    "dog_id" INT DEFAULT NULL,
+    "runner_id" INT DEFAULT NULL,
+    "created_at" TIMESTAMP DEFAULT now(),
+    CONSTRAINT "images_pkey" PRIMARY KEY ("id"),
+    CONSTRAINT "images_fkey_runnerid_id" FOREIGN KEY ("runner_id") REFERENCES "runners"("id"),
+    CONSTRAINT "images_fkey_dogid_id" FOREIGN KEY ("dog_id") REFERENCES "dogs"("id"),
+    CHECK (
+        ("dog_id" IS NOT NULL AND "runner_id" IS NULL)
+        OR
+        ("dog_id" IS NULL AND "runner_id" IS NOT NULL)
+    )
+);
+
+
 CREATE TABLE IF NOT EXISTS "sports"(
     "id" SERIAL,
     "name" VARCHAR(50),

@@ -20,6 +20,25 @@ VALUES
     ('Canicross', 'Running with your dog'),
     ('Bikejoring', 'Biking with your dog');
 
+
+-- insert runner pictures path
+INSERT INTO "images" ("runner_id","image_path")
+VALUES
+    (1, 'runner1.jpg'),
+    (2, 'runner2.jpg');
+
+-- insert runner pictures path
+INSERT INTO "images" ("dog_id", "image_path")
+VALUES
+    (1, 'dog1.jpg'),
+    (2, 'dog2.jpg'),
+    (3, 'dog3.jpg');
+
+-- insert image as "old" to check if query gets latest
+INSERT INTO "images" ( "dog_id", "image_path", "created_at")
+VALUES
+    (3, 'dog3-old.jpg', '2024-11-01T12:00:00');
+
 -- Insert into activities
 INSERT INTO activities (
     runner_id, sport_id, timestamp, notes, location, workout, speed, distance
