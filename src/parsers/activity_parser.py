@@ -18,6 +18,7 @@ def parse_activity_from_row(row: dict) -> Dog:
     dogs=[]
     for dog in row['dogs']:
         dog['kennel_name'] = row['kennel_name']
+        dog['kennel_id'] = row['kennel_id']
         dogs.append(ActivityDogs(
             dog= parse_dog_from_row(dog),
             rating = dog['rating']

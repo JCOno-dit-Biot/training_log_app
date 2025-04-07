@@ -21,6 +21,7 @@ def default_activity_row():
         "distance": 8.0,
         "runner_name": "Alice Monroe",
         "sport_name": "Canicross",
+        "kennel_id" : 1,
         "kennel_name": "test_kennel",
         "dogs": [
             {
@@ -61,7 +62,7 @@ def test_dog_parser():
         'name' : 'Fido',
         'breed' : 'labrador',
         'date_of_birth' : '2024-01-01',
-        'k.id': 1,
+        'kennel_id': 1,
         'kennel_name' : 'test_kennel',
         'image_url': 'test_dog_image'
         
@@ -81,7 +82,7 @@ def test_runner_parser():
     row = {
         'id':2,
         'name' : 'John',
-        'k.id': 1,
+        'kennel_id': 1,
         'kennel_name' : 'test_kennel',
         'image_url': 'test_path'
     }
@@ -98,7 +99,7 @@ def test_runner_parser_image_none():
     row = {
         'id':2,
         'name' : 'John',
-        'k.id': 1,
+        'kennel_id': 1,
         'kennel_name' : 'test_kennel',
         'image_url': None
     }
@@ -115,7 +116,7 @@ def test_runner_parser_no_image_url():
     row = {
         'id':2,
         'name' : 'John',
-        'k.id': 1,
+        'kennel_id': 1,
         'kennel_name' : 'test_kennel'
     }
 
