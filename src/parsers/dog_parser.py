@@ -7,5 +7,6 @@ def parse_dog_from_row(row: dict) -> Dog:
         name = row['name'],
         breed=row['breed'],
         date_of_birth=row['date_of_birth'],
-        kennel=Kennel(name=row['kennel_name'])
+        kennel=Kennel(id = row['id'], name=row['kennel_name']),
+        image_url=row.get('image_url') or ""
     )
