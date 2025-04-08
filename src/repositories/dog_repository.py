@@ -18,15 +18,21 @@ class dog_repository(abstract_repository):
                             dogs.name,
                             date_of_birth, 
                             breed, 
-                            kennels.name as kennel_name
+                            k.id as kennel_id,
+                            k.name as kennel_name,
+                            image_path as image_url
                         FROM 
                             dogs 
                         JOIN 
-                            kennels 
+                            kennels k
                         ON
-                            dogs.kennel_id = kennels.id
+                            dogs.kennel_id = k.id
+                        LEFT JOIN images
+                            ON images.dog_id = dogs.id
                         WHERE 
                             dogs.name = %s
+                        ORDER BY images.created_at DESC 
+                        LIMIT 1;
                         """
             cur.execute(query, (dog_name,))
             dogs = []
@@ -43,15 +49,21 @@ class dog_repository(abstract_repository):
                             dogs.name,
                             date_of_birth, 
                             breed, 
-                            kennels.name as kennel_name
+                            k.id as kennel_id,
+                            k.name as kennel_name,
+                            image_path as image_url
                         FROM 
                             dogs 
                         JOIN 
-                            kennels 
+                            kennels k
                         ON
-                            dogs.kennel_id = kennels.id
+                            dogs.kennel_id = k.id
+                        LEFT JOIN images
+                            ON images.dog_id = dogs.id
                         WHERE 
                             dogs.id = %s
+                        ORDER BY images.created_at DESC 
+                        LIMIT 1;
                         """
             cur.execute(query, (id,))
             row = cur.fetchone()
@@ -61,20 +73,31 @@ class dog_repository(abstract_repository):
 
     def get_all(self, kennel_id: int) -> List[Dog]:
         with self._connection.cursor(cursor_factory= RealDictCursor) as cur:
-            query = """ SELECT 
+            query = """ 
+                        WITH latest_images AS (
+                            SELECT *,
+                                    ROW_NUMBER() OVER (PARTITION BY dog_id ORDER BY created_at DESC) AS rn
+                            FROM images
+                            WHERE dog_id IS NOT NULL
+                        )
+                        SELECT 
                             dogs.id,
                             dogs.name,
                             date_of_birth, 
                             breed, 
-                            kennels.name as kennel_name
+                            k.id as kennel_id,
+                            k.name as kennel_name,
+                            latest_images.image_path as image_url
                         FROM 
                             dogs 
                         JOIN 
-                            kennels 
+                            kennels k
                         ON
-                            dogs.kennel_id = kennels.id
+                            dogs.kennel_id = k.id
+                        LEFT JOIN latest_images
+                            ON latest_images.dog_id = dogs.id AND latest_images.rn = 1
                         WHERE 
-                            kennel_id = %s
+                            kennel_id = %s;
                         """
             cur.execute(query, (kennel_id,))
             dogs = []

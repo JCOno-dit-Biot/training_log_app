@@ -21,6 +21,7 @@ def default_activity_row():
         "distance": 8.0,
         "runner_name": "Alice Monroe",
         "sport_name": "Canicross",
+        "kennel_id" : 1,
         "kennel_name": "test_kennel",
         "dogs": [
             {
@@ -61,7 +62,10 @@ def test_dog_parser():
         'name' : 'Fido',
         'breed' : 'labrador',
         'date_of_birth' : '2024-01-01',
-        'kennel_name' : 'test_kennel'
+        'kennel_id': 1,
+        'kennel_name' : 'test_kennel',
+        'image_url': 'test_dog_image'
+        
     }
 
     dog = parse_dog_from_row(row)
@@ -71,11 +75,48 @@ def test_dog_parser():
     assert dog.breed == 'labrador'
     assert dog.date_of_birth == date(2024,1,1)
     assert dog.kennel.name == 'test_kennel'
+    assert dog.kennel.id == 1
+    assert dog.image_url == 'test_dog_image'
 
 def test_runner_parser():
     row = {
         'id':2,
         'name' : 'John',
+        'kennel_id': 1,
+        'kennel_name' : 'test_kennel',
+        'image_url': 'test_path'
+    }
+
+    runner = parse_runner_from_row(row)
+
+    assert runner.id == 2
+    assert runner.name == 'John'
+    assert runner.kennel.name == 'test_kennel'
+    assert runner.kennel.id == 1
+    assert runner.image_url == 'test_path'
+
+def test_runner_parser_image_none():
+    row = {
+        'id':2,
+        'name' : 'John',
+        'kennel_id': 1,
+        'kennel_name' : 'test_kennel',
+        'image_url': None
+    }
+
+    runner = parse_runner_from_row(row)
+
+    assert runner.id == 2
+    assert runner.name == 'John'
+    assert runner.kennel.name == 'test_kennel'
+    assert runner.kennel.id == 1
+    assert runner.image_url == ''
+
+def test_runner_parser_no_image_url():
+    row = {
+        'id':2,
+        'name' : 'John',
+        'kennel_id': 1,
         'kennel_name' : 'test_kennel'
     }
 
@@ -84,6 +125,8 @@ def test_runner_parser():
     assert runner.id == 2
     assert runner.name == 'John'
     assert runner.kennel.name == 'test_kennel'
+    assert runner.kennel.id == 1
+    assert runner.image_url == ''
 
 def test_activity_parser(default_activity_row):
     activity = parse_activity_from_row(default_activity_row)
