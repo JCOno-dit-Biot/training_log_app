@@ -20,7 +20,11 @@ export default function DogCard({ dog }: DogCardProps) {
         <h2 className="text-lg font-bold text-gray-800">{dog.name}</h2>
         <p className="text-sm text-gray-600">{dog.breed}</p>
       </div>
-
+      <img
+        src={`/profile_picture/dogs/${dog.image_url}`}
+        alt={dog.name}
+        className="absolute top-3 right-6 aspect-square w-auto h-25 rounded-full object-cover border"
+      />
       {/* Bottom-right: DOB */}
       <p className="absolute bottom-3 right-4 text-xs text-gray-500">
         DOB: {dobFormatted}
