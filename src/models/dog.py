@@ -9,6 +9,7 @@ class Dog(BaseModel):
     breed: str
     date_of_birth: date
     kennel: Optional[Kennel] = None
+    image_url: Optional[str] = ""
 
     def calculate_dog_age(self, as_of_date: date = None) -> float:
         """

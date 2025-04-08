@@ -21,6 +21,7 @@ class activity_repository(abstract_repository):
                             r.name AS runner_name,
                             s.name AS sport_name,
                             k.name AS kennel_name,
+                            k.id as kennel_id,
                             -- Aggregate dogs
                             json_agg(DISTINCT jsonb_build_object(
                                 'id', d.id,
@@ -46,7 +47,7 @@ class activity_repository(abstract_repository):
                         GROUP BY 
                         a.id, a.runner_id, a.sport_id, a.timestamp, a.notes, a.location,
                         a.workout, a.speed, a.distance,
-                        r.name, s.name, k.name
+                        r.name, s.name, k.name, k.id
                     """
             cur.execute(query, (kennel_id,))
             activities = []
@@ -64,6 +65,7 @@ class activity_repository(abstract_repository):
                             r.name AS runner_name,
                             s.name AS sport_name,
                             k.name AS kennel_name,
+                            k.id as kennel_id,
                             -- Aggregate dogs
                             json_agg(DISTINCT jsonb_build_object(
                                 'id', d.id,
@@ -89,7 +91,7 @@ class activity_repository(abstract_repository):
                         GROUP BY 
                         a.id, a.runner_id, a.sport_id, a.timestamp, a.notes, a.location,
                         a.workout, a.speed, a.distance,
-                        r.name, s.name, k.name
+                        r.name, s.name, k.name, k.id
                     """
             cur.execute(query, (activity_id,))
             row = cur.fetchone()

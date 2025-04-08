@@ -14,15 +14,21 @@ class runner_repository(abstract_repository):
             query = """ SELECT 
                             runners.id,
                             runners.name,
-                            kennels.name as kennel_name
+                            k.id as kennel_id,
+                            k.name as kennel_name,
+                            image_path as image_url
                         FROM 
                             runners
                         JOIN 
-                            kennels 
+                            kennels k
                         ON
-                            runners.kennel_id = kennels.id
+                            runners.kennel_id = k.id
+                        LEFT JOIN images
+                            ON images.runner_id = runners.id
                         WHERE 
                             runners.name = %s
+                        ORDER BY images.created_at DESC 
+                        LIMIT 1;
                         """
             cur.execute(query, (runner_name,))
             row = cur.fetchone()
@@ -33,16 +39,27 @@ class runner_repository(abstract_repository):
 
     def get_all(self, kennel_id: int) -> List[Runner]:
         with self._connection.cursor(cursor_factory= RealDictCursor) as cur:
-            query = """ SELECT 
+            query = """ 
+                        WITH latest_images AS (
+                            SELECT *,
+                                    ROW_NUMBER() OVER (PARTITION BY runner_id ORDER BY created_at DESC) AS rn
+                            FROM images
+                            WHERE runner_id IS NOT NULL
+                        )
+                        SELECT 
                             runners.id,
                             runners.name,
-                            kennels.name as kennel_name
+                            k.id as kennel_id,
+                            k.name as kennel_name,
+                            latest_images.image_path as image_url
                         FROM 
                             runners
                         JOIN 
-                            kennels 
+                            kennels k
                         ON
-                            runners.kennel_id = kennels.id
+                            runners.kennel_id = k.id
+                        LEFT JOIN latest_images
+                            ON latest_images.runner_id = runners.id AND latest_images.rn = 1
                         WHERE 
                             kennel_id = %s
                         """
@@ -59,15 +76,21 @@ class runner_repository(abstract_repository):
             query = """ SELECT 
                             runners.id,
                             runners.name,
-                            kennels.name as kennel_name
+                            k.id as kennel_id,
+                            k.name as kennel_name,
+                            image_path as image_url
                         FROM 
                             runners
                         JOIN 
-                            kennels 
+                            kennels k
                         ON
-                            runners.kennel_id = kennels.id
+                            runners.kennel_id = k.id
+                        LEFT JOIN images
+                            ON images.runner_id = runners.id
                         WHERE 
                             runners.id = %s
+                        ORDER BY images.created_at DESC 
+                        LIMIT 1;
                         """
             cur.execute(query, (id,))
             row = cur.fetchone()
