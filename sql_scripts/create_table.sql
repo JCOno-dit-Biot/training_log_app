@@ -94,9 +94,8 @@ CREATE TABLE IF NOT EXISTS "weight_entries" (
 CREATE TABLE IF NOT EXISTS "users" (
     "id" SERIAL,
     "username" TEXT NOT NULL,
-    -- "kennel_id" INT,
+    "kennel_id" INT,
     "password_hash" TEXT NOT NULL,
-    "salt" TEXT NOT NULL,
     "created_at" TIMESTAMPTZ DEFAULT NOW(),
     "is_active" BOOLEAN DEFAULT true, -- allows to disable a user if needed
     CONSTRAINT "user_pkey" PRIMARY KEY ("id")
