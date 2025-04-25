@@ -103,7 +103,7 @@ CREATE TABLE IF NOT EXISTS "users" (
 
 CREATE UNIQUE INDEX "unique_active_username" ON users(username) WHERE is_active=true; 
 
-CREATE IF NOT EXISTS "refresh_tokens" (
+CREATE TABLE IF NOT EXISTS "refresh_tokens" (
     "user_id" INT,
     "hashed_refresh_token" TEXT,
     "expires_on" TIMESTAMPTZ NOT NULL, --expiry date for refresh token
