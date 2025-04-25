@@ -1,5 +1,5 @@
 import psycopg2
-from .config import settings
+from config import settings
 
 def get_connection():
     db_url = (
