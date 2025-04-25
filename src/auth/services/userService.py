@@ -1,4 +1,6 @@
+from fastapi.security import OAuth2PasswordRequestForm
 from ..models.user import Users, UsersIn
+from ..models.customResponseModel import SessionTokenResponse
 from ..repositories.userRepository import UserRepository
 from ..repositories.kennelRepository import KennelRepository
 
@@ -31,23 +33,23 @@ class UserService():
 
         return user_id
     
-    def get_access_token(self, user: Users):
-        if not self.userRepository.is_password_correct(user):
-            return None
-        access_token = self.repository.get_access_token(user)
+    def get_access_token(self, form_data: OAuth2PasswordRequestForm):
+        if not self.userRepository.is_password_correct(form_data):
+            return SessionTokenResponse(access_token=None)
+        access_token = self.userRepository.get_access_token(form_data)
         return access_token
     
-    def authenticate_user(self, token: str):
-        return self.repository.authenticate_user(token)
-    
-    def register_token_in_session(self, token: str):
-        self.repository.register_token_in_session(token)
+    def get_refresh_token(self, username):
+        return self.userRepository.get_refresh_token(username)
 
-    def is_session_active(self, username: str):
-        return self.repository.is_session_active(username)
+    def register_token_in_session(self, access_token: SessionTokenResponse):
+        self.userRepository.register_token_in_session(access_token)
+
+    # def authenticate_user(self, token: str):
+    #     return self.repository.authenticate_user(token)
     
     def delete_all_active_session(self, username: str):
-        self.repository.delete_all_active_session(username)
+        self.userRepository.delete_all_active_session(username)
         
     def logout(self, token: str):
-        self.repository.logout(token)
+        self.userRepository.logout(token)
