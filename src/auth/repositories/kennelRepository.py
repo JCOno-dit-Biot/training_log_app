@@ -1,6 +1,9 @@
+
+from utils import get_connection
+
 class KennelRepository:
-    def __init__(self, conn):
-        self.conn = conn
+    def __init__(self):
+        self.conn = get_connection()
 
     def get_by_name(self, name: str):
         with self.conn.cursor() as cur:

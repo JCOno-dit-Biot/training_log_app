@@ -3,9 +3,9 @@ from fastapi_utils.cbv import cbv
 from fastapi.security import OAuth2PasswordRequestForm
 from pydantic import ValidationError
 from jwt.exceptions import PyJWTError
-from ..services.userService import UserService
+from services.userService import UserService
 
-from ..models.user import UsersIn, Users
+from models.user import UsersIn, Users
 from models.customException import CustomValidationException
 from models.customResponseModel import CustomResponseModel, SessionTokenResponse
 
@@ -33,7 +33,7 @@ class UserController:
             usr_id = self.userService.register(user)
 
             if usr_id is not False:
-                return CustomResponseModel(status_code = 201, message = f"User {user.username} was succesfully registered")
+                return CustomResponseModel(status_code = 201, message = f"User {user.email} was succesfully registered")
             else:
                 raise HTTPException(status_code=422, detail="User already exists")
         except ValidationError as validation_error:
@@ -81,11 +81,11 @@ class UserController:
             raise HTTPException(status_code = e.status_code, detail=str(e.detail))
         
 
-    @user_controller_router("/refesh_token")
-    def refresh_token(self, token: str = Form(...), refresh_token: str = Form(...)):
-        pass
+    # @user_controller_router.post("/refesh_token")
+    # def refresh_token(self, token: str = Form(...), refresh_token: str = Form(...)):
+    #     pass
 
-    @user_controller_router("/logout")
+    @user_controller_router.post("/logout")
     def logout(self):
         try:
             self.userService.logout()

@@ -1,8 +1,8 @@
 from fastapi.security import OAuth2PasswordRequestForm
-from ..models.user import Users, UsersIn
-from ..models.customResponseModel import SessionTokenResponse
-from ..repositories.userRepository import UserRepository
-from ..repositories.kennelRepository import KennelRepository
+from models.user import Users, UsersIn
+from models.customResponseModel import SessionTokenResponse
+from repositories.userRepository import UserRepository
+from repositories.kennelRepository import KennelRepository
 
 
 
@@ -16,7 +16,7 @@ class UserService():
 
     def __init__(self):
         self.userRepository = UserRepository()
-        self.kennelRepository = KennelRepository()
+        self.kennel_repo = KennelRepository()
 
     def register(self, user: UsersIn):
         # Try to find existing kennel

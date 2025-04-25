@@ -7,12 +7,14 @@ import secrets
 import os
 from datetime import datetime, timedelta, timezone
 from psycopg2.extras import RealDictCursor
-from ..repositories.IUserRepository import IUserRepository
-from ..models.customResponseModel import SessionTokenResponse
-from ..models.user import Users, UsersIn
+from repositories.IUserRepository import IUserRepository
+from models.customResponseModel import SessionTokenResponse
+from models.user import Users, UsersIn
 
 from utils import get_connection
+from dotenv import load_dotenv
 
+load_dotenv()
 
 pwd_context = CryptContext(schemes = ["bcrypt"], deprecated = "auto")
 
@@ -24,14 +26,14 @@ class UserRepository(IUserRepository):
     def create(self, user: UsersIn, password_hash, kennel_id): 
         with self.connection.cursor() as cur:
             # check if user email is already used
-            cur.execute("""SELECT * FROM users WHERE username = %s""", (user.username,))
+            cur.execute("""SELECT * FROM users WHERE username = %s""", (user.email,))
             usr = cur.fetchone()
 
             if usr is None:
                 query = """
                 INSERT INTO users (username, password_hash, kennel_id) VALUES (%s, %s, %s) RETURNING id
                 """
-                user_id = cur.execute(query (user.username, password_hash, kennel_id,))
+                user_id = cur.execute(query, (user.email, password_hash, kennel_id,))
                 self.connection.commit()
                 return user_id
             else:
@@ -41,9 +43,9 @@ class UserRepository(IUserRepository):
         access_token_expires = timedelta(minutes= int(os.getenv('ACCESS_TOKEN_EXPIRE_MINUTES', 60)))
         with self.connection.cursor(cursor_factory = RealDictCursor) as cur:
             cur.execute("""
-                        SELECT keneel_id FROM users WHERE username = %s
+                        SELECT kennel_id FROM users WHERE username = %s
                         """, (form_data.username,))
-            kennel_id = cur.fetchone()[0]
+            kennel_id = cur.fetchone()
             if kennel_id is None:
                 return SessionTokenResponse(access_token=None)
             access_token = self.create_access_token(
@@ -60,6 +62,8 @@ class UserRepository(IUserRepository):
         to_encode = data.copy()
         expire = datetime.now(timezone.utc) + expires_delta
         to_encode.update({'exp': expire})
+        print(os.getenv("SECRET_KEY"))
+
         encoded_jwt = jwt.encode(to_encode, os.getenv("SECRET_KEY"), algorithm = os.getenv("ALGORITHM"))
 
         return SessionTokenResponse(
@@ -70,13 +74,13 @@ class UserRepository(IUserRepository):
 
     def get_user(self, username: str): 
         with self.connection.cursor(cursor_factory = RealDictCursor) as cur:
-            cur.execute("""SELECT username, password FROM users WHERE username = %s""", (username,))
+            cur.execute("""SELECT username, password_hash FROM users WHERE username = %s""", (username,))
             user = cur.fetchone()
             
             if user is not None:
                 return Users(
-                    username = user["username"],
-                    password= user["password"]
+                    email = user["username"],
+                    password= user["password_hash"]
                 )
             
             return None
