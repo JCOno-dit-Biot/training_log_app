@@ -105,7 +105,9 @@ class UserRepository(IUserRepository):
     def authenticate_user(self, token: str): pass
 
     def register_token_in_session(self, token: SessionTokenResponse):
-        payload = jwt.decode(token.access_token, os.getenv("SECRET_KEY"), algorithm = os.getenv("ALGORITHM"))
+        print(token.access_token)
+        payload = jwt.decode(token.access_token, os.getenv("SECRET_KEY"), algorithms = os.getenv("ALGORITHM"))
+        print(payload)
         username = payload.get("sub")
         if token.refresh_token is not None:
             hashed_token = self.hash_token(token.refresh_token)

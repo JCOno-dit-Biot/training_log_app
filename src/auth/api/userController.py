@@ -86,9 +86,9 @@ class UserController:
     #     pass
 
     @user_controller_router.post("/logout")
-    def logout(self):
+    def logout(self, refresh_token: str):
         try:
-            self.userService.logout()
+            self.userService.logout(refresh_token)
         except Exception as e:
             raise HTTPException(status_code = e.status_code, detail=str(e.detail))
 
