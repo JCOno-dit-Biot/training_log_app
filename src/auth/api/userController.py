@@ -101,7 +101,7 @@ class UserController:
             access_token = self.userService.refresh_access_token(token, refresh_token)
             if access_token is None:
                 raise HTTPException(status_code=400, detail= "Invalid refresh token")
-            return SessionTokenResponse.validate_model(access_token)
+            return SessionTokenResponse.model_validate(access_token)
         except Exception as e:
             raise HTTPException(status_code = e.status_code, detail=str(e.detail))
         

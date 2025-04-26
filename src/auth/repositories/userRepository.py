@@ -137,6 +137,7 @@ class UserRepository(IUserRepository):
 
     def validate_refresh_token(self, username: str, refresh_token: str):
         hashed_token = self.hash_token(refresh_token)
+
         with self.connection.cursor(cursor_factory=RealDictCursor) as cur:
             cur.execute("""
                         SELECT hashed_refresh_token, expires_on FROM refresh_tokens \
@@ -144,11 +145,12 @@ class UserRepository(IUserRepository):
                         """, (username, hashed_token,))
             hashed_token_db = cur.fetchone()
 
+            print(hashed_token_db)
             if hashed_token_db["expires_on"].replace(tzinfo=timezone.utc) < datetime.now(timezone.utc):
                 return False
             
             # check that the token corresponds to what is registered in db
-            return hashed_token == hashed_token_db
+            return hashed_token == hashed_token_db['hashed_refresh_token']
         
     def refresh_access_token(self, token, refresh_token):
         try:
