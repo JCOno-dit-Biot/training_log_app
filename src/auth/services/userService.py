@@ -37,6 +37,11 @@ class UserService():
 
         return user_id
     
+    def reset_password(self, user: Users, old_password):
+        if self.userRepository.is_password_correct(OAuth2PasswordRequestForm(username = user.email, password=old_password)):
+            return self.userRepository.reset_password(user)
+        return False
+    
     def get_access_token(self, form_data: OAuth2PasswordRequestForm):
         if not self.userRepository.is_password_correct(form_data):
             return SessionTokenResponse(access_token=None)

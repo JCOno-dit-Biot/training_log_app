@@ -12,7 +12,6 @@ from models.customResponseModel import CustomResponseModel, SessionTokenResponse
 
 user_controller_router = APIRouter()
 
-
 @cbv(user_controller_router)
 class UserController:
     
@@ -57,8 +56,38 @@ class UserController:
             raise HTTPException(status_code = e.status_code, detail=str(e.detail))
         
     @user_controller_router.post("/reset-password")
-    def reset_password(self):
-        pass
+    def reset_password(self, email: str = Form(...), old_password = Form(...), new_password = Form(...)):
+        '''
+        Route to reset user's password
+        '''
+        try:
+            if not old_password.strip() or not new_password.strip():
+                raise HTTPException(status_code=422, detail="Passwords cannot be empty strings or spaces")
+            
+            user_in = Users(
+                email = email,
+                password= new_password
+            )
+            user=self.userService.reset_password(user_in, old_password)
+            if user is not None:
+                if user == False:
+                    raise HTTPException(status_code=401, detail=f"Old password for user {user_in.email} is incorrect")
+                else:
+                    return CustomResponseModel(
+                        status_code=200,
+                        message = f"Password for user {user.email} was reset successfully"
+                    )
+            else:
+                raise HTTPException(status_code=404, detail = f"Could not find user {user_in.email}")
+        except ValidationError as validation_error:
+            for err in validation_error.errors():
+                if err['loc'][0] == 'username':
+                    raise CustomValidationException(
+                        field = "email",
+                        message = "Invalid format for registration information"
+                    )
+        except Exception as e:
+            raise HTTPException(status_code = e.status_code, detail=str(e.detail))
 
     @user_controller_router.post("/token", response_model=SessionTokenResponse)
     def get_token(self, form_data: OAuth2PasswordRequestForm = Depends()):

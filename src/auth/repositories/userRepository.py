@@ -41,6 +41,21 @@ class UserRepository(IUserRepository):
             else:
                 return False
             
+    def reset_password(self, user: Users):
+        with self.connection.cursor(cursor_factory = RealDictCursor) as cur:
+            cur.execute("""
+                            SELECT id, username FROM users WHERE username = %s 
+                        """, (user.email,))
+            usr = cur.fetchone()
+
+            if usr is not None:
+                cur.execute(""" UPDATE users SET password_hash = %s WHERE username = %s""",
+                            (pwd_context.hash(user.password), user.email,))
+                self.connection.commit()
+                return user
+            else:
+                return None
+        
     def get_access_token(self, form_data: OAuth2PasswordRequestForm = Depends()):
         access_token_expires = timedelta(minutes= int(os.getenv('ACCESS_TOKEN_EXPIRE_MINUTES', 60)))
         with self.connection.cursor(cursor_factory = RealDictCursor) as cur:
