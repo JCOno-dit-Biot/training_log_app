@@ -1,4 +1,4 @@
-from fastapi import Depends, APIRouter, Form, HTTPException
+from fastapi import Depends, APIRouter, Form, HTTPException, Query
 from fastapi_utils.cbv import cbv
 from fastapi.security import OAuth2PasswordRequestForm
 from pydantic import ValidationError
@@ -6,7 +6,8 @@ from jwt.exceptions import PyJWTError
 from services.userService import UserService
 
 from models.user import UsersIn, Users
-from models.customException import CustomValidationException
+from models.kennel import Kennel
+from models.customException import CustomValidationException, TokenDecodeError
 from models.customResponseModel import CustomResponseModel, SessionTokenResponse
 
 user_controller_router = APIRouter()
@@ -18,6 +19,14 @@ class UserController:
     def __init__(self):
         self.userService = UserService()
 
+    @user_controller_router.get("/kennels", response_model=list[Kennel])
+    def get_all_kennels(self):
+        try:
+            kennel_list = self.userService.get_all_kennels()
+            return [Kennel.model_validate(kennel) for kennel in kennel_list]
+        except Exception as e:
+            raise HTTPException(status_code = e.status_code, detail=str(e.detail))
+        
     @user_controller_router.post("/register")
     def register(self, email: str = Form(...), password: str = Form(), kennel_name: str = Form(...)):
         ''' 
@@ -47,7 +56,10 @@ class UserController:
         except Exception as e:
             raise HTTPException(status_code = e.status_code, detail=str(e.detail))
         
-    
+    @user_controller_router.post("/reset-password")
+    def reset_password(self):
+        pass
+
     @user_controller_router.post("/token", response_model=SessionTokenResponse)
     def get_token(self, form_data: OAuth2PasswordRequestForm = Depends()):
         ''' 
@@ -75,16 +87,24 @@ class UserController:
                 # register the refresh token as active session
                 self.userService.register_token_in_session(access_token)
             return SessionTokenResponse.model_validate(access_token)     
-        except PyJWTError as decoding_error:
+        except TokenDecodeError as decoding_error:
             raise HTTPException(status_code=401, detail = "Error during token registration process, token expired or invalid")         
         except Exception as e:
             raise HTTPException(status_code = e.status_code, detail=str(e.detail))
         
-
-    # @user_controller_router.post("/refesh_token")
-    # def refresh_token(self, token: str = Form(...), refresh_token: str = Form(...)):
-    #     pass
-
+    @user_controller_router.post("/refesh-token", response_model=SessionTokenResponse)
+    def refresh_token(self, token: str = Query(...), refresh_token: str = Query(...)):
+        '''
+        Route to renew JWT tokens that have expired
+        '''
+        try:
+            access_token = self.userService.refresh_access_token(token, refresh_token)
+            if access_token is None:
+                raise HTTPException(status_code=400, detail= "Invalid refresh token")
+            return SessionTokenResponse.validate_model(access_token)
+        except Exception as e:
+            raise HTTPException(status_code = e.status_code, detail=str(e.detail))
+        
     @user_controller_router.post("/logout")
     def logout(self, refresh_token: str):
         try:

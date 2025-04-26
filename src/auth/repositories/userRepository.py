@@ -3,12 +3,14 @@ from fastapi.security import OAuth2PasswordRequestForm
 from passlib.context import CryptContext
 import hashlib
 import jwt
+from jwt.exceptions import PyJWTError
 import secrets
 import os
 from datetime import datetime, timedelta, timezone
 from psycopg2.extras import RealDictCursor
 from repositories.IUserRepository import IUserRepository
 from models.customResponseModel import SessionTokenResponse
+from models.customException import TokenDecodeError
 from models.user import Users, UsersIn
 
 from utils import get_connection
@@ -105,22 +107,24 @@ class UserRepository(IUserRepository):
     def authenticate_user(self, token: str): pass
 
     def register_token_in_session(self, token: SessionTokenResponse):
-        print(token.access_token)
-        payload = jwt.decode(token.access_token, os.getenv("SECRET_KEY"), algorithms = os.getenv("ALGORITHM"))
-        print(payload)
-        username = payload.get("sub")
-        if token.refresh_token is not None:
-            hashed_token = self.hash_token(token.refresh_token)
+        try:
+            payload = jwt.decode(token.access_token, os.getenv("SECRET_KEY"), algorithms = os.getenv("ALGORITHM"))
+        
+            username = payload.get("sub")
+            if token.refresh_token is not None:
+                hashed_token = self.hash_token(token.refresh_token)
 
-        refresh_token_expires = timedelta(days = int(os.getenv("REFRESH_TOKEN_EXPIRE_DAYS")))
-        refresh_token_expiry_date = datetime.now(timezone.utc) + refresh_token_expires
+            refresh_token_expires = timedelta(days = int(os.getenv("REFRESH_TOKEN_EXPIRE_DAYS")))
+            refresh_token_expiry_date = datetime.now(timezone.utc) + refresh_token_expires
 
-        with self.connection.cursor() as cur:
-            cur.execute("""
-                        INSERT INTO refresh_tokens (user_id, hashed_refresh_token, expires_on) VALUES ((SELECT id FROM users WHERE username = %s), %s, %s)
-                        """, (username, hashed_token, refresh_token_expiry_date,))
-            self.connection.commit()
-
+            with self.connection.cursor() as cur:
+                cur.execute("""
+                            INSERT INTO refresh_tokens (user_id, hashed_refresh_token, expires_on) VALUES ((SELECT id FROM users WHERE username = %s), %s, %s)
+                            """, (username, hashed_token, refresh_token_expiry_date,))
+                self.connection.commit()
+        except PyJWTError as decoding_error:
+            raise TokenDecodeError("Invalid access token") from decoding_error 
+        
     def logout(self, refresh_token:str):
         with self.connection.cursor() as cur:
             cur.execute("""
@@ -130,3 +134,39 @@ class UserRepository(IUserRepository):
             self.connection.commit()
  
     def delete_all_active_session(self, username: str): pass
+
+    def validate_refresh_token(self, username: str, refresh_token: str):
+        hashed_token = self.hash_token(refresh_token)
+        with self.connection.cursor(cursor_factory=RealDictCursor) as cur:
+            cur.execute("""
+                        SELECT hashed_refresh_token, expires_on FROM refresh_tokens \
+                        WHERE user_id = (SELECT id FROM users WHERE username = %s) AND hashed_refresh_token = %s
+                        """, (username, hashed_token,))
+            hashed_token_db = cur.fetchone()
+
+            if hashed_token_db["expires_on"].replace(tzinfo=timezone.utc) < datetime.now(timezone.utc):
+                return False
+            
+            # check that the token corresponds to what is registered in db
+            return hashed_token == hashed_token_db
+        
+    def refresh_access_token(self, token, refresh_token):
+        try:
+            # get user info from previous token
+            payload = jwt.decode(token, os.getenv("SECRET_KEY"), algorithms = os.getenv("ALGORITHM"))
+            username, kennel_id = payload.get('sub'), payload.get('kennel_id')
+
+            # validate refresh_token
+            if not self.validate_refresh_token(username, refresh_token):
+                return None
+            
+            # generate new access_token
+            access_token_expires =  timedelta(minutes= int(os.getenv('ACCESS_TOKEN_EXPIRE_MINUTES', 60)))
+
+            new_access_token = self.create_access_token(
+                data = {'sub': username, 'kennel_id': kennel_id}, expires_delta= access_token_expires
+            )
+            return new_access_token
+        except PyJWTError as decoding_error:
+            raise TokenDecodeError("Invalid access token") from decoding_error
+            

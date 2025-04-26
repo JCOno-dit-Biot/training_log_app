@@ -18,6 +18,10 @@ class UserService():
         self.userRepository = UserRepository()
         self.kennel_repo = KennelRepository()
 
+    def get_all_kennels(self):
+        kennel_list = self.kennel_repo.get_all()
+        return kennel_list
+    
     def register(self, user: UsersIn):
         # Try to find existing kennel
         kennel_id = self.kennel_repo.get_by_name(user.kennel_name)
@@ -39,6 +43,12 @@ class UserService():
         access_token = self.userRepository.get_access_token(form_data)
         return access_token
     
+    def refresh_access_token(self, token: str, refresh_token: str):
+        new_access_token = self.userRepository.refresh_access_token(token, refresh_token)
+        if new_access_token is not None:
+            new_access_token.refresh_token = refresh_token
+        return new_access_token
+
     def get_refresh_token(self, username):
         return self.userRepository.get_refresh_token(username)
 
