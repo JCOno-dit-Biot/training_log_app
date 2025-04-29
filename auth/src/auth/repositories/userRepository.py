@@ -8,12 +8,12 @@ import secrets
 import os
 from datetime import datetime, timedelta, timezone
 from psycopg2.extras import RealDictCursor
-from repositories.IUserRepository import IUserRepository
-from models.customResponseModel import SessionTokenResponse
-from models.customException import TokenDecodeError
-from models.user import Users, UsersIn
+from auth.repositories.IUserRepository import IUserRepository
+from auth.models.customResponseModel import SessionTokenResponse
+from auth.models.customException import TokenDecodeError
+from auth.models.user import Users, UsersIn
 
-from utils import get_connection
+from auth.utils import get_connection
 from dotenv import load_dotenv
 
 load_dotenv()

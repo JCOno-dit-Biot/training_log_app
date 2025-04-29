@@ -1,8 +1,8 @@
 from fastapi.security import OAuth2PasswordRequestForm
-from models.user import Users, UsersIn
-from models.customResponseModel import SessionTokenResponse
-from repositories.userRepository import UserRepository
-from repositories.kennelRepository import KennelRepository
+from auth.models.user import Users, UsersIn
+from auth.models.customResponseModel import SessionTokenResponse
+from auth.repositories.userRepository import UserRepository
+from auth.repositories.kennelRepository import KennelRepository
 
 
 

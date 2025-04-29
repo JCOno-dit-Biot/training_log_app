@@ -1,5 +1,5 @@
-from utils import get_connection
-from models.kennel import Kennel
+from auth.utils import get_connection
+from auth.models.kennel import Kennel
 
 class KennelRepository:
     def __init__(self):
