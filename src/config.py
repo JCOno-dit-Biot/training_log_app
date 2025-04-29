@@ -7,5 +7,6 @@ class Settings(BaseSettings):
 
     class Config:
         env_file = "config/.env"
-
+        extra = "ignore"
+        
 settings = Settings()
