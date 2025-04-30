@@ -79,8 +79,7 @@ class UserRepository(IUserRepository):
         to_encode = data.copy()
         expire = datetime.now(timezone.utc) + expires_delta
         to_encode.update({'exp': expire})
-        print(os.getenv("SECRET_KEY"))
-
+        
         encoded_jwt = jwt.encode(to_encode, os.getenv("SECRET_KEY"), algorithm = os.getenv("ALGORITHM"))
 
         return SessionTokenResponse(
