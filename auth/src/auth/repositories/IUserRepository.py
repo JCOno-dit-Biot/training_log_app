@@ -1,5 +1,5 @@
 from abc import abstractmethod
-from models.user import Users
+from auth.models.user import Users
 
 class IUserRepository:
     @abstractmethod

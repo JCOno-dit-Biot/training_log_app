@@ -3,12 +3,12 @@ from fastapi_utils.cbv import cbv
 from fastapi.security import OAuth2PasswordRequestForm
 from pydantic import ValidationError
 from jwt.exceptions import PyJWTError
-from services.userService import UserService
+from auth.services.userService import UserService
 
-from models.user import UsersIn, Users
-from models.kennel import Kennel
-from models.customException import CustomValidationException, TokenDecodeError
-from models.customResponseModel import CustomResponseModel, SessionTokenResponse
+from auth.models.user import UsersIn, Users
+from auth.models.kennel import Kennel
+from auth.models.customException import CustomValidationException, TokenDecodeError
+from auth.models.customResponseModel import CustomResponseModel, SessionTokenResponse
 
 user_controller_router = APIRouter()
 
