@@ -80,7 +80,6 @@ INSERT INTO activities (
 INSERT INTO activity_dogs (activity_id, dog_id, rating) VALUES 
 (3, 1, 8);
 
-
 -- add weight entries
 INSERT INTO weight_entries(
     dog_id, date, weight
