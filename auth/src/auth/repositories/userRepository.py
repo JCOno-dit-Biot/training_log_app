@@ -35,8 +35,10 @@ class UserRepository(IUserRepository):
                 query = """
                 INSERT INTO users (username, password_hash, kennel_id) VALUES (%s, %s, %s) RETURNING id
                 """
-                user_id = cur.execute(query, (user.email, password_hash, kennel_id,))
+                cur.execute(query, (user.email, password_hash, kennel_id,))
+                user_id = cur.fetchone()[0]
                 self.connection.commit()
+                print(user_id)
                 return user_id
             else:
                 return False
@@ -79,7 +81,7 @@ class UserRepository(IUserRepository):
         to_encode = data.copy()
         expire = datetime.now(timezone.utc) + expires_delta
         to_encode.update({'exp': expire})
-        
+
         encoded_jwt = jwt.encode(to_encode, os.getenv("SECRET_KEY"), algorithm = os.getenv("ALGORITHM"))
 
         return SessionTokenResponse(
@@ -117,7 +119,6 @@ class UserRepository(IUserRepository):
     def hash_token(self, token: str) -> str:
         return hashlib.sha256(token.encode()).hexdigest()
 
-
     def authenticate_user(self, token: str): pass
 
     def register_token_in_session(self, token: SessionTokenResponse):
@@ -127,6 +128,7 @@ class UserRepository(IUserRepository):
             username = payload.get("sub")
             if token.refresh_token is not None:
                 hashed_token = self.hash_token(token.refresh_token)
+            # Note: look at the case where refresh token is None
 
             refresh_token_expires = timedelta(days = int(os.getenv("REFRESH_TOKEN_EXPIRE_DAYS")))
             refresh_token_expiry_date = datetime.now(timezone.utc) + refresh_token_expires
@@ -158,13 +160,13 @@ class UserRepository(IUserRepository):
                         WHERE user_id = (SELECT id FROM users WHERE username = %s) AND hashed_refresh_token = %s
                         """, (username, hashed_token,))
             hashed_token_db = cur.fetchone()
-
-            print(hashed_token_db)
-            if hashed_token_db["expires_on"].replace(tzinfo=timezone.utc) < datetime.now(timezone.utc):
+            if hashed_token_db is not None:
+                if hashed_token_db["expires_on"].replace(tzinfo=timezone.utc) < datetime.now(timezone.utc):
+                    return False
+                # check that the token corresponds to what is registered in db
+                return hashed_token == hashed_token_db['hashed_refresh_token']
+            else: 
                 return False
-            
-            # check that the token corresponds to what is registered in db
-            return hashed_token == hashed_token_db['hashed_refresh_token']
         
     def refresh_access_token(self, token, refresh_token):
         try:
