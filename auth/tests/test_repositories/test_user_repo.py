@@ -5,6 +5,7 @@ from fastapi.security import OAuth2PasswordRequestForm
 from datetime import timedelta, timezone, datetime
 import jwt
 import hashlib
+import secrets
 from unittest.mock import patch
 
 from auth.models.user import Users, UsersIn
@@ -36,6 +37,7 @@ def refresh_token():
 
 @pytest.fixture
 def insert_valid_refresh_token(user_repo, refresh_token):
+    refresh_token = secrets.token_hex(32)  
     hashed = user_repo.hash_token(refresh_token)
     with user_repo.connection.cursor() as cur:
         cur.execute("""
@@ -48,6 +50,13 @@ def insert_valid_refresh_token(user_repo, refresh_token):
         ))
         user_repo.connection.commit()
     return refresh_token
+
+@pytest.fixture(autouse=True)
+def cleanup_refresh_tokens(user_repo):
+    ''' Clean up refresh token created by fixture '''
+    with user_repo.connection.cursor() as cur:
+        cur.execute("DELETE FROM refresh_tokens WHERE user_id = (SELECT id FROM users WHERE username = %s)", ('john@domain.com',))
+        user_repo.connection.commit()
 
 
 def test_create_new_user(user_repo, test_user):
@@ -79,6 +88,20 @@ def test_reset_password_user_not_exist(user_repo):
     user = Users(email = 'johndoe@domain.com', password = 'new_password')
     usr = user_repo.reset_password(user)
     assert usr is None
+
+
+def test_get_access_token(user_repo, test_OAuth_form):
+    token = user_repo.get_access_token(test_OAuth_form)
+    assert isinstance(token, SessionTokenResponse)
+    assert token.access_token is not None
+    # this test does not check the info in the JWT as this is perfomed in
+    # the following tests
+
+def test_get_access_token_undefined_user(user_repo):
+    form = OAuth2PasswordRequestForm(username = 'not_a_user', password = 'pass')
+    token = user_repo.get_access_token(form)
+    assert isinstance(token, SessionTokenResponse)
+    assert token.access_token is None
 
 def test_create_access_token(user_repo):
     data = {'sub': 'john.doe@domain.com', 'kennel_id': 1}
@@ -173,11 +196,18 @@ def test_decode_token_raises_token_decode_error(user_repo):
         assert "Invalid access token" in str(exc_info.value)
         assert isinstance(exc_info.value.__cause__, jwt.PyJWTError)
 
-def test_logout(user_repo):
-    pass
+def test_logout(user_repo, insert_valid_refresh_token):
+    user_repo.logout(insert_valid_refresh_token)
+    with user_repo.connection.cursor() as cur:
+        cur.execute("SELECT * FROM refresh_tokens WHERE hashed_refresh_token = %s", 
+                        (user_repo.hash_token(insert_valid_refresh_token),))
+        result = cur.fetchone()
+
+    assert result is None
+    
 
 def test_validate_refresh_token(user_repo, insert_valid_refresh_token):
-    valid_token = user_repo.validate_refresh_token('john@domain.com', 'fake_refresh_token')
+    valid_token = user_repo.validate_refresh_token('john@domain.com', insert_valid_refresh_token)
     assert valid_token == True
 
 
@@ -186,17 +216,39 @@ def test_validate_refresh_token_wrong_token(user_repo, insert_valid_refresh_toke
     valid_token = user_repo.validate_refresh_token('john@domain.com', 'wrong_fake_refresh_token')
     assert valid_token == False
 
-
 def test_validate_refresh_token_expired(user_repo, insert_valid_refresh_token):
     hashed = user_repo.hash_token(insert_valid_refresh_token)
     # artificially make the token expired
     with user_repo.connection.cursor() as cur:
-        cur.execute("UPDATE refresh_token SET expires_on = %s WHERE hashed_refresh_token = %s",
-                    (datetime.now(timezone.utc) + timedelta(days = 1), hashed,)
+        cur.execute("UPDATE refresh_tokens SET expires_on = %s WHERE hashed_refresh_token = %s",
+                    (datetime.now(timezone.utc) - timedelta(days = 1), hashed,)
                     )
     
     valid_token = user_repo.validate_refresh_token('john@domain.com', insert_valid_refresh_token)
     assert valid_token == False
 
-def test_refresh_token():
-    pass
+def test_refresh_access_token(user_repo, insert_valid_refresh_token):
+    data = {'sub': 'john@domain.com', 'kennel_id': 1}
+    token = user_repo.create_access_token(data, timedelta(minutes=60))
+    assert token is not None
+    new_access_token = user_repo.refresh_access_token(token.access_token, insert_valid_refresh_token)
+    assert new_access_token is not None
+    payload = jwt.decode(new_access_token.access_token, os.getenv("SECRET_KEY"), algorithms = os.getenv("ALGORITHM"))
+    assert payload.get('sub') == 'john@domain.com'
+    assert payload.get('kennel_id') == 1
+
+def test_refresh_token_invalid(user_repo, insert_valid_refresh_token):
+    data = {'sub': 'john@domain.com', 'kennel_id': 1}
+    token = user_repo.create_access_token(data, timedelta(minutes=60))
+    assert token is not None
+    new_access_token = user_repo.refresh_access_token(token.access_token, 'bad_token')
+    assert new_access_token is None
+
+def test_decode_token_raises_token_decode_error_in_refresh_access_token(user_repo):
+    token = SessionTokenResponse(access_token="fake.jwt.token")
+
+    with patch("auth.repositories.userRepository.jwt.decode", side_effect=jwt.PyJWTError("bad token")):
+        with pytest.raises(TokenDecodeError) as exc_info:
+            user_repo.refresh_access_token(token.access_token, 'refresh_token')
+        assert "Invalid access token" in str(exc_info.value)
+        assert isinstance(exc_info.value.__cause__, jwt.PyJWTError)
