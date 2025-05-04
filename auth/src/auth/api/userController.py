@@ -65,7 +65,6 @@ class UserController:
         '''
 
         if not old_password.strip() or not new_password.strip():
-            print('not a string')
             raise HTTPException(status_code=422, detail="Passwords cannot be empty strings or spaces only")
         
         try:         
@@ -86,7 +85,7 @@ class UserController:
                 raise HTTPException(status_code=404, detail = f"Could not find user {user_in.email}")
         except ValidationError as validation_error:
             for err in validation_error.errors():
-                if err['loc'][0] == 'username':
+                if err['loc'][0] == 'email':
                     raise CustomValidationException(
                         field = "email",
                         message = "Invalid format for registration information"
@@ -140,6 +139,8 @@ class UserController:
             if access_token is None:
                 raise HTTPException(status_code=400, detail= "Invalid refresh token")
             return SessionTokenResponse.model_validate(access_token)
+        except HTTPException: 
+            raise
         except Exception as e:
             raise HTTPException(status_code=500, detail=str(e)) 
         

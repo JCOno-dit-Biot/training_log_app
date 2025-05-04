@@ -1,7 +1,7 @@
 import pytest
 from fastapi import HTTPException
 from auth.models.customResponseModel import CustomResponseModel, SessionTokenResponse
-from auth.models.customException import CustomValidationException
+from auth.models.customException import CustomValidationException, TokenDecodeError
 from auth.models.user import Users
 from auth.models.kennel import Kennel
 
@@ -34,6 +34,14 @@ def test_register_bad_email_format(client, mock_user_service):
             "email": 123,
             "password": "securepassword",
             "kennel_name": "Wolfpack"
+        })
+
+def test_reset_password_bad_email_format(client, mock_user_service):
+    with pytest.raises(CustomValidationException):
+        client.post("/reset-password", data= {
+            "email": 123,
+            "old_password": "securepassword",
+            "new_password": "new_securepassword"
         })
 
 def test_reset_password_success(client, mock_user_service):
@@ -108,6 +116,23 @@ def test_get_access_token_fails(client, mock_user_service, access_token, refresh
     assert response.status_code == code
     assert response.json()['detail'] == message
 
+@pytest.mark.parametrize('error,code,detail',[
+    (TokenDecodeError("bad token"), 401, "Error during token registration process, token expired or invalid"),
+    (Exception("some internal server issue"), 500, "some internal server issue")
+])
+def test_get_access_token_raises(client, mock_user_service, error, code, detail):
+    # Simulate the service raising TokenDecodeError when registering the session
+    mock_user_service.register_token_in_session.side_effect = error
+
+    response = client.post("/token", data={
+        "username": "test@example.com",
+        "password": "testpass"
+    })
+
+    # Assert
+    assert response.status_code == code
+    assert detail in response.json()["detail"]
+
 def test_refresh_token(client, mock_user_service):
     mock_user_service.refresh_access_token.return_value = SessionTokenResponse(
         access_token = 'my_new_jwt'
@@ -118,7 +143,13 @@ def test_refresh_token(client, mock_user_service):
     assert response.status_code == 200
     assert response.json()['access_token'] == 'my_new_jwt'
     
-
+def test_refresh_token_invalid(client, mock_user_service):
+    mock_user_service.refresh_access_token.return_value = None
+    response = client.post("/refresh-token", params =
+                           {'token':'current_jwt',
+                            'refresh_token': "my_refresh_token"})
+    assert response.status_code == 400
+    assert response.json()['detail'] == "Invalid refresh token"
 
 def test_logout(client, mock_user_service):
     mock_user_service.logout.return_value = {'content':'Success'}
