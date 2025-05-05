@@ -7,6 +7,8 @@ from auth.server import app
 
 from auth.api.userController import user_controller_router
 from auth.services.userService import UserService
+from auth.repositories.kennelRepository import KennelRepository
+from auth.repositories.userRepository import UserRepository
 from unittest.mock import MagicMock
 
 load_dotenv()
@@ -28,6 +30,21 @@ def test_db_conn():
 @pytest.fixture
 def mock_user_service():
     return MagicMock(spec=UserService)
+
+@pytest.fixture
+def mock_user_repo():
+    return MagicMock(spec=UserRepository)
+
+@pytest.fixture
+def mock_kennel_repo():
+    return MagicMock(spec=KennelRepository)
+
+@pytest.fixture
+def user_service(mock_user_repo, mock_kennel_repo):
+    return UserService(
+        user_repository=mock_user_repo,
+        kennel_repository=mock_kennel_repo
+    )
 
 @pytest.fixture
 def test_app(mock_user_service):
