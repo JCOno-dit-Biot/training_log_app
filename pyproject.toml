@@ -5,6 +5,7 @@ description = "App to record dog training activites with their owners"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
+    "email-validator>=2.2.0",
     "fastapi>=0.115.12",
     "fastapi-utils>=0.8.0",
     "httpx>=0.28.1",

@@ -1,4 +1,5 @@
 from fastapi.security import OAuth2PasswordRequestForm
+from fastapi import Depends
 from auth.models.user import Users, UsersIn
 from auth.models.customResponseModel import SessionTokenResponse
 from auth.repositories.userRepository import UserRepository
@@ -14,9 +15,9 @@ pwd_context = CryptContext(schemes = ["bcrypt"], deprecated = "auto")
 
 class UserService():
 
-    def __init__(self):
-        self.userRepository = UserRepository()
-        self.kennel_repo = KennelRepository()
+    def __init__(self, user_repository: UserRepository = Depends(), kennel_repository: KennelRepository = Depends()):
+        self.userRepository = user_repository
+        self.kennel_repo = kennel_repository
 
     def get_all_kennels(self):
         kennel_list = self.kennel_repo.get_all()
