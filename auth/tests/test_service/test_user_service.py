@@ -42,6 +42,11 @@ def test_reset_password_wrong_password(user_service, mock_user_repo):
     assert user_return == False
     mock_user_repo.is_password_correct.assert_called_once()
 
+def test_authenticate_user(user_service, mock_user_repo):
+    mock_user_repo.authenticate_user.return_value = {}
+    user_service.authenticate_user('my_token')
+    mock_user_repo.authenticate_user.assert_called_once()
+
 @pytest.mark.parametrize('mock_return_password, mock_return_access_token, expected', [
     (True, MagicMock(access_token = 'valid_token'), MagicMock(access_token = 'valid_token')),
     (False, None, MagicMock(access_token = None))])

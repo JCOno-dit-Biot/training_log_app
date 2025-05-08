@@ -128,7 +128,25 @@ class UserController:
             raise
         except Exception as e:
             raise HTTPException(status_code=500, detail=str(e)) 
-        
+    
+    @user_controller_router.post("/validate", status_code=status.HTTP_200_OK)
+    def validate_token(self, payload: dict):
+        token = payload.get("token")
+        try:
+            user_dict = self.userService.authenticate_user(token)
+            if user_dict is None:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail = "User not found in token"
+                )
+            return user_dict
+        except TokenDecodeError as decoding_error:
+            raise HTTPException(status_code=401, detail = str(decoding_error))
+        except HTTPException: 
+            raise
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=str(e)) 
+
     @user_controller_router.post("/refresh-token", response_model=SessionTokenResponse, status_code=200)
     def refresh_token(self, token: str = Query(...), refresh_token: str = Query(...)):
         '''

@@ -61,8 +61,8 @@ class UserService():
     def register_token_in_session(self, access_token: SessionTokenResponse):
         self.userRepository.register_token_in_session(access_token)
 
-    # def authenticate_user(self, token: str):
-    #     return self.repository.authenticate_user(token)
+    def authenticate_user(self, token: str):
+        return self.userRepository.authenticate_user(token)
     
     def delete_all_active_session(self, username: str):
         self.userRepository.delete_all_active_session(username)

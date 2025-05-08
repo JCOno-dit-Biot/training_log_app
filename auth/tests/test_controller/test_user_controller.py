@@ -133,6 +133,29 @@ def test_get_access_token_raises(client, mock_user_service, error, code, detail)
     assert response.status_code == code
     assert detail in response.json()["detail"]
 
+@pytest.mark.parametrize('return_value,code',
+                         [({'sub': 'john@example.com', 'kennel_id':1}, 200),
+                         (None, 404)]
+                         )
+def test_validate_token(client, mock_user_service, return_value, code):
+    mock_user_service.authenticate_user.return_value = return_value
+    response = client.post("/validate", json={"token": "jwt_token"})
+    assert response.status_code == code
+    if code == 200:
+        assert response.json().get('sub') == 'john@example.com'
+        assert response.json().get('kennel_id') == 1
+
+@pytest.mark.parametrize('error,code,detail',[
+    (TokenDecodeError("Invalid or expired access token"), 401, "Invalid or expired access token"),
+    (Exception("some internal server issue"), 500, "some internal server issue")
+])
+def test_validate_token_raises(client, mock_user_service, error, code, detail):
+    mock_user_service.authenticate_user.side_effect = error
+    response = client.post("/validate", json={"token": "jwt_token"})
+    print(response.json()["detail"])
+    assert response.status_code == code
+    assert detail in response.json()["detail"]
+
 def test_refresh_token(client, mock_user_service):
     mock_user_service.refresh_access_token.return_value = SessionTokenResponse(
         access_token = 'my_new_jwt'

@@ -169,6 +169,37 @@ def test_hash_token(user_repo):
 
     assert user_repo.hash_token(token) == expected
 
+def test_authenticate_user(user_repo):
+    data = {'sub': 'john.doe@domain.com', 'kennel_id': 1}
+    expires_delta = timedelta(minutes = 60)
+    expire = datetime.now(timezone.utc) + expires_delta
+    data.update({'exp': expire})
+    encoded_jwt = jwt.encode(data, os.getenv("SECRET_KEY"), algorithm = os.getenv("ALGORITHM"))
+    user_dict = user_repo.authenticate_user(encoded_jwt)
+    assert user_dict['sub'] == 'john.doe@domain.com'
+    assert user_dict['kennel_id'] == 1
+
+def test_authenticate_user_no_user(user_repo):
+    data = {'kennel_id': 1}
+    expires_delta = timedelta(minutes = 60)
+    expire = datetime.now(timezone.utc) + expires_delta
+    data.update({'exp': expire})
+    encoded_jwt = jwt.encode(data, os.getenv("SECRET_KEY"), algorithm = os.getenv("ALGORITHM"))
+    user_dict = user_repo.authenticate_user(encoded_jwt)
+    assert user_dict == None
+
+def test_authenticate_user_expired_token(user_repo):
+    data = {'sub': 'john.doe@domain.com', 'kennel_id': 1}
+    expires_delta = timedelta(minutes = 10)
+    expire = datetime.now(timezone.utc) - expires_delta
+    data.update({'exp': expire})
+    encoded_jwt = jwt.encode(data, os.getenv("SECRET_KEY"), algorithm = os.getenv("ALGORITHM"))
+    with pytest.raises(TokenDecodeError) as exc_info:
+        user_dict = user_repo.authenticate_user(encoded_jwt)
+
+    assert str(exc_info.value) == "Invalid or expired access token"
+    
+
 def test_register_token_in_session(user_repo):
     user = 'john@domain.com'
     token = user_repo.create_access_token(

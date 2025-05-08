@@ -119,7 +119,17 @@ class UserRepository(IUserRepository):
     def hash_token(self, token: str) -> str:
         return hashlib.sha256(token.encode()).hexdigest()
 
-    def authenticate_user(self, token: str): pass
+    def authenticate_user(self, token: str) -> dict | None: 
+        try:
+            payload = jwt.decode(token, os.getenv("SECRET_KEY"), algorithms = os.getenv("ALGORITHM"))
+            username = payload.get('sub')
+            kennel_id = payload.get('kennel_id')
+            if username is None or kennel_id is None:
+                return None
+            else:
+                return {'sub': payload['sub'], 'kennel_id': payload['kennel_id']}
+        except PyJWTError as decoding_error:
+             raise TokenDecodeError("Invalid or expired access token") from decoding_error 
 
     def register_token_in_session(self, token: SessionTokenResponse):
         try:
