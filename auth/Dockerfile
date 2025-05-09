@@ -17,7 +17,7 @@ ENV PYTHONPATH=/app/src
 # Expose port 8001
 EXPOSE 8001
 
-ENTRYPOINT ["uv", "run", "uvicorn", "auth.server:app", "--host", "0.0.0.0", "--port", "8001"]
+ENTRYPOINT ["uv", "run", "python", "-m", "src.auth"]
 
 
 
