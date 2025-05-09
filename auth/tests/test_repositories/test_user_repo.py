@@ -275,6 +275,19 @@ def test_refresh_token_invalid(user_repo, insert_valid_refresh_token):
     new_access_token = user_repo.refresh_access_token(token.access_token, 'bad_token')
     assert new_access_token is None
 
+def test_refresh_token_with_expired_jwt(user_repo, insert_valid_refresh_token):
+    data = {'sub': 'john@domain.com', 'kennel_id': 1}
+    expires_delta = timedelta(minutes = 10)
+    expire = datetime.now(timezone.utc) - expires_delta
+    data.update({'exp': expire})
+    token = jwt.encode(data, os.getenv("SECRET_KEY"), algorithm = os.getenv("ALGORITHM"))
+    new_access_token = user_repo.refresh_access_token(token, insert_valid_refresh_token)
+    assert new_access_token is not None
+    payload = jwt.decode(new_access_token.access_token, os.getenv("SECRET_KEY"), algorithms = os.getenv("ALGORITHM"))
+    assert payload.get('sub') == 'john@domain.com'
+    assert payload.get('kennel_id') == 1
+
+
 def test_decode_token_raises_token_decode_error_in_refresh_access_token(user_repo):
     token = SessionTokenResponse(access_token="fake.jwt.token")
 

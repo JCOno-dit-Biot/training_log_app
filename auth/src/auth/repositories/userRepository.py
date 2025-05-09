@@ -180,8 +180,8 @@ class UserRepository(IUserRepository):
         
     def refresh_access_token(self, token, refresh_token):
         try:
-            # get user info from previous token
-            payload = jwt.decode(token, os.getenv("SECRET_KEY"), algorithms = os.getenv("ALGORITHM"))
+            # get user info from previous token, disable expiry check to get the user info
+            payload = jwt.decode(token, os.getenv("SECRET_KEY"), algorithms = os.getenv("ALGORITHM"), options={"verify_exp": False})
             username, kennel_id = payload.get('sub'), payload.get('kennel_id')
 
             # validate refresh_token
