@@ -6,6 +6,6 @@ services:
     container_name: postgres_test
     restart: always
     env_file:
-      - .env.test
+      - ../config/.env.test
     ports:
       - "5433:5432"
