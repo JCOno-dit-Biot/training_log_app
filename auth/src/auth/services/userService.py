@@ -55,8 +55,8 @@ class UserService():
             new_access_token.refresh_token = refresh_token
         return new_access_token
 
-    def get_refresh_token(self, username: str):
-        return self.userRepository.get_refresh_token(username)
+    def get_refresh_token(self, form_data: OAuth2PasswordRequestForm = Depends()):
+        return self.userRepository.get_refresh_token(form_data)
 
     def register_token_in_session(self, access_token: SessionTokenResponse):
         self.userRepository.register_token_in_session(access_token)
