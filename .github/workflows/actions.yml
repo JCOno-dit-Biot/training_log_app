@@ -3,7 +3,8 @@ name: Run Tests
 on:
   push:
     branches:
-      - ["main", "add-authentication"]
+      - main
+      - add-authentication
   pull_request:
     branches:
       - main
