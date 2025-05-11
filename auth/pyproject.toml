@@ -1,20 +1,21 @@
 [project]
-name = "training-log-app"
+name = "auth"
 version = "0.1.0"
-description = "App to record dog training activites with their owners"
+description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
+    "bcrypt==4.0.1",
     "email-validator>=2.2.0",
     "fastapi>=0.115.12",
     "fastapi-utils>=0.8.0",
     "httpx>=0.28.1",
-    "numpy>=2.2.3",
+    "passlib>=1.7.4",
     "psycopg2-binary>=2.9.10",
     "pydantic>=2.10.6",
     "pydantic-settings>=2.8.1",
-    "pytest-cov>=6.1.1",
-    "python-dotenv>=1.0.1",
+    "pyjwt>=2.10.1",
+    "python-multipart>=0.0.20",
     "typing-inspect>=0.9.0",
     "uvicorn>=0.34.0",
 ]
@@ -22,7 +23,5 @@ dependencies = [
 [dependency-groups]
 dev = [
     "pytest>=8.3.5",
+    "pytest-cov>=6.1.1",
 ]
-
-[tool.uv.workspace]
-members = ["src/auth"]

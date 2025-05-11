@@ -90,3 +90,23 @@ CREATE TABLE IF NOT EXISTS "weight_entries" (
     CONSTRAINT "weight_entries_pkey" PRIMARY KEY ("id"),
     CONSTRAINT "weightentries_fkey_dogid_id" FOREIGN KEY ("dog_id") REFERENCES "dogs"("id")
 );
+
+CREATE TABLE IF NOT EXISTS "users" (
+    "id" SERIAL,
+    "username" TEXT NOT NULL,
+    "kennel_id" INT,
+    "password_hash" TEXT NOT NULL,
+    "created_at" TIMESTAMPTZ DEFAULT NOW(),
+    "is_active" BOOLEAN DEFAULT true, -- allows to disable a user if needed
+    CONSTRAINT "user_pkey" PRIMARY KEY ("id")
+);
+
+CREATE UNIQUE INDEX "unique_active_username" ON users(username) WHERE is_active=true; 
+
+CREATE TABLE IF NOT EXISTS "refresh_tokens" (
+    "user_id" INT,
+    "hashed_refresh_token" TEXT,
+    "expires_on" TIMESTAMPTZ NOT NULL, --expiry date for refresh token
+    CONSTRAINT "refrehs_tokens_pkey" PRIMARY KEY ("user_id", "hashed_refresh_token"),
+    CONSTRAINT "refresh_rokens_fkey_userid_id" FOREIGN KEY ("user_id") REFERENCES "users"("id")
+);

@@ -1,7 +1,7 @@
-INSERT INTO "kennels"
+INSERT INTO "kennels" ("name")
 VALUES 
-    (1, 'Test Kennel'),
-    (2, 'Les Gaulois');
+    ('Test Kennel'),
+    ('Les Gaulois');
 
 INSERT INTO "dogs"("name", "date_of_birth", "breed", "kennel_id")
 VALUES
@@ -79,7 +79,6 @@ INSERT INTO activities (
 
 INSERT INTO activity_dogs (activity_id, dog_id, rating) VALUES 
 (3, 1, 8);
-
 
 -- add weight entries
 INSERT INTO weight_entries(

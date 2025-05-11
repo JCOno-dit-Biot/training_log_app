@@ -4,12 +4,13 @@ on:
   push:
     branches:
       - main
+      - add-authentication
   pull_request:
     branches:
       - main
 
 jobs:
-  unit-tests:
+  test-main:
     runs-on: ubuntu-latest
 
     steps:
@@ -34,17 +35,7 @@ jobs:
       - name: Run api test
         run: uv run pytest tests/api
 
-      
-  integration-tests:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Set up Docker Buildx (optional for caching)
-        uses: docker/setup-buildx-action@v3
-
+      # set up for integration tests
       - name: Generate .env.test from secrets
         run: |
           echo CI=true >> docker/.env.test
@@ -52,8 +43,8 @@ jobs:
           echo POSTGRES_PASSWORD=${{ secrets.TEST_DB_PASSWORD }} >> docker/.env.test
           echo POSTGRES_DB=test_db >> docker/.env.test
           echo POSTGRES_PORT=${{ secrets.TEST_DB_PORT }} >> docker/.env.test
+        
           
-
       - name: Build the test database image
         run: |
           docker compose -f docker-compose.test.yaml build
@@ -73,6 +64,33 @@ jobs:
           echo "Waiting for Postgres..."
           until pg_isready -h localhost -p 5433 -U test_user; do sleep 2; done
 
+      - name: Run integration tests
+        run: uv run pytest tests/integration -s
+        env:
+          ENV: test
+          TEST_DATABASE_URL: postgres://test_user:${{ secrets.TEST_DB_PASSWORD }}@localhost:5433/test_db
+
+      - name: Tear down containers
+        if: always()
+        run: docker compose -f docker-compose.test.yaml down --volumes
+        working-directory: docker
+    
+  test-auth:
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: auth  # auto-cd into auth/ for all steps
+
+    env:
+      PYTHONPATH: src
+      ENV: test
+      CI: true
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
       - name: Install uv
         uses: astral-sh/setup-uv@v5
         with:
@@ -85,13 +103,49 @@ jobs:
       - name: Install Project
         run: uv sync --dev
 
-      - name: Run integration tests
-        run: uv run pytest tests/integration -s
+      - name: Run unit tests (service and controller)
+        run: uv run pytest tests/test_service tests/test_controller 
         env:
-          ENV: test
+          SECRET_KEY: ${{ secrets.JWT_SECRET_KEY }}
+          ALGORITHM: ${{ secrets.JWT_ALGO }}
+          ACCESS_TOKEN_EXPIRE_MINUTES: 60
+          REFRESH_TOKEN_EXPIRE_DAYS: 30
+
+      - name: Generate .env.test from secrets
+        run: |
+          echo CI=true >> docker/.env.test
+          echo POSTGRES_USER=test_user >> docker/.env.test
+          echo POSTGRES_PASSWORD=${{ secrets.TEST_DB_PASSWORD }} >> docker/.env.test
+          echo POSTGRES_DB=test_db >> docker/.env.test
+          echo POSTGRES_PORT=${{ secrets.TEST_DB_PORT }} >> docker/.env.test
+        working-directory: ${{ github.workspace }}
+
+      - name: Build the test database image
+        run: |
+          docker compose -f docker-compose.test.yaml build
+        working-directory: ${{ github.workspace }}/docker
+
+      - name: Start the test database
+        run: |
+          docker compose -f docker-compose.test.yaml up -d
+        working-directory: ${{ github.workspace }}/docker
+
+      - name: Wait for Postgres to be ready
+        run: |
+          echo "Waiting for Postgres..."
+          until pg_isready -h localhost -p 5433 -U test_user; do sleep 2; done
+
+      - name: Run integration tests
+        run: uv run pytest tests/test_repositories -s
+        env:
+          SECRET_KEY: ${{ secrets.JWT_SECRET_KEY }}
+          ALGORITHM: ${{ secrets.JWT_ALGO }}
+          ACCESS_TOKEN_EXPIRE_MINUTES: 60
+          REFRESH_TOKEN_EXPIRE_DAYS: 30
           TEST_DATABASE_URL: postgres://test_user:${{ secrets.TEST_DB_PASSWORD }}@localhost:5433/test_db
 
       - name: Tear down containers
         if: always()
         run: docker compose -f docker-compose.test.yaml down --volumes
-        working-directory: docker
+        working-directory: ${{ github.workspace }}/docker
+    
