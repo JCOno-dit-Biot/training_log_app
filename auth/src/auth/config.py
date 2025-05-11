@@ -1,5 +1,10 @@
 from pydantic_settings import BaseSettings
 from pydantic import ConfigDict
+from pathlib import Path
+from dotenv import load_dotenv
+
+
+load_dotenv(dotenv_path='.env', override=False)
 
 class Settings(BaseSettings):
     ENV: str = "dev"
