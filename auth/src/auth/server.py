@@ -8,6 +8,8 @@ app = FastAPI()
 # Allow requests from frontend dev server
 origins = [
     "http://localhost",
+    "http://localhost:8000",
+    "http://app:8000",
     "http://localhost:5173",
     "http://127.0.0.1:5173"
 ]
@@ -26,7 +28,7 @@ def main():
         "auth.server:app",
         host="0.0.0.0",
         port=8001,
-        reload=True
+        reload=False
     )
 
 if __name__ == "__main__":
