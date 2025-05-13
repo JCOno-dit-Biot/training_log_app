@@ -1,4 +1,4 @@
-from fastapi import Depends, APIRouter, Form, HTTPException, Query, status
+from fastapi import Depends, APIRouter, Form, HTTPException, Query, status, Response
 from fastapi_utils.cbv import cbv
 from fastapi.responses import JSONResponse
 from fastapi.security import OAuth2PasswordRequestForm
@@ -96,7 +96,7 @@ class UserController:
             raise HTTPException(status_code=500, detail=str(e)) 
 
     @user_controller_router.post("/token", response_model=SessionTokenResponse, status_code = 201)
-    def get_token(self, form_data: OAuth2PasswordRequestForm = Depends()):
+    def get_token(self, response: Response, form_data: OAuth2PasswordRequestForm = Depends()):
         ''' 
         Route to get a JWT and a refresh token. JWT expires on a short time scale, refresh tokens are long lived and can be used to regenerate a new JWT token.
         Refresh tokens should be kept securely
@@ -118,7 +118,16 @@ class UserController:
                 refresh_token = self.userService.get_refresh_token(form_data)
                 if refresh_token["refresh_token"] is None:
                     raise HTTPException(status_code=400, detail = "Unable to generate refresh token")       
-                access_token.refresh_token = refresh_token["refresh_token"]   
+                
+                response.set_cookie(
+                    key="refresh-token",
+                    value=refresh_token,
+                    httponly=True,
+                    secure=True,        # Only over HTTPS
+                    samesite="strict",
+                    max_age=7 * 24 * 60 * 60,  # 7 days
+                    path="/refresh-token"     # Optional: restrict to refresh route
+                )
                 # register the refresh token as active session
                 self.userService.register_token_in_session(access_token)
             return SessionTokenResponse.model_validate(access_token)     
