@@ -120,8 +120,8 @@ class UserController:
                     raise HTTPException(status_code=400, detail = "Unable to generate refresh token")       
                 
                 response.set_cookie(
-                    key="refresh-token",
-                    value=refresh_token,
+                    key="refresh_token",
+                    value=refresh_token["refresh_token"],
                     httponly=True,
                     secure=True,        # Only over HTTPS
                     samesite="strict",
