@@ -172,22 +172,29 @@ def test_validate_token_raises(client, mock_user_service, error, code, detail):
     assert detail in response.json()["detail"]
 
 def test_refresh_token(client, mock_user_service):
+    client.cookies.set("refresh_token", 'my_refresh_token')
     mock_user_service.refresh_access_token.return_value = SessionTokenResponse(
         access_token = 'my_new_jwt'
     )
     response = client.post("/refresh-token", params =
-                           {'token':'current_jwt',
-                            'refresh_token': "my_refresh_token"})
+                           {'token':'current_jwt'})
     assert response.status_code == 200
     assert response.json()['access_token'] == 'my_new_jwt'
     
 def test_refresh_token_invalid(client, mock_user_service):
+    client.cookies.set("refresh_token", 'my_refresh_token')
     mock_user_service.refresh_access_token.return_value = None
     response = client.post("/refresh-token", params =
-                           {'token':'current_jwt',
-                            'refresh_token': "my_refresh_token"})
-    assert response.status_code == 400
+                           {'token':'current_jwt'})
+    assert response.status_code == 401
     assert response.json()['detail'] == "Invalid refresh token"
+
+def test_refresh_token_missing(client, mock_user_service):
+    response = client.post("/refresh-token", params =
+                           {'token':'current_jwt'}
+                           )
+    assert response.status_code == 401
+    assert response.json()['detail'] == "Missing refresh token"
 
 def test_logout(client, mock_user_service):
     mock_user_service.logout.return_value = {'content':'Success'}

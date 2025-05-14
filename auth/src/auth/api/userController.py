@@ -1,4 +1,4 @@
-from fastapi import Depends, APIRouter, Form, HTTPException, Query, status, Response
+from fastapi import Depends, APIRouter, Form, HTTPException, Query, status, Response, Request
 from fastapi_utils.cbv import cbv
 from fastapi.responses import JSONResponse
 from fastapi.security import OAuth2PasswordRequestForm
@@ -157,14 +157,18 @@ class UserController:
             raise HTTPException(status_code=500, detail=str(e)) 
 
     @user_controller_router.post("/refresh-token", response_model=SessionTokenResponse, status_code=200)
-    def refresh_token(self, token: str = Query(...), refresh_token: str = Query(...)):
+    def refresh_token(self, request: Request, token: str = Query(...)):
         '''
         Route to renew JWT tokens that have expired
         '''
+        refresh_token = request.cookies.get("refresh_token")
+
+        if not refresh_token:
+            raise HTTPException( status_code=status.HTTP_401_UNAUTHORIZED, detail = 'Missing refresh token')
         try:
             access_token = self.userService.refresh_access_token(token, refresh_token)
             if access_token is None:
-                raise HTTPException(status_code=400, detail= "Invalid refresh token")
+                raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail= "Invalid refresh token")
             return SessionTokenResponse.model_validate(access_token)
         except HTTPException: 
             raise
