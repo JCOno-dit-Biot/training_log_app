@@ -87,7 +87,7 @@ def test_get_access_token(client, mock_user_service):
     mock_user_service.get_access_token.return_value = SessionTokenResponse(
         access_token = 'my_jwt_token'
     )
-    mock_user_service.get_refresh_token.return_value = { 'refresh_token':'my_refresh_token'}
+    mock_user_service.get_refresh_token.return_value = {'refresh_token':'my_refresh_token'}
     mock_user_service.register_token_in_session.return_value = None # no return value
 
     response = client.post("/token", data =
@@ -96,7 +96,18 @@ def test_get_access_token(client, mock_user_service):
    
     assert response.status_code == 201
     assert response.json()['access_token'] == 'my_jwt_token'
-    assert response.json()['refresh_token'] == 'my_refresh_token'
+    
+    cookies = response.cookies
+    print(cookies.get("refresh_token"))
+
+    assert "refresh_token" in cookies
+    assert cookies.get("refresh_token") == "my_refresh_token"
+
+    raw_set_cookie = response.headers.get("set-cookie")
+    assert "HttpOnly" in raw_set_cookie
+    assert "Secure" in raw_set_cookie
+    assert "refresh_token=my_refresh_token" in raw_set_cookie
+
 
 @pytest.mark.parametrize('access_token,refresh_token,code, message', [
     (None, 'refresh_token', 400, "Incorrect username or password"),
