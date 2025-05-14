@@ -126,6 +126,10 @@ def test_get_access_token_fails(client, mock_user_service, access_token, refresh
     
     assert response.status_code == code
     assert response.json()['detail'] == message
+    assert "refresh_token" not in response.cookies
+    set_cookie = response.headers.get("set-cookie")
+    if set_cookie:
+        assert "refresh_token=" not in set_cookie
 
 @pytest.mark.parametrize('error,code,detail',[
     (TokenDecodeError("bad token"), 401, "Error during token registration process, token expired or invalid"),
