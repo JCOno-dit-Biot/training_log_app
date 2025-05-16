@@ -129,7 +129,7 @@ class UserController:
                     path="/refresh-token"     # Optional: restrict to refresh route
                 )
                 # register the refresh token as active session
-                self.userService.register_token_in_session(access_token)
+                self.userService.register_token_in_session(access_token, refresh_token["refresh_token"])
             return SessionTokenResponse.model_validate(access_token)     
         except TokenDecodeError as decoding_error:
             raise HTTPException(status_code=401, detail = "Error during token registration process, token expired or invalid")         

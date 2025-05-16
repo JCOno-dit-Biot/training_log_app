@@ -131,13 +131,13 @@ class UserRepository(IUserRepository):
         except PyJWTError as decoding_error:
              raise TokenDecodeError("Invalid or expired access token") from decoding_error 
 
-    def register_token_in_session(self, token: SessionTokenResponse):
+    def register_token_in_session(self, token: SessionTokenResponse, refresh_token):
         try:
             payload = jwt.decode(token.access_token, os.getenv("SECRET_KEY"), algorithms = os.getenv("ALGORITHM"))
         
             username = payload.get("sub")
-            if token.refresh_token is not None:
-                hashed_token = self.hash_token(token.refresh_token)
+            if refresh_token is not None:
+                hashed_token = self.hash_token(refresh_token)
             # Note: look at the case where refresh token is None
 
             refresh_token_expires = timedelta(days = int(os.getenv("REFRESH_TOKEN_EXPIRE_DAYS")))
