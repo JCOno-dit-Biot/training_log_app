@@ -27,7 +27,6 @@ export default function LoginPage() {
 
         try {
             const response = await getToken(formData)
-
             localStorage.setItem("email", username)
             localStorage.setItem("access_token", response.access_token)
                     

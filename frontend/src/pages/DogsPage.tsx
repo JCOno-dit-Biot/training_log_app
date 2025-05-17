@@ -14,13 +14,6 @@ export default function DogsPage() {
     <div className="p-4">
       <h1 className="text-3xl font-bold mb-6">Dogs</h1>
 
-      {/* Vertical list */}
-      {/* <div className="space-y-4">
-        {dogs.map(dog => (
-          <DogCard key={dog.id} dog={dog} />
-        ))}
-      </div> */}
-
       {/* Horizontal scroll option: */}
       <div className="flex space-x-2 overflow-x-auto pb-2">
         {dogs.map(dog => (
