@@ -1,7 +1,10 @@
+import os
+import logging
+
 from fastapi import Depends, APIRouter, Form, HTTPException, Query, status, Response, Request
 from fastapi_utils.cbv import cbv
 from fastapi.responses import JSONResponse
-from fastapi.security import OAuth2PasswordRequestForm
+from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
 from pydantic import ValidationError
 from jwt.exceptions import PyJWTError
 from auth.services.userService import UserService
@@ -12,6 +15,10 @@ from auth.models.customException import CustomValidationException, TokenDecodeEr
 from auth.models.customResponseModel import CustomResponseModel, SessionTokenResponse
 
 user_controller_router = APIRouter()
+oauth2_scheme = OAuth2PasswordBearer()
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
 
 @cbv(user_controller_router)
 class UserController:
@@ -123,7 +130,7 @@ class UserController:
                     key="refresh_token",
                     value=refresh_token["refresh_token"],
                     httponly=True,
-                    secure=True,        # Only over HTTPS
+                    secure= not (os.getenv("ENV") == "dev"),        # Only over HTTPS
                     samesite="strict",
                     max_age=7 * 24 * 60 * 60,  # 7 days
                     path="/refresh-token"     # Optional: restrict to refresh route
@@ -157,12 +164,12 @@ class UserController:
             raise HTTPException(status_code=500, detail=str(e)) 
 
     @user_controller_router.post("/refresh-token", response_model=SessionTokenResponse, status_code=200)
-    def refresh_token(self, request: Request, token: str = Query(...)):
+    def refresh_token(self, request: Request, token=Depends(oauth2_scheme)):
         '''
         Route to renew JWT tokens that have expired
         '''
         refresh_token = request.cookies.get("refresh_token")
-
+        
         if not refresh_token:
             raise HTTPException( status_code=status.HTTP_401_UNAUTHORIZED, detail = 'Missing refresh token')
         try:
