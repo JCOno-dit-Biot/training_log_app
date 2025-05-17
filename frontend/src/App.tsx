@@ -8,15 +8,13 @@ import LoginPage from './pages/LoginPage';
 import PrivateRoute from './components/PrivateRoutes';
 import Layout from './components/Layout';
 
-import './App.css';
+import './index.css';
 
 export default function App() {
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="p-4">
         <Routes>
           <Route path="/" element={<LoginPage />} />
-
            {/* Protected route with shared layout */}
           <Route path="/dashboard" element={<PrivateRoute><Layout><DashboardPage /></Layout></PrivateRoute>} />
           <Route path="/dogs" element={<PrivateRoute><Layout><DogsPage /></Layout></PrivateRoute>} />
@@ -24,7 +22,6 @@ export default function App() {
           {/* <Route path="/activities" element={<ActivitiesPage />} />
           <Route path="/weight" element={<WeightPage />} />  */}
         </Routes>
-      </div>
     </div>
   );
 }

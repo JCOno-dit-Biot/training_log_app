@@ -40,33 +40,33 @@ export default function LoginPage() {
 
     return(
         <div
-        className="min-h-screen bg-cover bg-center flex items-center justify-center"
+        className="h-screen w-screen bg-cover bg-center flex items-center justify-center"
         style={{ backgroundImage: `url(/background/canicross_bolt.jpg)` }}
         >
         <div className="max-w-md mx-auto mt-10 p-6 rounded shadow bg-white">
-        <h1 className="text-xl font-bold mb-4 text-center">Log In</h1>
-        <form onSubmit={handleLogin} className="space-y-4">
-            <input
-            type="text"
-            placeholder="Username"
-            className="w-full p-2 border rounded"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            required
-            />
-            <input
-            type="password"
-            placeholder="Password"
-            className="w-full p-2 border rounded"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            />
-            {error && <p className="text-red-500 text-sm">{error}</p>}
-            <button type="submit" className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700">
-            Login
-            </button>
-        </form>
+          <h1 className="text-xl font-bold mb-4 text-center">Log In</h1>
+          <form onSubmit={handleLogin} className="space-y-4">
+              <input
+              type="text"
+              placeholder="Username"
+              className="w-full p-2 border rounded"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              required
+              />
+              <input
+              type="password"
+              placeholder="Password"
+              className="w-full p-2 border rounded"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              />
+              {error && <p className="text-red-500 text-sm">{error}</p>}
+              <button type="submit" className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700">
+              Login
+              </button>
+          </form>
 
         <div className="mt-4 text-sm text=center space-y-2">
           <p>   
