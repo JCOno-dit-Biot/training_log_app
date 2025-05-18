@@ -15,7 +15,7 @@ from auth.models.customException import CustomValidationException, TokenDecodeEr
 from auth.models.customResponseModel import CustomResponseModel, SessionTokenResponse
 
 user_controller_router = APIRouter()
-oauth2_scheme = OAuth2PasswordBearer()
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="http://localhost:8001/token")
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
