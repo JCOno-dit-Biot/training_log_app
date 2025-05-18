@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getToken } from '../api/token';
+import { getToken } from '../api/auth/token';
 
 
 //{ onLogin }: { onLogin: () => void }
