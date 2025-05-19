@@ -6,61 +6,68 @@ import { useNavigate } from "react-router-dom";
 
 export default function Register() {
 
-    const [username, setUsername] = useState('');
-    const [password, setPassword] = useState('');
-    const [kennels, setKennels] = useState<Kennel[]>([]);
-    const [kennelQuery, setKennelQuery] = useState('');
-    const [filteredKennels, setFilteredKennels] = useState<Kennel[]>([]);
-    const [addNewMode, setAddNewMode] = useState(false);
-    const [newKennelName, setNewKennelName] = useState('');
-    const [error, setError] = useState('');
-    const navigate = useNavigate();
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [kennels, setKennels] = useState<Kennel[]>([]);
+  const [kennelQuery, setKennelQuery] = useState('');
+  const [filteredKennels, setFilteredKennels] = useState<Kennel[]>([]);
+  const [addNewMode, setAddNewMode] = useState(false);
+  const [newKennelName, setNewKennelName] = useState('');
+  const [success, setSuccess] = useState(false)
+  const [error, setError] = useState('');
+  const navigate = useNavigate();
 
-    useEffect(() => { getKennels()
-        .then(res => setKennels(res))
-        .catch(() => setKennels([]));
-    }, []);
+  useEffect(() => {
+    getKennels()
+      .then(res => setKennels(res))
+      .catch(() => setKennels([]));
+  }, []);
 
-    useEffect(() => {
-        const filtered = kennels.filter(k =>
-        k.name.toLowerCase().includes(kennelQuery.toLowerCase())
-        );
-        setFilteredKennels(filtered);
-    }, [kennelQuery, kennels]);
+  useEffect(() => {
+    const filtered = kennels.filter(k =>
+      k.name.toLowerCase().includes(kennelQuery.toLowerCase())
+    );
+    setFilteredKennels(filtered);
+  }, [kennelQuery, kennels]);
 
-    const handleSelectKennel = (kennel: string) => {
-      setKennelQuery(kennel);
-      setFilteredKennels([]);
-    };
+  const handleSelectKennel = (kennel: string) => {
+    setKennelQuery(kennel);
+    setFilteredKennels([]);
+  };
 
-    const onRegister = async (e: React.FocusEvent) => {
-        e.preventDefault();
-        setError('')
+  const onRegister = async (e: React.FocusEvent) => {
+    e.preventDefault();
+    setError('')
 
-        const kennel_name = addNewMode ? newKennelName : kennelQuery;
-        
-        if (!kennel_name) {
-            setError('Please select or enter a kennel name.');
-            return;
-        }
-        
-        const formData = new URLSearchParams();
-        formData.append('email', username); // if email is used instead of "username"
-        formData.append('password', password);
-        formData.append('kennel_name', kennel_name);
+    const kennel_name = addNewMode ? newKennelName : kennelQuery;
+
+    if (!kennel_name) {
+      setError('Please select or enter a kennel name.');
+      return;
+    }
+
+    const formData = new URLSearchParams();
+    formData.append('email', username); // if email is used instead of "username"
+    formData.append('password', password);
+    formData.append('kennel_name', kennel_name);
 
 
-        try{
-            register(formData,
-            );
-            navigate('/');
+    try {
+      const res = await register(formData);
 
-        } catch (err: any) {
-            setError(err.response?.data?.detail || 'Registration failed');
-        }
-    };
-    return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-100 p-4">
+      if (res.status_code === 201) {
+        setSuccess(true);
+        setTimeout(() => navigate('/'), 5000); // redirect after 10s
+      } else {
+        setError('Unexpected response from server.');
+      }
+    } catch (err: any) {
+      setError(err.response?.data?.detail || 'Registration failed');
+    }
+
+  };
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gray-100 p-4">
       <div className="bg-white p-6 rounded-lg shadow-md w-full max-w-md">
         <h2 className="text-2xl font-bold mb-4 text-center">Register</h2>
 
@@ -138,6 +145,11 @@ export default function Register() {
             Register
           </button>
         </form>
+        {success && (
+          <div className="mt-4 p-4 bg-green-100 border border-green-400 text-green-700 rounded">
+            Account created successfully! Redirecting to login in 5 seconds...
+          </div>
+        )}
 
         <p className="mt-4 text-center text-sm">
           Already have an account?{' '}

@@ -2,7 +2,7 @@
 import axios from './authAxios';
 
 
-export const register = async (payload: Object): Promise<string>=> {
+export const register = async (payload: URLSearchParams): Promise<{data: string, status_code: number}>=> {
   const res = await axios.post(
     '/register',
     payload,
@@ -11,5 +11,5 @@ export const register = async (payload: Object): Promise<string>=> {
     }}
   );
 
-  return res.data;
+  return {data: res.data, status_code: res.status};
 };
