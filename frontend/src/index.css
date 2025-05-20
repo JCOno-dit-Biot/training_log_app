@@ -9,7 +9,7 @@
   color-scheme: light dark;
   color: rgba(255, 255, 255, 0.87);
   background-color: #242424;
-
+       
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -46,6 +46,20 @@ body {
 h1 {
   font-size: 3.2em;
   line-height: 1.1;
+}
+
+
+@theme {
+  --color-primary: #2D4A26; 
+  --color-secondary: #A5BDA2; 
+
+  --color-charcoal: #1B1B1B; 
+  --color-cream: #F5F2EA;   
+  --color-stone: #8C8C8C;    
+
+  --color-success: #5D9B4B;
+  --color-warning: #E7B343;
+  --color-error: #C94C4C;
 }
 
 @media (prefers-color-scheme: light) {
