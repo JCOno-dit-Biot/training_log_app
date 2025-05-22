@@ -1,9 +1,10 @@
-import Navbar from './Navbar';
+import Sidebar from './sidebar/Sidebar';
 import React from 'react';
+
 export default function Layout({ children }: { children: React.JSX.Element }) {
   return (
     <>
-      <Navbar />
+      <Sidebar />
       <main className="p-4">{children}</main>
     </>
   );
