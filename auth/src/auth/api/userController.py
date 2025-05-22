@@ -133,7 +133,7 @@ class UserController:
                     secure= not (os.getenv("ENV") == "dev"),        # Only over HTTPS
                     samesite="strict",
                     max_age=7 * 24 * 60 * 60,  # 7 days
-                    path="/refresh-token"     # Optional: restrict to refresh route
+                    path="/auth"     # Optional: restrict to auth prefix (used in refresh-token and logout)
                 )
                 # register the refresh token as active session
                 self.userService.register_token_in_session(access_token, refresh_token["refresh_token"])
