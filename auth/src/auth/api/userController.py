@@ -183,11 +183,16 @@ class UserController:
             raise HTTPException(status_code=500, detail=str(e)) 
         
     @user_controller_router.post("/logout", status_code=200)
-    def logout(self, refresh_token: str = Form(...)):
+    def logout(self, request: Request, response: Response):
+        refresh_token = request.cookies.get("refresh_token")
         try:
             self.userService.logout(refresh_token)
-            return JSONResponse(content = "Success")
         except Exception as e:
-            raise HTTPException(status_code=500, detail=str(e)) 
+            pass
+              
+        # Remove the cookie from the client regardless
+        response.delete_cookie(key="refresh_token", path="/auth", httponly=True)
+
+        return {"message": "Logged out successfully"}
 
         

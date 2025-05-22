@@ -78,7 +78,7 @@ def test_get_refresh_token(mock_user_repo, user_service):
 
 def test_register_token_in_session(user_service, mock_user_repo):
     token = MagicMock()
-    user_service.register_token_in_session(token)
+    user_service.register_token_in_session(token, 'my_token')
     mock_user_repo.register_token_in_session.assert_called_once()
 
 def test_delete_all_active_session(user_service, mock_user_repo):

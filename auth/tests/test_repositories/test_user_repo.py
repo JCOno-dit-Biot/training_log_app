@@ -206,9 +206,9 @@ def test_register_token_in_session(user_repo):
         data={'sub': 'john@domain.com', 'kennel_id': 1},
         expires_delta=timedelta(minutes=60)
     )
-    token.refresh_token = user_repo.generate_refresh_token()
+    refresh_token = user_repo.generate_refresh_token()
 
-    user_repo.register_token_in_session(token)
+    user_repo.register_token_in_session(token, refresh_token)
 
     with user_repo.connection.cursor() as cur:
         cur.execute("SELECT * FROM refresh_tokens WHERE user_id = \
@@ -223,7 +223,7 @@ def test_decode_token_raises_token_decode_error(user_repo):
 
     with patch("auth.repositories.userRepository.jwt.decode", side_effect=jwt.PyJWTError("bad token")):
         with pytest.raises(TokenDecodeError) as exc_info:
-            user_repo.register_token_in_session(token)
+            user_repo.register_token_in_session(token, 'my_refresh_token')
         assert "Invalid access token" in str(exc_info.value)
         assert isinstance(exc_info.value.__cause__, jwt.PyJWTError)
 

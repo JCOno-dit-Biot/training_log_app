@@ -98,8 +98,6 @@ def test_get_access_token(client, mock_user_service):
     assert response.json()['access_token'] == 'my_jwt_token'
     
     cookies = response.cookies
-    print(cookies.get("refresh_token"))
-
     assert "refresh_token" in cookies
     assert cookies.get("refresh_token") == "my_refresh_token"
 
@@ -176,27 +174,38 @@ def test_refresh_token(client, mock_user_service):
     mock_user_service.refresh_access_token.return_value = SessionTokenResponse(
         access_token = 'my_new_jwt'
     )
-    response = client.post("/refresh-token", params =
-                           {'token':'current_jwt'})
+    response = client.post("/refresh-token", headers = {"Authorization": "Bearer my token"})
     assert response.status_code == 200
     assert response.json()['access_token'] == 'my_new_jwt'
     
 def test_refresh_token_invalid(client, mock_user_service):
     client.cookies.set("refresh_token", 'my_refresh_token')
     mock_user_service.refresh_access_token.return_value = None
-    response = client.post("/refresh-token", params =
-                           {'token':'current_jwt'})
+    response = client.post("/refresh-token",
+                           headers = {"Authorization": "Bearer my token"})
     assert response.status_code == 401
     assert response.json()['detail'] == "Invalid refresh token"
 
 def test_refresh_token_missing(client, mock_user_service):
-    response = client.post("/refresh-token", params =
-                           {'token':'current_jwt'}
+    response = client.post("/refresh-token", 
+                           headers = {"Authorization": "Bearer my token"}
                            )
     assert response.status_code == 401
     assert response.json()['detail'] == "Missing refresh token"
 
 def test_logout(client, mock_user_service):
+    client.cookies.set("refresh_token", 'my_refresh_token_for_logout')
     mock_user_service.logout.return_value = {'content':'Success'}
-    response = client.post("/logout", data = {'refresh_token': 'token'})
+    response = client.post("/logout")
     assert response.status_code ==200
+
+    #check that the cookie is deleted
+    set_cookie = response.headers.get("set-cookie")
+    assert set_cookie is not None
+    assert "refresh_token=" in set_cookie
+    assert "Max-Age=0" in set_cookie or "expires=Thu, 01 Jan 1970" in set_cookie
+
+def test_lougout_no_cookies(client, mock_user_service):
+    response = client.post("/logout")
+    assert response.status_code ==200
+    assert response.json()["message"] == 'Logged out successfully'
