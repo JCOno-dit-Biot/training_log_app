@@ -110,3 +110,31 @@ CREATE TABLE IF NOT EXISTS "refresh_tokens" (
     CONSTRAINT "refrehs_tokens_pkey" PRIMARY KEY ("user_id", "hashed_refresh_token"),
     CONSTRAINT "refresh_rokens_fkey_userid_id" FOREIGN KEY ("user_id") REFERENCES "users"("id")
 );
+
+-- Create function to enfore a maximum number of active session for a user
+CREATE OR REPLACE FUNCTION enforce_token_limit()
+RETURNS TRIGGER AS $$
+BEGIN
+ IF (
+ SELECT COUNT(*)
+    FROM refresh_tokens
+    WHERE user_id = NEW.user_id
+  ) >= 3 THEN
+    DELETE FROM refresh_tokens
+    WHERE ctid IN (
+      SELECT ctid
+      FROM refresh_tokens
+      WHERE user_id = NEW.user_id
+      ORDER BY expires_on ASC
+      LIMIT 1
+    );
+  END IF;
+RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Create trigger
+CREATE TRIGGER trigger_enforce_token_limit
+BEFORE INSERT ON refresh_tokens
+FOR EACH ROW
+EXECUTE FUNCTION enforce_token_limit();
