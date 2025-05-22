@@ -87,7 +87,7 @@ def test_get_access_token(client, mock_user_service):
     mock_user_service.get_access_token.return_value = SessionTokenResponse(
         access_token = 'my_jwt_token'
     )
-    mock_user_service.get_refresh_token.return_value = { 'refresh_token':'my_refresh_token'}
+    mock_user_service.get_refresh_token.return_value = {'refresh_token':'my_refresh_token'}
     mock_user_service.register_token_in_session.return_value = None # no return value
 
     response = client.post("/token", data =
@@ -96,7 +96,16 @@ def test_get_access_token(client, mock_user_service):
    
     assert response.status_code == 201
     assert response.json()['access_token'] == 'my_jwt_token'
-    assert response.json()['refresh_token'] == 'my_refresh_token'
+    
+    cookies = response.cookies
+    assert "refresh_token" in cookies
+    assert cookies.get("refresh_token") == "my_refresh_token"
+
+    raw_set_cookie = response.headers.get("set-cookie")
+    assert "HttpOnly" in raw_set_cookie
+    assert "Secure" in raw_set_cookie
+    assert "refresh_token=my_refresh_token" in raw_set_cookie
+
 
 @pytest.mark.parametrize('access_token,refresh_token,code, message', [
     (None, 'refresh_token', 400, "Incorrect username or password"),
@@ -115,6 +124,10 @@ def test_get_access_token_fails(client, mock_user_service, access_token, refresh
     
     assert response.status_code == code
     assert response.json()['detail'] == message
+    assert "refresh_token" not in response.cookies
+    set_cookie = response.headers.get("set-cookie")
+    if set_cookie:
+        assert "refresh_token=" not in set_cookie
 
 @pytest.mark.parametrize('error,code,detail',[
     (TokenDecodeError("bad token"), 401, "Error during token registration process, token expired or invalid"),
@@ -157,24 +170,42 @@ def test_validate_token_raises(client, mock_user_service, error, code, detail):
     assert detail in response.json()["detail"]
 
 def test_refresh_token(client, mock_user_service):
+    client.cookies.set("refresh_token", 'my_refresh_token')
     mock_user_service.refresh_access_token.return_value = SessionTokenResponse(
         access_token = 'my_new_jwt'
     )
-    response = client.post("/refresh-token", params =
-                           {'token':'current_jwt',
-                            'refresh_token': "my_refresh_token"})
+    response = client.post("/refresh-token", headers = {"Authorization": "Bearer my token"})
     assert response.status_code == 200
     assert response.json()['access_token'] == 'my_new_jwt'
     
 def test_refresh_token_invalid(client, mock_user_service):
+    client.cookies.set("refresh_token", 'my_refresh_token')
     mock_user_service.refresh_access_token.return_value = None
-    response = client.post("/refresh-token", params =
-                           {'token':'current_jwt',
-                            'refresh_token': "my_refresh_token"})
-    assert response.status_code == 400
+    response = client.post("/refresh-token",
+                           headers = {"Authorization": "Bearer my token"})
+    assert response.status_code == 401
     assert response.json()['detail'] == "Invalid refresh token"
 
+def test_refresh_token_missing(client, mock_user_service):
+    response = client.post("/refresh-token", 
+                           headers = {"Authorization": "Bearer my token"}
+                           )
+    assert response.status_code == 401
+    assert response.json()['detail'] == "Missing refresh token"
+
 def test_logout(client, mock_user_service):
+    client.cookies.set("refresh_token", 'my_refresh_token_for_logout')
     mock_user_service.logout.return_value = {'content':'Success'}
-    response = client.post("/logout", data = {'refresh_token': 'token'})
+    response = client.post("/logout")
     assert response.status_code ==200
+
+    #check that the cookie is deleted
+    set_cookie = response.headers.get("set-cookie")
+    assert set_cookie is not None
+    assert "refresh_token=" in set_cookie
+    assert "Max-Age=0" in set_cookie or "expires=Thu, 01 Jan 1970" in set_cookie
+
+def test_lougout_no_cookies(client, mock_user_service):
+    response = client.post("/logout")
+    assert response.status_code ==200
+    assert response.json()["message"] == 'Logged out successfully'

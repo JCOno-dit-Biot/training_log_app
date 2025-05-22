@@ -21,7 +21,7 @@ app.add_middleware(
     allow_methods=["*"],             # allow all HTTP methods
     allow_headers=["*"],             # allow all headers
 )
-app.include_router(user_controller_router, tags=["Users"])
+app.include_router(user_controller_router, tags=["Users"], prefix= '/auth')
 
 def main():
     uvicorn.run(

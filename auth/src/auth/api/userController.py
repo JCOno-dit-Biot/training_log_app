@@ -1,7 +1,10 @@
-from fastapi import Depends, APIRouter, Form, HTTPException, Query, status
+import os
+import logging
+
+from fastapi import Depends, APIRouter, Form, HTTPException, Query, status, Response, Request
 from fastapi_utils.cbv import cbv
 from fastapi.responses import JSONResponse
-from fastapi.security import OAuth2PasswordRequestForm
+from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
 from pydantic import ValidationError
 from jwt.exceptions import PyJWTError
 from auth.services.userService import UserService
@@ -12,6 +15,10 @@ from auth.models.customException import CustomValidationException, TokenDecodeEr
 from auth.models.customResponseModel import CustomResponseModel, SessionTokenResponse
 
 user_controller_router = APIRouter()
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="http://localhost:8001/token")
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
 
 @cbv(user_controller_router)
 class UserController:
@@ -96,7 +103,7 @@ class UserController:
             raise HTTPException(status_code=500, detail=str(e)) 
 
     @user_controller_router.post("/token", response_model=SessionTokenResponse, status_code = 201)
-    def get_token(self, form_data: OAuth2PasswordRequestForm = Depends()):
+    def get_token(self, response: Response, form_data: OAuth2PasswordRequestForm = Depends()):
         ''' 
         Route to get a JWT and a refresh token. JWT expires on a short time scale, refresh tokens are long lived and can be used to regenerate a new JWT token.
         Refresh tokens should be kept securely
@@ -118,9 +125,18 @@ class UserController:
                 refresh_token = self.userService.get_refresh_token(form_data)
                 if refresh_token["refresh_token"] is None:
                     raise HTTPException(status_code=400, detail = "Unable to generate refresh token")       
-                access_token.refresh_token = refresh_token["refresh_token"]   
+                
+                response.set_cookie(
+                    key="refresh_token",
+                    value=refresh_token["refresh_token"],
+                    httponly=True,
+                    secure= not (os.getenv("ENV") == "dev"),        # Only over HTTPS
+                    samesite="strict",
+                    max_age=7 * 24 * 60 * 60,  # 7 days
+                    path="/auth"     # Optional: restrict to auth prefix (used in refresh-token and logout)
+                )
                 # register the refresh token as active session
-                self.userService.register_token_in_session(access_token)
+                self.userService.register_token_in_session(access_token, refresh_token["refresh_token"])
             return SessionTokenResponse.model_validate(access_token)     
         except TokenDecodeError as decoding_error:
             raise HTTPException(status_code=401, detail = "Error during token registration process, token expired or invalid")         
@@ -148,14 +164,18 @@ class UserController:
             raise HTTPException(status_code=500, detail=str(e)) 
 
     @user_controller_router.post("/refresh-token", response_model=SessionTokenResponse, status_code=200)
-    def refresh_token(self, token: str = Query(...), refresh_token: str = Query(...)):
+    def refresh_token(self, request: Request, token=Depends(oauth2_scheme)):
         '''
         Route to renew JWT tokens that have expired
         '''
+        refresh_token = request.cookies.get("refresh_token")
+        
+        if not refresh_token:
+            raise HTTPException( status_code=status.HTTP_401_UNAUTHORIZED, detail = 'Missing refresh token')
         try:
             access_token = self.userService.refresh_access_token(token, refresh_token)
             if access_token is None:
-                raise HTTPException(status_code=400, detail= "Invalid refresh token")
+                raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail= "Invalid refresh token")
             return SessionTokenResponse.model_validate(access_token)
         except HTTPException: 
             raise
@@ -163,11 +183,16 @@ class UserController:
             raise HTTPException(status_code=500, detail=str(e)) 
         
     @user_controller_router.post("/logout", status_code=200)
-    def logout(self, refresh_token: str = Form(...)):
+    def logout(self, request: Request, response: Response):
+        refresh_token = request.cookies.get("refresh_token")
         try:
             self.userService.logout(refresh_token)
-            return JSONResponse(content = "Success")
         except Exception as e:
-            raise HTTPException(status_code=500, detail=str(e)) 
+            pass
+              
+        # Remove the cookie from the client regardless
+        response.delete_cookie(key="refresh_token", path="/auth", httponly=True)
+
+        return {"message": "Logged out successfully"}
 
         
