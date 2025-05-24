@@ -56,7 +56,7 @@ api.interceptors.response.use(
 
       try {
         const refreshRes = await axios.post(
-          `${import.meta.env.VITE_AUTH_API_URL || 'http://localhost:8001'}/refresh-token`,
+          `${import.meta.env.VITE_AUTH_API_URL || 'http://localhost:8001/auth'}/refresh-token`,
           null,
           { withCredentials: true ,
             headers: {Authorization: `Bearer ${expiredToken}`}
