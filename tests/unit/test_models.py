@@ -1,7 +1,9 @@
-from src.models import Activity, Dog, Kennel, Runner, DogWeightEntry, Sport, ActivityLaps, ActivityDogs
+from src.models import Activity, Dog, Kennel, Runner, DogWeightEntry, Sport, ActivityLaps, ActivityDogs, Weather
 import pytest
+from pydantic import ValidationError
 from datetime import datetime, date
 from src import calculation_helpers as ch
+
 
 
 @pytest.fixture
@@ -143,8 +145,23 @@ def test_activity_workout_with_lap(JC, Luna):
     assert workout.laps[1].speed == pytest.approx(18)
 
 
+def test_weather_init():
+    weather = Weather(
+        temperature=20.9,
+        humidity=0.78,
+        condition="Sunny"
+    )
+    assert weather.temperature == 20.9
+    assert weather.humidity == 0.78
+    assert weather.condition == "Sunny"
 
-
-
+@pytest.mark.parametrize("humidity", [(-0.1), (1.1)])
+def test_weather_humidity_raises(humidity):
+    with pytest.raises(ValidationError):
+        weather = Weather(
+                temperature=20.9,
+                humidity=humidity,
+                condition="Sunny"
+            )
 
 
