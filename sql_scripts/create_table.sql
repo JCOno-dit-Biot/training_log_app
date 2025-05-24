@@ -75,11 +75,21 @@ CREATE TABLE IF NOT EXISTS "activity_dogs"(
 
 CREATE TABLE IF NOT EXISTS "workout_laps" (
     "id" SERIAL,
-    "activity_id"INTEGER, -- think about adding a constraint so workout must be true in activity table
+    "activity_id" INTEGER, -- think about adding a constraint so workout must be true in activity table
     "lap_number" INTEGER,
     "speed" FLOAT,
     CONSTRAINT "workout_laps_pkey" PRIMARY KEY ("id"),
     CONSTRAINT "workoutlaps_fkey_activityid_id" FOREIGN KEY ("activity_id") REFERENCES "activities"("id")
+);
+
+CREATE TABLE IF NOT EXISTS "weather_entries" (
+    "id" SERIAL,
+    "activity_id" INTEGER,
+    "temperature" FLOAT,
+    "humidity" FLOAT,
+    "condition" TEXT, -- weather description sunny, cloudy etc...
+    CONSTRAINT "weather_pkey" PRIMARY KEY ("id"),
+    CONSTRAINT "weather_fkey_activityid_id" FOREIGN KEY ("activity_id") REFERENCES "activities"("id")
 );
 
 CREATE TABLE IF NOT EXISTS "weight_entries" (
