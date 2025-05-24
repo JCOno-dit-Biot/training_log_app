@@ -1,15 +1,13 @@
 import { Routes, Route } from 'react-router-dom';
-// import Navbar from './components/Navbar';
-
 import DashboardPage from './pages/DashboardPage';
-import DogsPage from './pages/DogsPage';
-import RunnersPage from './pages/RunnersPage';
+import MyKennelPage from './pages/MyKennelPage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage'
 import PrivateRoute from './components/PrivateRoutes';
 import Layout from './components/Layout';
 
 import './index.css';
+
 
 export default function App() {
   return (
@@ -19,8 +17,8 @@ export default function App() {
           <Route path="/register" element={<RegisterPage />} />
            {/* Protected route with shared layout */}
           <Route path="/dashboard" element={<PrivateRoute><Layout><DashboardPage /></Layout></PrivateRoute>} />
-          <Route path="/dogs" element={<PrivateRoute><Layout><DogsPage /></Layout></PrivateRoute>} />
-          <Route path="/runners" element={<PrivateRoute><Layout><RunnersPage /></Layout></PrivateRoute>} />
+          <Route path="/kennel" element={<PrivateRoute><Layout><MyKennelPage /></Layout></PrivateRoute>} />
+         
           {/* <Route path="/activities" element={<ActivitiesPage />} />
           <Route path="/weight" element={<WeightPage />} />  */}
         </Routes>
