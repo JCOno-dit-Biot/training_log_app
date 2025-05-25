@@ -12,7 +12,7 @@ def activity_entry(JC):
     training_entry= Activity (
         timestamp = datetime.now(),
         runner = JC,
-        sport = Sport(name= 'Canicross'),
+        sport = Sport(name= 'Canicross', type= 'dryland'),
         location = 'Christie',
         distance = 2.4,
         workout = False,
@@ -75,7 +75,7 @@ def test_activity_no_pace_if_not_running(JC, Luna):
     bike_activity = Activity (
         timestamp = datetime.now(),
         runner = JC,
-        sport = Sport(name= 'Bikejoring'),
+        sport = Sport(name= 'Bikejoring', type= 'dryland'),
         speed = 21.9,
         location = 'Christie',
         distance = 2.4,
@@ -93,7 +93,7 @@ def test_no_speed_pace_raises_ValError(JC):
         training_entry= Activity (
         timestamp = datetime.now(),
         runner = JC,
-        sport = Sport(name= 'Canicross'),
+        sport = Sport(name= 'Canicross', type= 'dryland'),
         location = 'Christie',
         distance = 2.4,
         workout = False
@@ -104,7 +104,7 @@ def test_activity_workout_without_lap_raise():
         training_entry= Activity (
         timestamp = datetime.now(),
         runner = JC,
-        sport = Sport(name= 'Canicross'),
+        sport = Sport(name= 'Canicross', type= 'dryland'),
         location = 'Christie',
         distance = 2.4,
         workout = True,
@@ -118,7 +118,7 @@ def test_activity_workout_with_lap(JC, Luna):
     workout = Activity (
         timestamp = datetime.now(),
         runner = JC,
-        sport = Sport(name= 'Canicross'),
+        sport = Sport(name= 'Canicross', type= 'dryland'),
         location = 'Christie',
         distance = 2.4,
         workout = True,
@@ -164,4 +164,8 @@ def test_weather_humidity_raises(humidity):
                 condition="Sunny"
             )
 
-
+def test_weather_no_t_humidity_raise():
+    with pytest.raises(ValueError):
+        weather = Weather (
+            condition = "wet"
+        )
