@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field, field_validator, model_validator
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Optional, List
 from .runner import Runner
 from .sport import Sport
@@ -51,13 +51,17 @@ class Activity(BaseModel):
     
 class ActivityLaps(BaseModel):
     lap_number: int
+    lap_distance: float
+    lap_time: str
+    lap_time_delta: Optional[timedelta] = None
     speed: Optional[float] = Field(None, description="Speed in km per hours")
     pace: Optional[str] = Field(None, description="Pace in min per km")
 
     @model_validator(mode="after")
-    def ensure_at_least_one_metric(cls, values):
-        if values.speed is None and values.pace is None:
-            raise ValueError(f"At least one of 'speed' or 'pace' must be provided the activity")
+    def calculate_speed_from_time_distance(cls, values):
+        if values.lap_distance is not None and values.lap_time is not None:
+            values.lap_time_delta = ch.convert_str_time_to_timedelta(values.lap_time)
+            values.speed = ch.calculate_speed_from_time_distance(values.lap_distance, values.lap_time)
         return values
 
     @model_validator(mode="after")

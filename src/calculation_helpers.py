@@ -2,6 +2,29 @@ import numpy as np
 from datetime import datetime, timedelta
 from . import constants as c
 
+def convert_str_time_to_timedelta(time_str) -> timedelta:
+    if isinstance(time_str, str):
+        try:
+            # Try to parse as H:MM:SS format
+            if ":" in time_str:
+                parts = time_str.split(":")
+                if len(parts) == 2:  # MM:SS
+                    minutes, seconds = map(int, parts)
+                    time_delta = timedelta(seconds=seconds, minutes=minutes)
+                elif len(parts) == 3:  # H:MM:SS
+                    hours, minutes, seconds = map(int, parts)
+                    time_delta = timedelta(seconds=seconds, minutes=minutes, hours=hours)
+                else:
+                    raise ValueError(f"Invalid timeformat: {time_str}")
+            else:
+                raise ValueError(f"time string must include colons: {time_str}")
+        except ValueError as e:
+            raise ValueError(f"Error parsing time '{time_str}': {e}")
+    else:
+        raise TypeError(f"Time must be a string or a number, got {type(time_str)}")
+    
+    return time_delta
+
 def calculate_speed_from_pace(pace):
 
     """
@@ -11,36 +34,19 @@ def calculate_speed_from_pace(pace):
     :return: Speed in kilometers per hour (float).
     :raises ValueError: If the input pace is invalid.
     """
-    SEC_IN_HOUR = 3600
-    MIN_TO_SEC = 60
-
-    if isinstance(pace, str):
-        try:
-            # Try to parse as H:MM:SS format
-            if ":" in pace:
-                parts = pace.split(":")
-                if len(parts) == 2:  # MM:SS
-                    minutes, seconds = map(int, parts)
-                    total_seconds = minutes * MIN_TO_SEC + seconds
-                elif len(parts) == 3:  # H:MM:SS
-                    hours, minutes, seconds = map(int, parts)
-                    total_seconds = hours * SEC_IN_HOUR + minutes * MIN_TO_SEC + seconds
-                else:
-                    raise ValueError(f"Invalid pace format: {pace}")
-            else:
-                raise ValueError(f"Pace string must include colons: {pace}")
-        except ValueError as e:
-            raise ValueError(f"Error parsing pace '{pace}': {e}")
-    elif isinstance(pace, (int, float)):
-        # Assume pace is given in minutes per kilometer
-        total_seconds = pace * MIN_TO_SEC
-    else:
-        raise TypeError(f"Pace must be a string or a number, got {type(pace)}")
+    try:
+        total_seconds = convert_str_time_to_timedelta(pace).total_seconds()
+    except TypeError as type_error:
+        if isinstance(pace, (int, float)):
+            # Assume pace is given in minutes per kilometer
+            total_seconds = pace * c.MIN_TO_SEC
+        else:
+            raise TypeError(f"Pace must be a string or a number, got {type(pace)}")
 
     if total_seconds <= 0:
         raise ValueError("Pace must be greater than 0")
 
-    speed = SEC_IN_HOUR / total_seconds
+    speed = c.SEC_IN_HOUR / total_seconds
     return round(speed, 2)
 
 def calculate_pace_from_speed(speed):
@@ -64,3 +70,8 @@ def calculate_pace_from_speed(speed):
         raise TypeError("speed must be a float")
 
         
+def calculate_speed_from_time_distance(distance: float, time: str):
+
+    total_seconds = convert_str_time_to_timedelta(time).total_seconds()
+
+    return distance / total_seconds * c.SEC_IN_HOUR

@@ -1,7 +1,7 @@
 from src.models import Activity, Dog, Kennel, Runner, DogWeightEntry, Sport, ActivityLaps, ActivityDogs, Weather
 import pytest
 from pydantic import ValidationError
-from datetime import datetime, date
+from datetime import datetime, date, timedelta
 from src import calculation_helpers as ch
 
 
@@ -113,6 +113,19 @@ def test_activity_workout_without_lap_raise():
 def test_activity_lap_no_speed_raise():
  with pytest.raises(ValueError):
     ActivityLaps(lap_number=1)
+
+
+def test_activity_lap_with_time_distance():
+    activitylap = ActivityLaps(
+        lap_number = 1,
+        lap_distance = 1,
+        lap_time= '3:00'
+    )
+
+    assert activitylap.speed == 20
+    assert activitylap.pace == "03:00"
+    assert activitylap.lap_time_delta is not None
+    assert activitylap.lap_time_delta == timedelta(minutes=3)
 
 def test_activity_workout_with_lap(JC, Luna):
     workout = Activity (
