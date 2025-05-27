@@ -78,6 +78,8 @@ CREATE TABLE IF NOT EXISTS "workout_laps" (
     "id" SERIAL,
     "activity_id" INTEGER, -- think about adding a constraint so workout must be true in activity table
     "lap_number" INTEGER,
+    "lap_distance" FLOAT,
+    "lap_time" INTERVAL,
     "speed" FLOAT,
     CONSTRAINT "workout_laps_pkey" PRIMARY KEY ("id"),
     CONSTRAINT "workoutlaps_fkey_activityid_id" FOREIGN KEY ("activity_id") REFERENCES "activities"("id")
