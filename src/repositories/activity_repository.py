@@ -21,6 +21,7 @@ class activity_repository(abstract_repository):
                             r.name AS runner_name,
                             s.name AS sport_name,
                             k.name AS kennel_name,
+                            s.type AS sport_type,
                             k.id as kennel_id,
                             -- Aggregate dogs
                             json_agg(DISTINCT jsonb_build_object(
@@ -34,7 +35,9 @@ class activity_repository(abstract_repository):
                             -- Aggregate laps (only if workout is true)
                             json_agg(DISTINCT jsonb_build_object(
                                 'lap_number', wl.lap_number,
-                                'speed', wl.speed
+                                'speed', wl.speed,
+                                'lap_time', wl.lap_time,
+                                'lap_distance', wl.lap_distance
                             )) FILTER (WHERE wl.id IS NOT NULL) AS laps
                         FROM activities a
                         JOIN runners r ON a.runner_id = r.id
@@ -47,7 +50,7 @@ class activity_repository(abstract_repository):
                         GROUP BY 
                         a.id, a.runner_id, a.sport_id, a.timestamp, a.notes, a.location,
                         a.workout, a.speed, a.distance,
-                        r.name, s.name, k.name, k.id
+                        r.name, s.name, s.type, k.name, k.id
                     """
             cur.execute(query, (kennel_id,))
             activities = []
@@ -64,6 +67,7 @@ class activity_repository(abstract_repository):
                             a.*, 
                             r.name AS runner_name,
                             s.name AS sport_name,
+                            s.type AS sport_type,
                             k.name AS kennel_name,
                             k.id as kennel_id,
                             -- Aggregate dogs
@@ -78,7 +82,9 @@ class activity_repository(abstract_repository):
                             -- Aggregate laps (only if workout is true)
                             json_agg(DISTINCT jsonb_build_object(
                                 'lap_number', wl.lap_number,
-                                'speed', wl.speed
+                                'speed', wl.speed,
+                                'lap_time', wl.lap_time,
+                                'lap_distance', wl.lap_distance
                             )) FILTER (WHERE wl.id IS NOT NULL) AS laps
                         FROM activities a
                         JOIN runners r ON a.runner_id = r.id
@@ -91,7 +97,7 @@ class activity_repository(abstract_repository):
                         GROUP BY 
                         a.id, a.runner_id, a.sport_id, a.timestamp, a.notes, a.location,
                         a.workout, a.speed, a.distance,
-                        r.name, s.name, k.name, k.id
+                        r.name, s.name, s.type, k.name, k.id
                     """
             cur.execute(query, (activity_id,))
             row = cur.fetchone()
@@ -128,9 +134,9 @@ class activity_repository(abstract_repository):
                 if len(activity.laps) > 0:
                     for lap in activity.laps:
                         cur.execute("""
-                            INSERT INTO workout_laps (activity_id, lap_number, speed)
-                            VALUES (%s, %s, %s)
-                        """, (activity_id, lap.lap_number, lap.speed,))
+                            INSERT INTO workout_laps (activity_id, lap_number, lap_time, lap_distance, speed)
+                            VALUES (%s, %s, %s, %s, %s)
+                        """, (activity_id, lap.lap_number, lap.lap_time_delta, lap.lap_distance, lap.speed,))
 
             except Exception as e:
                 print(e)
