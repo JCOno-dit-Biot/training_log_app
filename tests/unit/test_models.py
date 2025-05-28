@@ -157,8 +157,49 @@ def test_activity_workout_with_lap(JC, Luna):
     assert all([x.speed is not None for x in workout.laps])
     assert all([x.pace is not None for x in workout.laps])
     assert workout.laps[0].pace == "03:17" # there is a rounding error going through speed to pace
+    assert workout.laps[0].lap_time_delta == timedelta(minutes = 3, seconds = 18)
+    assert workout.laps[0].lap_distance == 1
     assert workout.laps[1].speed == pytest.approx(18)
 
+def test_from_lap_time_and_distance():
+    lap = ActivityLaps(lap_number=1, lap_distance=1.0, lap_time="05:00")
+    assert lap.lap_time_delta == timedelta(minutes=5)
+    assert round(lap.speed, 2) == 12.0
+    assert lap.pace == "05:00"
+
+def test_from_lap_time_delta_and_distance():
+    lap = ActivityLaps(lap_number=2, lap_distance=1.0, lap_time_delta=timedelta(minutes=5))
+    assert lap.lap_time == "05:00"
+    assert round(lap.speed, 2) == 12.0
+    assert lap.pace == "05:00"
+
+def test_from_pace_only():
+    lap = ActivityLaps(lap_number=3, lap_distance=1.0, pace="05:00")
+    assert round(lap.speed, 2) == 12.0
+    assert lap.pace == "05:00"
+
+def test_from_speed_only():
+    lap = ActivityLaps(lap_number=4, lap_distance=1.0, speed=12.0)
+    assert lap.speed == 12.0
+    assert lap.pace == "05:00"
+
+def test_preserve_all_provided_fields():
+    lap = ActivityLaps(
+        lap_number=5,
+        lap_distance=1.0,
+        lap_time="05:00",
+        lap_time_delta=timedelta(minutes=5),
+        speed=12.0,
+        pace="05:00"
+    )
+    assert lap.lap_time == "05:00"
+    assert lap.lap_time_delta == timedelta(minutes=5)
+    assert lap.speed == 12.0
+    assert lap.pace == "05:00"
+
+def test_activity_lap_raise():
+    with pytest.raises(ValueError, match="Must specify at least one of: lap_time, lap_time_delta, speed or pace"):
+        lap = ActivityLaps(lap_number = 6, lap_distance = 0.5)
 
 def test_weather_init():
     weather = Weather(
