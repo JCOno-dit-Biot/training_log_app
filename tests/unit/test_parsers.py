@@ -137,7 +137,8 @@ def test_runner_parser_no_image_url():
 
 def test_activity_parser(default_activity_row):
     activity = parse_activity_from_row(default_activity_row)
-    print(activity.laps[1])
+    print(activity.weather)
+    assert activity.weather is None
     assert len(activity.laps) == 3
     assert len(activity.dogs) == 2
     assert activity.runner.name == 'Alice Monroe'
@@ -159,6 +160,19 @@ def test_activity_parser_laps_none(default_activity_row):
     activity = parse_activity_from_row(default_activity_row)
     assert len(activity.laps) == 0
     assert len(activity.dogs) == 2
+
+def test_activity_parser_with_weather(default_activity_row):
+    default_activity_row['temperature'] = 20.1
+    default_activity_row['humidity'] = 0.56
+    default_activity_row['condition'] =  "sunny"
+    
+    print(default_activity_row)
+    activity = parse_activity_from_row(default_activity_row)
+    print(activity)
+    assert activity.weather is not None
+    assert activity.weather.temperature == 20.1
+    assert activity.weather.humidity == 0.56
+    assert activity.weather.condition =="sunny"
 
 def test_weight_parser():
     

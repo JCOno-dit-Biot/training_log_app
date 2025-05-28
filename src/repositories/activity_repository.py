@@ -23,6 +23,7 @@ class activity_repository(abstract_repository):
                             k.name AS kennel_name,
                             s.type AS sport_type,
                             k.id as kennel_id,
+                            w.temperature, w.humidity, w.condition,
                             -- Aggregate dogs
                             json_agg(DISTINCT jsonb_build_object(
                                 'id', d.id,
@@ -46,11 +47,13 @@ class activity_repository(abstract_repository):
                         LEFT JOIN activity_dogs ad ON a.id = ad.activity_id
                         LEFT JOIN dogs d ON ad.dog_id = d.id
                         LEFT JOIN workout_laps wl ON wl.activity_id = a.id
+                        LEFT JOIN weather_entries w ON w.activity_id = a.id
                         WHERE r.kennel_id = %s
                         GROUP BY 
                         a.id, a.runner_id, a.sport_id, a.timestamp, a.notes, a.location,
                         a.workout, a.speed, a.distance,
-                        r.name, s.name, s.type, k.name, k.id
+                        r.name, s.name, s.type, k.name, k.id,
+                        w.temperature, w.humidity, w.condition
                     """
             cur.execute(query, (kennel_id,))
             activities = []
@@ -70,6 +73,7 @@ class activity_repository(abstract_repository):
                             s.type AS sport_type,
                             k.name AS kennel_name,
                             k.id as kennel_id,
+                            w.temperature, w.humidity, w.condition,
                             -- Aggregate dogs
                             json_agg(DISTINCT jsonb_build_object(
                                 'id', d.id,
@@ -93,11 +97,12 @@ class activity_repository(abstract_repository):
                         LEFT JOIN activity_dogs ad ON a.id = ad.activity_id
                         LEFT JOIN dogs d ON ad.dog_id = d.id
                         LEFT JOIN workout_laps wl ON wl.activity_id = a.id
+                        LEFT JOIN weather_entries w ON w.activity_id = a.id
                         WHERE a.id = %s
                         GROUP BY 
                         a.id, a.runner_id, a.sport_id, a.timestamp, a.notes, a.location,
                         a.workout, a.speed, a.distance,
-                        r.name, s.name, s.type, k.name, k.id
+                        r.name, s.name, s.type, k.name, k.id, w.temperature, w.humidity, w.condition
                     """
             cur.execute(query, (activity_id,))
             row = cur.fetchone()
@@ -138,6 +143,7 @@ class activity_repository(abstract_repository):
                             VALUES (%s, %s, %s, %s, %s)
                         """, (activity_id, lap.lap_number, lap.lap_time_delta, lap.lap_distance, lap.speed,))
 
+            # add weather here
             except Exception as e:
                 print(e)
                 self._connection.rollback()
