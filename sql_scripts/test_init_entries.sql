@@ -15,10 +15,10 @@ VALUES
     ('Obelix', 2),
     ('Asterix', 2);
 
-INSERT INTO sports ("name", "description")
+INSERT INTO sports ("name", "description", "type")
 VALUES 
-    ('Canicross', 'Running with your dog'),
-    ('Bikejoring', 'Biking with your dog');
+    ('Canicross', 'Running with your dog', 'dryland'),
+    ('Bikejoring', 'Biking with your dog', 'on-snow');
 
 
 -- insert runner pictures path
@@ -53,10 +53,10 @@ INSERT INTO activity_dogs (activity_id, dog_id, rating) VALUES
 (1, 2, 8);
 
 -- Insert into workout_laps
-INSERT INTO workout_laps (activity_id, lap_number, speed) VALUES 
-(1, 1, 21.0),
-(1, 2, 20.1),
-(1, 3, 19.8);
+INSERT INTO workout_laps (activity_id, lap_number, lap_time, lap_distance, speed) VALUES 
+(1, 1, INTERVAL '5 minutes 50 seconds', 2, 20.57),
+(1, 2, INTERVAL '1 minutes 25 seconds', 0.5, 21.18),
+(1, 3, INTERVAL '3 minutes 3 seconds', 1, 19.67);
 
 -- Activity 2 (same runner)
 INSERT INTO activities (
@@ -79,6 +79,10 @@ INSERT INTO activities (
 
 INSERT INTO activity_dogs (activity_id, dog_id, rating) VALUES 
 (3, 1, 8);
+
+INSERT INTO weather_entries (activity_id, temperature, humidity, condition)
+VALUES 
+    (1, 10.4, 0.67, 'sunny');
 
 -- add weight entries
 INSERT INTO weight_entries(

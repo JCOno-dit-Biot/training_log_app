@@ -2,10 +2,10 @@ import pytest
 from src.models.activity import Activity, ActivityLaps, ActivityDogs
 from src.models.dog import Dog
 from src.models.runner import Runner
-from src.models.sport import Sport
+from src.models.sport import Sport, SportType
 from src.models.kennel import Kennel
 from src.repositories.activity_repository import activity_repository
-from datetime import date, timezone, datetime
+from datetime import date, timezone, datetime, timedelta
 
 @pytest.fixture
 def activity_repo(test_db_conn):
@@ -22,7 +22,7 @@ def test_activity():
         id=None,
         timestamp=datetime(2025, 4, 1, 9, 30, tzinfo=timezone.utc),
         runner=Runner(id=2, name="Obelix", kennel=Kennel(id=1, name="Les Gaulois")),
-        sport=Sport(id=1, name="Canicross"),
+        sport=Sport(id=1, name="Canicross", type = SportType.DRYLAND),
         location="Forest Loop",
         distance=8.0,
         workout=True,
@@ -53,9 +53,9 @@ def test_activity():
             )
         ],
         laps=[
-            ActivityLaps(lap_number=1, speed=21.0, pace="02:51"),
-            ActivityLaps(lap_number=2, speed=20.1, pace="02:59"),
-            ActivityLaps(lap_number=3, speed=19.8, pace="03:01")
+            ActivityLaps(lap_number=1, speed=21.0, pace="02:51", lap_distance = 1, lap_time_delta=timedelta(minutes = 2, seconds = 51) ),
+            ActivityLaps(lap_number=2, speed=20.1, pace="02:59", lap_distance = 1, lap_time_delta=timedelta(minutes = 2, seconds = 59)),
+            ActivityLaps(lap_number=3, speed=19.8, pace="03:01", lap_distance = 1, lap_time_delta=timedelta(minutes = 3, seconds = 1))
         ]
     )
     return test_activity

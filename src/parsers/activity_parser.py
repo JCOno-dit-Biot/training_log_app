@@ -2,8 +2,11 @@ from src.models.dog import Dog
 from src.models.runner import Runner
 from src.models.activity import Activity, ActivityLaps, ActivityDogs
 from src.models.kennel import Kennel
-from src.models.sport import Sport
+from src.models.sport import Sport, SportType
+from src.models.weather import Weather
 from .dog_parser import parse_dog_from_row
+
+from pydantic import ValidationError
 
 def parse_activity_from_row(row: dict) -> Dog:
     laps=[]
@@ -11,7 +14,9 @@ def parse_activity_from_row(row: dict) -> Dog:
         for lap in row['laps']:
             laps.append(ActivityLaps(
                 lap_number=lap['lap_number'],
-                speed=lap['speed']
+                speed=lap['speed'],
+                lap_distance=lap['lap_distance'],
+                lap_time_delta=lap['lap_time']
             ))
 
     #there should always be at least one dog
@@ -23,11 +28,22 @@ def parse_activity_from_row(row: dict) -> Dog:
             dog= parse_dog_from_row(dog),
             rating = dog['rating']
         ))
+
+    try:
+        weather = Weather(temperature=row['temperature'], humidity=row["humidity"], condition=row['condition'])
+    except (ValueError, ValidationError) as validation_error:
+        #logging.warning("no weather entry for this activity")
+        weather = None
+    except (KeyError) as key_error:
+        #logging.warning(f"Missing key: {e}")
+        weather =  None
+
     return Activity(
         id=row['id'],
         timestamp=row['timestamp'],
-        sport=Sport(name = row['sport_name']),
+        sport=Sport(name = row['sport_name'], type=SportType(row['sport_type'])),
         runner=Runner(name=row['runner_name']),
+        weather = weather,
         location = row['location'],
         distance=row['distance'],
         speed = row['speed'],

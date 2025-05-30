@@ -3,7 +3,7 @@ from src.parsers.runner_parser import parse_runner_from_row
 from src.parsers.activity_parser import parse_activity_from_row
 from src.parsers.weight_parser import parse_weight_from_row
 from src.models import Dog, DogWeightEntry
-from datetime import date
+from datetime import date, timedelta
 import pytest
 
 
@@ -21,6 +21,7 @@ def default_activity_row():
         "distance": 8.0,
         "runner_name": "Alice Monroe",
         "sport_name": "Canicross",
+        "sport_type": "dryland",
         "kennel_id" : 1,
         "kennel_name": "test_kennel",
         "dogs": [
@@ -42,15 +43,21 @@ def default_activity_row():
         "laps": [
             {
             "lap_number": 1,
-            "speed": 21.0
+            "speed": 21.0,
+            "lap_distance": 1,
+            "lap_time": timedelta(minutes=2, seconds=51)
             },
             {
             "lap_number": 2,
-            "speed": 20.1
+            "speed": 20.1,
+            "lap_distance": 1,
+            "lap_time": timedelta(minutes=2,seconds=59)
             },
             {
             "lap_number": 3,
-            "speed": 19.8
+            "speed": 19.8,
+            "lap_distance": 1,
+            "lap_time": timedelta(minutes=3, seconds=1)
             }
         ]
     }
@@ -130,13 +137,15 @@ def test_runner_parser_no_image_url():
 
 def test_activity_parser(default_activity_row):
     activity = parse_activity_from_row(default_activity_row)
+    print(activity.weather)
+    assert activity.weather is None
     assert len(activity.laps) == 3
     assert len(activity.dogs) == 2
     assert activity.runner.name == 'Alice Monroe'
     assert activity.sport.name == 'Canicross'
     assert activity.dogs[0].dog.name == 'Bolt'
     assert activity.laps[1].lap_number == 2
-    assert activity.laps[1].speed == 20.1
+    assert round(activity.laps[1].speed,1) == 20.1
     
 def test_activity_parser_no_laps(default_activity_row):
     default_activity_row['laps'] = []
@@ -151,6 +160,19 @@ def test_activity_parser_laps_none(default_activity_row):
     activity = parse_activity_from_row(default_activity_row)
     assert len(activity.laps) == 0
     assert len(activity.dogs) == 2
+
+def test_activity_parser_with_weather(default_activity_row):
+    default_activity_row['temperature'] = 20.1
+    default_activity_row['humidity'] = 0.56
+    default_activity_row['condition'] =  "sunny"
+    
+    print(default_activity_row)
+    activity = parse_activity_from_row(default_activity_row)
+    print(activity)
+    assert activity.weather is not None
+    assert activity.weather.temperature == 20.1
+    assert activity.weather.humidity == 0.56
+    assert activity.weather.condition =="sunny"
 
 def test_weight_parser():
     

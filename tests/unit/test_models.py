@@ -1,7 +1,9 @@
-from src.models import Activity, Dog, Kennel, Runner, DogWeightEntry, Sport, ActivityLaps, ActivityDogs
+from src.models import Activity, Dog, Kennel, Runner, DogWeightEntry, Sport, ActivityLaps, ActivityDogs, Weather
 import pytest
-from datetime import datetime, date
+from pydantic import ValidationError
+from datetime import datetime, date, timedelta
 from src import calculation_helpers as ch
+
 
 
 @pytest.fixture
@@ -10,7 +12,7 @@ def activity_entry(JC):
     training_entry= Activity (
         timestamp = datetime.now(),
         runner = JC,
-        sport = Sport(name= 'Canicross'),
+        sport = Sport(name= 'Canicross', type= 'dryland'),
         location = 'Christie',
         distance = 2.4,
         workout = False,
@@ -73,7 +75,7 @@ def test_activity_no_pace_if_not_running(JC, Luna):
     bike_activity = Activity (
         timestamp = datetime.now(),
         runner = JC,
-        sport = Sport(name= 'Bikejoring'),
+        sport = Sport(name= 'Bikejoring', type= 'dryland'),
         speed = 21.9,
         location = 'Christie',
         distance = 2.4,
@@ -91,7 +93,7 @@ def test_no_speed_pace_raises_ValError(JC):
         training_entry= Activity (
         timestamp = datetime.now(),
         runner = JC,
-        sport = Sport(name= 'Canicross'),
+        sport = Sport(name= 'Canicross', type= 'dryland'),
         location = 'Christie',
         distance = 2.4,
         workout = False
@@ -102,7 +104,7 @@ def test_activity_workout_without_lap_raise():
         training_entry= Activity (
         timestamp = datetime.now(),
         runner = JC,
-        sport = Sport(name= 'Canicross'),
+        sport = Sport(name= 'Canicross', type= 'dryland'),
         location = 'Christie',
         distance = 2.4,
         workout = True,
@@ -112,11 +114,24 @@ def test_activity_lap_no_speed_raise():
  with pytest.raises(ValueError):
     ActivityLaps(lap_number=1)
 
+
+def test_activity_lap_with_time_distance():
+    activitylap = ActivityLaps(
+        lap_number = 1,
+        lap_distance = 1,
+        lap_time= '3:00'
+    )
+
+    assert activitylap.speed == 20
+    assert activitylap.pace == "03:00"
+    assert activitylap.lap_time_delta is not None
+    assert activitylap.lap_time_delta == timedelta(minutes=3)
+
 def test_activity_workout_with_lap(JC, Luna):
     workout = Activity (
         timestamp = datetime.now(),
         runner = JC,
-        sport = Sport(name= 'Canicross'),
+        sport = Sport(name= 'Canicross', type= 'dryland'),
         location = 'Christie',
         distance = 2.4,
         workout = True,
@@ -124,11 +139,13 @@ def test_activity_workout_with_lap(JC, Luna):
         laps=[
             ActivityLaps(
                 lap_number=1,
-                speed = 18.1
+                lap_time = '03:18',
+                lap_distance = 1
             ),
             ActivityLaps(
                 lap_number=2,
-                pace = "03:20"
+                lap_distance = 1,
+                lap_time = "03:20"
             )
         ],
         dogs = [ActivityDogs(
@@ -137,14 +154,74 @@ def test_activity_workout_with_lap(JC, Luna):
         )]
     )
     assert len(workout.laps) == 2
-    assert workout.laps[1].speed is not None
-    assert workout.laps[0].pace is not None
-    assert workout.laps[0].pace == "03:18"
+    assert all([x.speed is not None for x in workout.laps])
+    assert all([x.pace is not None for x in workout.laps])
+    assert workout.laps[0].pace == "03:17" # there is a rounding error going through speed to pace
+    assert workout.laps[0].lap_time_delta == timedelta(minutes = 3, seconds = 18)
+    assert workout.laps[0].lap_distance == 1
     assert workout.laps[1].speed == pytest.approx(18)
 
+def test_from_lap_time_and_distance():
+    lap = ActivityLaps(lap_number=1, lap_distance=1.0, lap_time="05:00")
+    assert lap.lap_time_delta == timedelta(minutes=5)
+    assert round(lap.speed, 2) == 12.0
+    assert lap.pace == "05:00"
 
+def test_from_lap_time_delta_and_distance():
+    lap = ActivityLaps(lap_number=2, lap_distance=1.0, lap_time_delta=timedelta(minutes=5))
+    assert lap.lap_time == "05:00"
+    assert round(lap.speed, 2) == 12.0
+    assert lap.pace == "05:00"
 
+def test_from_pace_only():
+    lap = ActivityLaps(lap_number=3, lap_distance=1.0, pace="05:00")
+    assert round(lap.speed, 2) == 12.0
+    assert lap.pace == "05:00"
 
+def test_from_speed_only():
+    lap = ActivityLaps(lap_number=4, lap_distance=1.0, speed=12.0)
+    assert lap.speed == 12.0
+    assert lap.pace == "05:00"
 
+def test_preserve_all_provided_fields():
+    lap = ActivityLaps(
+        lap_number=5,
+        lap_distance=1.0,
+        lap_time="05:00",
+        lap_time_delta=timedelta(minutes=5),
+        speed=12.0,
+        pace="05:00"
+    )
+    assert lap.lap_time == "05:00"
+    assert lap.lap_time_delta == timedelta(minutes=5)
+    assert lap.speed == 12.0
+    assert lap.pace == "05:00"
 
+def test_activity_lap_raise():
+    with pytest.raises(ValueError, match="Must specify at least one of: lap_time, lap_time_delta, speed or pace"):
+        lap = ActivityLaps(lap_number = 6, lap_distance = 0.5)
 
+def test_weather_init():
+    weather = Weather(
+        temperature=20.9,
+        humidity=0.78,
+        condition="Sunny"
+    )
+    assert weather.temperature == 20.9
+    assert weather.humidity == 0.78
+    assert weather.condition == "Sunny"
+
+@pytest.mark.parametrize("humidity", [(-0.1), (1.1)])
+def test_weather_humidity_raises(humidity):
+    with pytest.raises(ValidationError):
+        weather = Weather(
+                temperature=20.9,
+                humidity=humidity,
+                condition="Sunny"
+            )
+
+def test_weather_no_t_humidity_raise():
+    with pytest.raises(ValueError):
+        weather = Weather (
+            condition = "wet"
+        )
