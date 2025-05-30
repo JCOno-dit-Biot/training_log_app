@@ -82,7 +82,8 @@ INSERT INTO activity_dogs (activity_id, dog_id, rating) VALUES
 
 INSERT INTO weather_entries (activity_id, temperature, humidity, condition)
 VALUES 
-    (1, 10.4, 0.67, 'sunny');
+    (1, 10.4, 0.67, 'sunny'),
+    (2, 1.4, NULL, NULL);
 
 -- add weight entries
 INSERT INTO weight_entries(
