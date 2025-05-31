@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Security, HTTPException, APIRouter, Depends
+from fastapi import FastAPI, Security, HTTPException, APIRouter, Depends, Request
 from fastapi.security import OAuth2PasswordBearer, HTTPAuthorizationCredentials
 import httpx
 from fastapi.middleware.cors import CORSMiddleware
@@ -37,7 +37,7 @@ app.add_middleware(
     allow_headers=["*"],             # allow all headers
 )
 
-async def verify_jwt(token: str = Depends(oauth2_scheme)):
+async def verify_jwt(request: Request, token: str = Depends(oauth2_scheme)):
     if not token:
         raise HTTPException(status_code=401, detail="Missing token")
 
@@ -45,6 +45,8 @@ async def verify_jwt(token: str = Depends(oauth2_scheme)):
         async with httpx.AsyncClient() as client:
             res = await client.post(f"{settings.AUTH_SERVICE_URL}/validate", json={"token": token})
             res.raise_for_status()
+            payload = res.json()
+            request.state.kennel_id = payload["kennel_id"]
             return res.json()
     except httpx.HTTPStatusError:
         raise HTTPException(status_code=401, detail="Invalid token")

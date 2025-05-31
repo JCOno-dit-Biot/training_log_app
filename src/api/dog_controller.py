@@ -1,7 +1,5 @@
-from fastapi import Depends, APIRouter
+from fastapi import Depends, APIRouter, Request
 from fastapi_utils.cbv import cbv
-
-
 from src.repositories.dog_repository import dog_repository
 from src.models.dog import Dog
 from src.deps import (
@@ -16,9 +14,9 @@ class DogController:
         self.repo = dog_repo
 
     @router.get("/dogs", response_model=list[Dog])
-    def list_dogs(self):
+    def list_dogs(self, request: Request):
         #for now hard code kennel_id, will get from JWT later
-        kennel_id = 1
+        kennel_id = request.state.kennel_id
         return self.repo.get_all(kennel_id)
 
     @router.post("/dogs")

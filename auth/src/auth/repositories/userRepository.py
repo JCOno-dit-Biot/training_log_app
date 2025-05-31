@@ -64,7 +64,7 @@ class UserRepository(IUserRepository):
             cur.execute("""
                         SELECT kennel_id FROM users WHERE username = %s
                         """, (form_data.username,))
-            kennel_id = cur.fetchone()
+            kennel_id = cur.fetchone()["kennel_id"]
             if kennel_id is None:
                 return SessionTokenResponse(access_token=None)
             access_token = self.create_access_token(
