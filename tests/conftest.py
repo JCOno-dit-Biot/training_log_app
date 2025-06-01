@@ -14,7 +14,6 @@ from src.utils import get_connection
 
 @pytest.fixture(scope="session")
 def test_db_conn():
-    #conn_string=f"postgres://{db_user}:{db_password}@{host}:{port}/{db}"
     conn = get_connection()
     yield conn
     conn.close()
