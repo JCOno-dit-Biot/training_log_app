@@ -46,7 +46,7 @@ class Activity(BaseModel):
         Automatically calculate pace for running based on speed.
         """
         if values.workout and (values.laps is None or len(values.laps) == 0):
-            raise ValueError(f"Laps cannot be None or an empty list is Workout is set to False")
+            raise ValueError(f"Laps cannot be None or an empty list if Workout is set to True")
         return values
     
 class ActivityLaps(BaseModel):

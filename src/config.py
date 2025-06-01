@@ -1,6 +1,11 @@
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 from pydantic import ConfigDict
+import os
+from dotenv import load_dotenv
 
+if os.getenv("ENV") != "test":
+    load_dotenv(dotenv_path='config/.env')
+    
 class Settings(BaseSettings):
     ENV: str = "dev"
     DATABASE_URL: str = ""
@@ -8,6 +13,6 @@ class Settings(BaseSettings):
     AUTH_SERVICE_URL: str = "http://fastapi-auth:8001/auth"
     ALGORITHM: str = ""
     SECRET_KEY: str = ""
-    model_config = ConfigDict(env_file="config/.env", extra="ignore")
+    model_config = SettingsConfigDict(extra="ignore")
         
 settings = Settings()

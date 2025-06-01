@@ -1,6 +1,4 @@
-from fastapi import FastAPI, Security, HTTPException, APIRouter, Depends
-from fastapi.security import OAuth2PasswordBearer, HTTPAuthorizationCredentials
-import httpx
+from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 from .utils import get_connection
@@ -8,9 +6,7 @@ from src.api.dog_controller import router as dog_router
 from src.api.runner_controller import router as runner_router
 from src.api.activity_controller import router as activity_router
 from src.api.weight_controller import router as weight_controler
-from .config import settings
-
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="http://localhost:8001/token")
+from src.deps import verify_jwt
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -37,17 +33,6 @@ app.add_middleware(
     allow_headers=["*"],             # allow all headers
 )
 
-async def verify_jwt(token: str = Depends(oauth2_scheme)):
-    if not token:
-        raise HTTPException(status_code=401, detail="Missing token")
-
-    try:
-        async with httpx.AsyncClient() as client:
-            res = await client.post(f"{settings.AUTH_SERVICE_URL}/validate", json={"token": token})
-            res.raise_for_status()
-            return res.json()
-    except httpx.HTTPStatusError:
-        raise HTTPException(status_code=401, detail="Invalid token")
 
 app.include_router(dog_router, tags=["Dogs"], dependencies=[Depends(verify_jwt)])
 app.include_router(runner_router, tags=["Runners"], dependencies=[Depends(verify_jwt)])

@@ -54,6 +54,7 @@ class activity_repository(abstract_repository):
                         a.workout, a.speed, a.distance,
                         r.name, s.name, s.type, k.name, k.id,
                         w.temperature, w.humidity, w.condition
+                        ORDER BY a.timestamp DESC LIMIT 5;
                     """
             cur.execute(query, (kennel_id,))
             activities = []
@@ -143,7 +144,12 @@ class activity_repository(abstract_repository):
                             VALUES (%s, %s, %s, %s, %s)
                         """, (activity_id, lap.lap_number, lap.lap_time_delta, lap.lap_distance, lap.speed,))
 
-            # add weather here
+                if activity.weather is not None:
+                    cur.execute("""
+                        INSERT INTO weather_entries (activity_id, temperature, humidity, condition)
+                        VALUES (%s, %s, %s, %s)
+                    """, (activity_id, activity.weather.temperature, activity.weather.humidity, activity.weather.condition,))
+            
             except Exception as e:
                 print(e)
                 self._connection.rollback()
@@ -159,6 +165,9 @@ class activity_repository(abstract_repository):
 
             # Delete activity from dog activity table first
             cur.execute("""DELETE FROM activity_dogs WHERE activity_id = %s;""", (activity.id,))
+
+            # Delete weather entry
+            cur.execute("""DELETE FROM weather_entries WHERE activity_id = %s;""", (activity.id,)) 
 
             # Finally delete the main activity
             cur.execute("""DELETE FROM activities WHERE id = %s; """,

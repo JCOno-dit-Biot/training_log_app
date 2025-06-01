@@ -2,7 +2,7 @@ from fastapi_utils.cbv import cbv
 from fastapi import APIRouter
 from src.repositories.runner_repository import runner_repository
 from src.models.runner import Runner
-from fastapi import Depends
+from fastapi import Depends, Request
 from src.deps import (
     get_runner_repo
 )
@@ -15,9 +15,9 @@ class RunnerController:
         self.repo = repo
 
     @router.get("/runners", response_model=list[Runner])
-    def list_runners(self):
+    def list_runners(self, request: Request):
         #for now hard code kennel_id, will get from JWT later
-        kennel_id = 1
+        kennel_id = request.state.kennel_id
         return self.repo.get_all(kennel_id)
 
     @router.post("/runners")

@@ -4,6 +4,7 @@ from src.models.dog import Dog
 from src.models.runner import Runner
 from src.models.sport import Sport, SportType
 from src.models.kennel import Kennel
+from src.models.weather import Weather
 from src.repositories.activity_repository import activity_repository
 from datetime import date, timezone, datetime, timedelta
 
@@ -56,7 +57,13 @@ def test_activity():
             ActivityLaps(lap_number=1, speed=21.0, pace="02:51", lap_distance = 1, lap_time_delta=timedelta(minutes = 2, seconds = 51) ),
             ActivityLaps(lap_number=2, speed=20.1, pace="02:59", lap_distance = 1, lap_time_delta=timedelta(minutes = 2, seconds = 59)),
             ActivityLaps(lap_number=3, speed=19.8, pace="03:01", lap_distance = 1, lap_time_delta=timedelta(minutes = 3, seconds = 1))
-        ]
+        ],
+        weather=Weather(
+            temperature=9.5,
+            humidity=0.85,
+            condition = "rainy"
+        )
+
     )
     return test_activity
 
@@ -70,6 +77,9 @@ def test_get_by_id(activity_repo):
     assert len(activity.laps) == 3
     assert activity.runner.name == 'Obelix'
     assert all([x.dog.name in ['Milou', 'Fido'] for x in activity.dogs])
+    assert activity.weather.temperature == 10.4
+    assert activity.weather.humidity == .67
+    assert activity.weather.condition == "sunny"
     
 
 def test_get_all(activity_repo):
@@ -79,9 +89,12 @@ def test_get_all(activity_repo):
     for activity in activities:
         assert all([x.dog.kennel.name == 'Les Gaulois' for x in activity.dogs])
         assert activity.sport.name =='Canicross'
-    act2 = activities[1]
+    act2 = activities[0]
     assert act2.laps == []
     assert act2.workout == False
+    assert act2.weather.temperature == 1.4
+    assert act2.weather.humidity is None
+    assert act2.weather.condition is None
     
 def test_create_activity(test_activity, activity_repo):
     id = activity_repo.create(test_activity)
@@ -99,6 +112,14 @@ def test_create_activity(test_activity, activity_repo):
         cur.execute("""SELECT * FROM activity_dogs WHERE activity_id = %s""", (id,))
         dogs =  cur.fetchall()
         assert len(dogs) == 2
+
+        cur.execute("""SELECT * FROM weather_entries WHERE activity_id = %s""", (id,))
+        weather = cur.fetchone()
+        assert weather is not None
+        assert weather[1] == 4
+        assert weather[2] == 9.5
+        assert weather[3] == 0.85
+        assert weather[4] == "rainy"
 
 def test_delete_activity(activity_repo, test_activity):
     test_activity.id = 4

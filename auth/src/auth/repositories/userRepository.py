@@ -64,9 +64,11 @@ class UserRepository(IUserRepository):
             cur.execute("""
                         SELECT kennel_id FROM users WHERE username = %s
                         """, (form_data.username,))
-            kennel_id = cur.fetchone()
-            if kennel_id is None:
+            result = cur.fetchone()
+            if result is None:
                 return SessionTokenResponse(access_token=None)
+            else:
+                kennel_id = result["kennel_id"]
             access_token = self.create_access_token(
                 data = {
                     "sub": form_data.username,
@@ -87,7 +89,7 @@ class UserRepository(IUserRepository):
         return SessionTokenResponse(
             access_token= encoded_jwt,
             token_type = "bearer",
-            expires_in = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES")) * 60
+            expires_in = expires_delta.total_seconds()
         )
 
     def get_user(self, username: str): 
