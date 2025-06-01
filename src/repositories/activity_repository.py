@@ -54,6 +54,7 @@ class activity_repository(abstract_repository):
                         a.workout, a.speed, a.distance,
                         r.name, s.name, s.type, k.name, k.id,
                         w.temperature, w.humidity, w.condition
+                        ORDER BY a.timestamp DESC LIMIT 5;
                     """
             cur.execute(query, (kennel_id,))
             activities = []

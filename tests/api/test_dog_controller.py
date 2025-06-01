@@ -1,6 +1,6 @@
 import pytest
 from unittest.mock import Mock
-from fastapi import FastAPI
+from fastapi import FastAPI, Request, Depends
 from fastapi.testclient import TestClient
 from datetime import date
 from src.api.dog_controller import router as dog_router
@@ -23,13 +23,17 @@ def mock_repo():
 def test_app(mock_repo):
     app = FastAPI()
 
+    async def fake_jwt_verify(request: Request):
+        request.state.kennel_id = 1
+
     # Override the repository dependency
     def override_repo():
         return mock_repo
 
-    from src.deps import get_dog_repo
+    from src.deps import get_dog_repo, verify_jwt
     app.dependency_overrides[get_dog_repo] = override_repo
-    app.include_router(dog_router)
+    app.dependency_overrides[verify_jwt] = fake_jwt_verify
+    app.include_router(dog_router, dependencies=[Depends(verify_jwt)])
 
     return app
 
