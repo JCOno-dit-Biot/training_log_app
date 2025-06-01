@@ -42,7 +42,7 @@ def parse_activity_from_row(row: dict) -> Dog:
         id=row['id'],
         timestamp=row['timestamp'],
         sport=Sport(name = row['sport_name'], type=SportType(row['sport_type'])),
-        runner=Runner(name=row['runner_name']),
+        runner=Runner(name=row['runner_name'], id = row["runner_id"]),
         weather = weather,
         location = row['location'],
         distance=row['distance'],
