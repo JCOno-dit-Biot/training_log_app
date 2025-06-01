@@ -1,19 +1,25 @@
 import { Activity } from '../types/Activity'
+import { useImageCache } from '../context/ImageCacheContext'
 
 export default function ActivityCard({ activity }: { activity: Activity }) {
 
   const DEFAULT_AVATAR = 'https://www.gravatar.com/avatar/?d=mp';
+  const { runners, dogs } = useImageCache();
+
   const date = new Date(activity.timestamp).toLocaleString();
   const dogNames = activity.dogs.map((d) => d.dog.name).join(', ');
   const sport = activity.sport.name;
   const speedOrPace =
     activity.sport.type === 'on-snow' ? `${activity.speed.toFixed(1)} km/h` : `${activity.pace}`;
-
+  const runnerImageUrl = runners.get(activity.runner.id)
+    ? `/profile_picture/runners/${runners.get(activity.runner.id)}`
+    : DEFAULT_AVATAR;
+  console.log(runners);
   return (
     <div className="bg-white border border-stone rounded p-4 shadow-sm space-y-2">
       <div className="flex items-center gap-3">
         <img
-          src={activity.runner.image_url || DEFAULT_AVATAR}
+          src={runnerImageUrl}
           alt={activity.runner.name}
           className="w-10 h-10 rounded-full object-cover"
         />
