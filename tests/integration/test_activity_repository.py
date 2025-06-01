@@ -89,7 +89,7 @@ def test_get_all(activity_repo):
     for activity in activities:
         assert all([x.dog.kennel.name == 'Les Gaulois' for x in activity.dogs])
         assert activity.sport.name =='Canicross'
-    act2 = activities[1]
+    act2 = activities[0]
     assert act2.laps == []
     assert act2.workout == False
     assert act2.weather.temperature == 1.4
