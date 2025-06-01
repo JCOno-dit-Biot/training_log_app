@@ -1,5 +1,6 @@
 import { Routes, Route } from 'react-router-dom';
 import DashboardPage from './pages/DashboardPage';
+import ActivityFeed from './pages/ActivityFeed';
 import MyKennelPage from './pages/MyKennelPage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage'
@@ -19,8 +20,8 @@ export default function App() {
           <Route path="/dashboard" element={<PrivateRoute><Layout><DashboardPage /></Layout></PrivateRoute>} />
           <Route path="/kennel" element={<PrivateRoute><Layout><MyKennelPage /></Layout></PrivateRoute>} />
          
-          {/* <Route path="/activities" element={<ActivitiesPage />} />
-          <Route path="/weight" element={<WeightPage />} />  */}
+          <Route path="/activities" element={<PrivateRoute><Layout><ActivityFeed /></Layout></PrivateRoute>} />
+          {/* <Route path="/weight" element={<WeightPage />} />  */}
         </Routes>
     </div>
   );
