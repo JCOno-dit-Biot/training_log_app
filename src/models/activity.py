@@ -7,7 +7,7 @@ from .dog import Dog
 from .weather import Weather
 import src.calculation_helpers as ch
 
-SPORT_PACE_DISPLAY = {'canicross', 'canihike'}
+SPORT_PACE_DISPLAY = {'canicross', 'canihike', 'canirando', 'skijoring'}
 
 class Activity(BaseModel):
     id: Optional[int] = None

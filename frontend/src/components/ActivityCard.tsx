@@ -10,11 +10,10 @@ export default function ActivityCard({ activity }: { activity: Activity }) {
   const dogNames = activity.dogs.map((d) => d.dog.name).join(', ');
   const sport = activity.sport.name;
   const speedOrPace =
-    activity.sport.type === 'on-snow' ? `${activity.speed.toFixed(1)} km/h` : `${activity.pace}`;
+    activity.pace ? `${activity.pace}` : `${activity.speed.toFixed(1)} km/h`;
   const runnerImageUrl = runners.get(activity.runner.id)
     ? `/profile_picture/runners/${runners.get(activity.runner.id)}`
     : DEFAULT_AVATAR;
-  console.log(runners);
   return (
     <div className="bg-white border border-stone rounded p-4 shadow-sm space-y-2">
       <div className="flex items-center gap-3">
@@ -36,7 +35,10 @@ export default function ActivityCard({ activity }: { activity: Activity }) {
       <div className="flex flex-wrap gap-4 text-sm text-stone">
         <span className="capitalize">Sport: {sport}</span>
         <span>Distance: {activity.distance} km</span>
-        <span>Speed/Pace: {speedOrPace}</span>
+        {activity.pace ? <span>Pace: {speedOrPace}</span> 
+          : activity.speed !== undefined
+          ? <span>Speed: {activity.speed.toFixed(1)} km/h</span>
+          : null}
         <span>
           Weather: {activity.weather.temperature}°C, {activity.weather.condition}
         </span>
