@@ -1,6 +1,6 @@
 // components/AddActivityForm.tsx
 import { useState } from "react";
-import { useRunnerCache } from "../context/RunnerCacheContext";
+import { useGlobalCache } from "../context/GlobalCacheContext";
 // import { Dog } from "../types/Dog";
 // import { Runner } from "../types/Runner";
 // import { Weather } from "../types/Weather";
@@ -37,8 +37,8 @@ export default function AddActivityForm({ onClose }: { onClose: () => void }) {
     condition: ''
   });
 
-  const {runners} = useRunnerCache();
-  console.log(runners)
+  const {runners, dogs} = useGlobalCache();
+  
   const handleInputChange = (field: keyof ActivityForm, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
