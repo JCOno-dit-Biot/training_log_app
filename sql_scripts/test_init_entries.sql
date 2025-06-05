@@ -15,10 +15,10 @@ VALUES
     ('Obelix', 2),
     ('Asterix', 2);
 
-INSERT INTO sports ("name", "description", "type")
+INSERT INTO sports ("name", "description", "type", "display_mode")
 VALUES 
-    ('Canicross', 'Running with your dog', 'dryland'),
-    ('Bikejoring', 'Biking with your dog', 'on-snow');
+    ('Canicross', 'Running with your dog', 'dryland', "pace"),
+    ('Bikejoring', 'Biking with your dog', 'on-snow', "speed");
 
 
 -- insert runner pictures path
