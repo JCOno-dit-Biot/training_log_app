@@ -1,6 +1,7 @@
 // components/AddActivityForm.tsx
 import { useState } from "react";
 import { useGlobalCache } from "../context/GlobalCacheContext";
+import DogSelector from "./DogSelector";
 // import { Dog } from "../types/Dog";
 // import { Runner } from "../types/Runner";
 // import { Weather } from "../types/Weather";
@@ -38,7 +39,7 @@ export default function AddActivityForm({ onClose }: { onClose: () => void }) {
   });
 
   const {runners, dogs} = useGlobalCache();
-  
+
   const handleInputChange = (field: keyof ActivityForm, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
@@ -66,6 +67,39 @@ export default function AddActivityForm({ onClose }: { onClose: () => void }) {
             <option key={id} value={id}>{runner.name}</option>
           ))}
         </select>
+
+        <DogSelector selectedDogs={formData.dogs} setSelectedDogs={(dogs) => handleInputChange('dogs', dogs)} dogs={dogs} />
+
+      <div className="mb-4">
+        <label className="block text-gray-700">Distance (km)</label>
+        <input
+          type="number"
+          className="w-full border rounded p-2"
+          value={formData.distance}
+          onChange={e => handleInputChange('distance', Number(e.target.value))}
+        />
+      </div>
+
+      <div className="mb-4">
+        <label className="block text-gray-700">Speed (km/h)</label>
+        <input
+          type="number"
+          className="w-full border rounded p-2"
+          value={formData.speed ?? ''}
+          onChange={e => handleInputChange('speed', Number(e.target.value))}
+        />
+      </div>
+
+      <div className="mb-4">
+        <label className="block text-gray-700">Pace</label>
+        <input
+          type="text"
+          className="w-full border rounded p-2"
+          value={formData.pace ?? ''}
+          onChange={e => handleInputChange('pace', e.target.value)}
+        />
+      </div>
+
       </div>
         <input
             type="text"
