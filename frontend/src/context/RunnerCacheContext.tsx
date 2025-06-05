@@ -21,13 +21,14 @@ export const RunnerCacheProvider = ({ children }: { children: ReactNode }) => {
     const runnerMap = new Map();
 
     getRunners().then((runners) => {
-         for (const runner of runners) {
+        for (const runner of runners) {
             console.log(runner)
             runnerMap.set(runner.id, runner);
         }
+        setRunners(runnerMap);
     });
 
-    setRunners(runnerMap);
+    
 
   }, []);
 

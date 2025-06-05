@@ -37,7 +37,7 @@ export default function AddActivityForm({ onClose }: { onClose: () => void }) {
     condition: ''
   });
 
-  const runners = useRunnerCache();
+  const {runners} = useRunnerCache();
   console.log(runners)
   const handleInputChange = (field: keyof ActivityForm, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -54,7 +54,7 @@ export default function AddActivityForm({ onClose }: { onClose: () => void }) {
     <form onSubmit={handleSubmit} className="space-y-4">
       <h2 className="text-xl font-bold text-charcoal">Add New Activity</h2>
 
-        {/* <div className="mb-4">
+        <div className="mb-4">
         <label className="block text-gray-700">Runner</label>
         <select
           className="w-full border rounded p-2"
@@ -63,10 +63,10 @@ export default function AddActivityForm({ onClose }: { onClose: () => void }) {
         >
           <option value="">Select Runner</option>
           {[...runners.entries()].map(([id, runner]) => (
-            <option key={id} value={id}>(runner.name)</option>
+            <option key={id} value={id}>{runner.name}</option>
           ))}
         </select>
-      </div> */}
+      </div>
         <input
             type="text"
             placeholder="Location"
