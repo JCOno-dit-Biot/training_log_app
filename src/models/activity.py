@@ -7,7 +7,7 @@ from .dog import Dog
 from .weather import Weather
 import src.calculation_helpers as ch
 
-SPORT_PACE_DISPLAY = {'canicross', 'canihike', 'canirando', 'skijoring'}
+# SPORT_PACE_DISPLAY = {'canicross', 'canihike', 'canirando', 'skijoring'}
 
 class Activity(BaseModel):
     id: Optional[int] = None
@@ -28,26 +28,19 @@ class Activity(BaseModel):
     def ensure_at_least_one_metric(cls, values):
         if values.speed is None and values.pace is None:
             raise ValueError(f"At least one of 'speed' or 'pace' must be provided the activity")
-        return values
-
-    @model_validator(mode="after")
-    def calculate_pace_if_running(cls, values) -> str:
-        """
-        Automatically calculate pace for running based on speed.
-        """
-        sport = values.sport
-        if sport and sport.name.lower() in SPORT_PACE_DISPLAY:
+        
+        # calculate pace from speed if not provided
+        if values.speed and values.pace is None:
             values.pace = ch.calculate_pace_from_speed(values.speed)
-        return values
-    
-    @model_validator(mode="after")
-    def ensure_lap_provided_if_workout(cls, values) -> str:
-        """
-        Automatically calculate pace for running based on speed.
-        """
+
+        if values.pace and values.speed is None:
+            values.speed = ch.calculate_speed_from_pace(values.pace)
+
+        # Ensure at least one lap is provided if workout is set to true
         if values.workout and (values.laps is None or len(values.laps) == 0):
             raise ValueError(f"Laps cannot be None or an empty list if Workout is set to True")
         return values
+
     
 class ActivityLaps(BaseModel):
     lap_number: int
