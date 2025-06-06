@@ -1,10 +1,6 @@
 import React from 'react';
-import { Dog } from '../types/Dog';
+import { Dog, SelectedDog } from '../types/Dog';
 
-interface SelectedDog {
-  dogId: number;
-  rating: number;
-}
 
 interface DogSelectorProps {
   selectedDogs: SelectedDog[];

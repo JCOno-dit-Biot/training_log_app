@@ -9,3 +9,7 @@ export interface Dog {
     image_url: string
   }
   
+export interface SelectedDog {
+  dogId: number;
+  rating: number;
+}

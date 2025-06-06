@@ -2,15 +2,12 @@
 import { useState } from "react";
 import { useGlobalCache } from "../context/GlobalCacheContext";
 import DogSelector from "./DogSelector";
+import { SelectedDog } from "../types/Dog";
 // import { Dog } from "../types/Dog";
 // import { Runner } from "../types/Runner";
 // import { Weather } from "../types/Weather";
 // import { Sport } from "../types/Sport";
 
-interface SelectedDog {
-  dogId: number;
-  rating: number;
-}
 
 interface ActivityForm {
   runner_id: number | null;
