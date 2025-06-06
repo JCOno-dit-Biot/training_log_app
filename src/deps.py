@@ -6,7 +6,8 @@ from src.repositories import (
     dog_repository,
     runner_repository,
     activity_repository,
-    weight_repository
+    weight_repository,
+    sport_repository
 )
 from .config import settings
 
@@ -26,6 +27,9 @@ def get_weight_repo(db=Depends(get_db)):
 
 def get_activity_repo(db=Depends(get_db)):
     return activity_repository(db)
+
+def get_sport_repo(db=Depends(get_db)):
+    return sport_repository(db)
 
 async def verify_jwt(request: Request, token: str = Depends(oauth2_scheme)):
     if not token:
