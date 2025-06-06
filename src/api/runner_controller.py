@@ -16,7 +16,6 @@ class RunnerController:
 
     @router.get("/runners", response_model=list[Runner])
     def list_runners(self, request: Request):
-        #for now hard code kennel_id, will get from JWT later
         kennel_id = request.state.kennel_id
         return self.repo.get_all(kennel_id)
 
