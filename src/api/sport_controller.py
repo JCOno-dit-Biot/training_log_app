@@ -9,7 +9,7 @@ from src.deps import (
 router = APIRouter()
 
 @cbv(router)
-class DogController:
+class SportController:
     def __init__(self, sport_repo: sport_repository = Depends(get_sport_repo)):
         self.repo = sport_repo
 

@@ -41,7 +41,7 @@ class sport_repository(abstract_repository):
                         FROM 
                             sports
                     """
-            cur.execute(query,)
+            cur.execute(query)
             sports = []
             for row in cur.fetchall():
                 sport = Sport(**row)
