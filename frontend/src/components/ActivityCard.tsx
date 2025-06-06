@@ -4,13 +4,14 @@ import { useGlobalCache } from '../context/GlobalCacheContext'
 export default function ActivityCard({ activity }: { activity: Activity }) {
 
   const DEFAULT_AVATAR = 'https://www.gravatar.com/avatar/?d=mp';
-  const { runners, dogs } = useGlobalCache();
-
+  const { runners, dogs, sports } = useGlobalCache();
+  console.log(sports)
   const date = new Date(activity.timestamp).toLocaleString();
   const dogNames = activity.dogs.map((d) => d.dog.name).join(', ');
-  const sport = activity.sport.name;
+  const sport = [...sports.values()].find(s => s.name === activity.sport.name);
+  console.log(sport?.display_mode)
   const speedOrPace =
-    activity.pace ? `${activity.pace}` : `${activity.speed.toFixed(1)} km/h`;
+    sport?.display_mode === 'pace' ? `${activity.pace}` : `${activity.speed.toFixed(1)} km/h`;
   const runnerImageUrl = runners.get(activity.runner.id)
     ? `/profile_picture/runners/${runners.get(activity.runner.id)?.image_url}`
     : DEFAULT_AVATAR; 
@@ -33,7 +34,7 @@ export default function ActivityCard({ activity }: { activity: Activity }) {
       </div>
 
       <div className="flex flex-wrap gap-4 text-sm text-stone">
-        <span className="capitalize">Sport: {sport}</span>
+        <span className="capitalize">Sport: {sport.name}</span>
         <span>Distance: {activity.distance} km</span>
         {activity.pace ? <span>Pace: {speedOrPace}</span> 
           : activity.speed !== undefined
