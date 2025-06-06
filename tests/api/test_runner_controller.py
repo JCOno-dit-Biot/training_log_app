@@ -66,3 +66,4 @@ def test_create_runner(test_app, mock_repo):
     assert response.status_code == 200
     assert Runner(**response.json()) == returned_runner
     mock_repo.create.assert_called_once_with(Runner(**input_data))
+
