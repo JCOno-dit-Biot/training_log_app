@@ -45,6 +45,7 @@ CREATE TABLE IF NOT EXISTS "sports"(
     "id" SERIAL,
     "name" VARCHAR(50),
     "type" VARCHAR (50), -- dryland or on-snow
+    "display_mode" VARCHAR (50),
     "description" TEXT,
     CONSTRAINT "sports_pkey" PRIMARY KEY ("id")
 );

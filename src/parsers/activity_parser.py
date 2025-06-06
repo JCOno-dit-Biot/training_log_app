@@ -30,13 +30,11 @@ def parse_activity_from_row(row: dict) -> Dog:
         ))
 
     try:
-        weather = Weather(temperature=row['temperature'], humidity=row["humidity"], condition=row['condition'])
+        weather = Weather(temperature=row.get('temperature'), humidity=row.get("humidity"), condition=row.get('condition'))
     except (ValueError, ValidationError) as validation_error:
         #logging.warning("no weather entry for this activity")
         weather = None
-    except (KeyError) as key_error:
-        #logging.warning(f"Missing key: {e}")
-        weather =  None
+    
 
     return Activity(
         id=row['id'],

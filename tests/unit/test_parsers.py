@@ -174,6 +174,11 @@ def test_activity_parser_with_weather(default_activity_row):
     assert activity.weather.humidity == 0.56
     assert activity.weather.condition =="sunny"
 
+def test_parser_weather_with_valerror(default_activity_row):
+    default_activity_row['condition'] =  "sunny"
+    activity = parse_activity_from_row(default_activity_row)
+    assert activity.weather is None
+
 def test_weight_parser():
     
     row = {

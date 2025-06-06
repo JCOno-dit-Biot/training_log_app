@@ -15,7 +15,6 @@ class DogController:
 
     @router.get("/dogs", response_model=list[Dog])
     def list_dogs(self, request: Request):
-        #for now hard code kennel_id, will get from JWT later
         kennel_id = request.state.kennel_id
         return self.repo.get_all(kennel_id)
 
