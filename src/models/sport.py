@@ -14,6 +14,6 @@ class Sport(BaseModel):
     id: Optional[int] = None
     name: str
     type: SportType = Field(description="Dryland or on-snow", )
-    display_mode: SportDisplayMode = Field(description = "display speed or pace depending on sport")
+    display_mode: Optional[SportDisplayMode] = Field(None, description = "display speed or pace depending on sport")
 
 
