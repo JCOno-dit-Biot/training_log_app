@@ -22,8 +22,8 @@ interface ActivityForm {
 }
 
 export default function AddActivityForm({ onClose }: { onClose: () => void }) {
-    
-    const [formData, setFormData] = useState<ActivityForm>({
+
+  const [formData, setFormData] = useState<ActivityForm>({
     runner_id: null,
     sport_id: null,
     dogs: [],
@@ -35,10 +35,26 @@ export default function AddActivityForm({ onClose }: { onClose: () => void }) {
     condition: ''
   });
 
-  const {runners, dogs} = useGlobalCache();
+  const { runners, dogs, sports } = useGlobalCache();
 
   const handleInputChange = (field: keyof ActivityForm, value: any) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+      if ((field === 'distance' || field === 'speed') && value !== '') {
+        const parsed = parseFloat(value);
+        if (!isNaN(parsed)) {
+          setFormData(prev => ({ ...prev, [field]: parsed }));
+        } else {
+          setFormData(prev => ({ ...prev, [field]: '' }));
+        }
+      } else {
+        setFormData(prev => ({ ...prev, [field]: value }));
+      }
+  };
+
+  const handlePaceChange = (value: string) => {
+    const regex = /^\d{0,2}:?\d{0,2}$/;
+    if (value === '' || regex.test(value)) {
+      setFormData(prev => ({ ...prev, pace: value }));
+    }
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -48,11 +64,28 @@ export default function AddActivityForm({ onClose }: { onClose: () => void }) {
     onClose();
   };
 
+  const selectedSport = formData.sport_id ? sports.get(formData.sport_id) : null;
+
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <h2 className="text-xl font-bold text-charcoal">Add New Activity</h2>
 
-        <div className="mb-4">
+
+      <div className="mb-4">
+        {/* Sport selection dropdown */}
+        <label className="block text-gray-700">Sport</label>
+        <select
+          className="w-full border rounded p-2"
+          value={formData.sport_id ?? ''}
+          onChange={e => handleInputChange('sport_id', Number(e.target.value))}
+        >
+          <option value="">Select Sport</option>
+          {[...sports.entries()].map(([id, sport]) => (
+            <option key={id} value={id}>{sport.name}</option>
+          ))}
+        </select>
+      </div>
+
         <label className="block text-gray-700">Runner</label>
         <select
           className="w-full border rounded p-2"
@@ -67,50 +100,57 @@ export default function AddActivityForm({ onClose }: { onClose: () => void }) {
 
         <DogSelector selectedDogs={formData.dogs} setSelectedDogs={(dogs) => handleInputChange('dogs', dogs)} dogs={dogs} />
 
-      <div className="mb-4">
-        <label className="block text-gray-700">Distance (km)</label>
-        <input
-          type="number"
-          className="w-full border rounded p-2"
-          value={formData.distance}
-          onChange={e => handleInputChange('distance', Number(e.target.value))}
-        />
-      </div>
-
-      <div className="mb-4">
-        <label className="block text-gray-700">Speed (km/h)</label>
-        <input
-          type="number"
-          className="w-full border rounded p-2"
-          value={formData.speed ?? ''}
-          onChange={e => handleInputChange('speed', Number(e.target.value))}
-        />
-      </div>
-
-      <div className="mb-4">
-        <label className="block text-gray-700">Pace</label>
-        <input
-          type="text"
-          className="w-full border rounded p-2"
-          value={formData.pace ?? ''}
-          onChange={e => handleInputChange('pace', e.target.value)}
-        />
-      </div>
-
-      </div>
-        <input
+        <div className="mb-4 flex gap-4">
+          <div className="flex-1">
+            <label className="block text-gray-700">Distance (km)</label>
+            <input
+              type="number"
+              step="0.1"
+              className="w-full border rounded p-2"
+              value={formData.distance}
+              onChange={e => handleInputChange('distance', parseFloat(e.target.value))}
+            />
+          </div>
+          {selectedSport?.display_mode === 'pace' ? (
+            <div className="flex-1">
+              <label className="block text-gray-700">Pace</label>
+              <input
+              type="text"
+              className={`w-full border rounded p-2 ${formData.pace ? 'text-black' : 'text-gray-400'}`}
+              placeholder="MM:SS"
+              value={formData.pace}
+              onChange={e => handlePaceChange(e.target.value)}
+              />
+            </div>
+          ) : (
+            <div className="flex-1">
+              <label className="block text-gray-700">Speed (km/h)</label>
+              <input
+                type="number"
+                step="0.1"
+                className="w-full border rounded p-2"
+                value={formData.speed ?? ''}
+                onChange={e => handleInputChange('speed', parseFloat(e.target.value))}
+              />
+            </div>
+          )}
+          </div>
+        
+        <div>
+          <input
             type="text"
             placeholder="Location"
             className="input"
             value={formData.location}
             onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-        />
+          />
 
-      {/* add other fields like sport, runner dropdown, dogs multiselect, etc. */}
+          {/* add other fields like sport, runner dropdown, dogs multiselect, etc. */}
+        </div>
+        <button type="submit" className="bg-primary text-white py-2 px-4 rounded hover:bg-opacity-90">
+          Save Activity
+        </button>
 
-      <button type="submit" className="bg-primary text-white py-2 px-4 rounded hover:bg-opacity-90">
-        Save Activity
-      </button>
     </form>
   );
 }
