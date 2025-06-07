@@ -10,6 +10,7 @@ import { SelectedDog } from "../types/Dog";
 
 
 interface ActivityForm {
+  datetime: string
   runner_id: number | null;
   sport_id: number | null;
   dogs: SelectedDog[];
@@ -24,6 +25,7 @@ interface ActivityForm {
 export default function AddActivityForm({ onClose }: { onClose: () => void }) {
 
   const [formData, setFormData] = useState<ActivityForm>({
+    datetime: new Date().toISOString(),
     runner_id: null,
     sport_id: null,
     dogs: [],
@@ -38,16 +40,16 @@ export default function AddActivityForm({ onClose }: { onClose: () => void }) {
   const { runners, dogs, sports } = useGlobalCache();
 
   const handleInputChange = (field: keyof ActivityForm, value: any) => {
-      if ((field === 'distance' || field === 'speed') && value !== '') {
-        const parsed = parseFloat(value);
-        if (!isNaN(parsed)) {
-          setFormData(prev => ({ ...prev, [field]: parsed }));
-        } else {
-          setFormData(prev => ({ ...prev, [field]: '' }));
-        }
+    if ((field === 'distance' || field === 'speed') && value !== '') {
+      const parsed = parseFloat(value);
+      if (!isNaN(parsed)) {
+        setFormData(prev => ({ ...prev, [field]: parsed }));
       } else {
-        setFormData(prev => ({ ...prev, [field]: value }));
+        setFormData(prev => ({ ...prev, [field]: '' }));
       }
+    } else {
+      setFormData(prev => ({ ...prev, [field]: value }));
+    }
   };
 
   const handlePaceChange = (value: string) => {
@@ -70,8 +72,38 @@ export default function AddActivityForm({ onClose }: { onClose: () => void }) {
     <form onSubmit={handleSubmit} className="space-y-4">
       <h2 className="text-xl font-bold text-charcoal">Add New Activity</h2>
 
+      <div className="mb-2 flex gap-4">
+        <div className="flex-1">
+          <label className="block text-gray-700">Date</label>
+          <input
+            type="date"
+            className="w-full border rounded p-2"
+            value={new Date(formData.datetime).toISOString().split('T')[0]}
+            onChange={(e) => {
+              const time = new Date(formData.datetime).toISOString().split('T')[1]; // keep current time
+              const combined = new Date(`${e.target.value}T${time}`);
+              setFormData(prev => ({ ...prev, datetime: combined.toISOString() }));
+            }}
+          />
+        </div>
+        <div className="flex-1">
+          <label className="block text-gray-700">Time</label>
+          <input
+            type="time"
+            className="w-full border rounded p-2"
+            value={new Date(formData.datetime).toLocaleTimeString('en-GB', { hour12: false }).slice(0, 5)}
+            onChange={(e) => {
+              const [hours, minutes] = e.target.value.split(':').map(Number);
+              const date = new Date(formData.datetime);
+              date.setHours(hours);
+              date.setMinutes(minutes);
+              setFormData(prev => ({ ...prev, datetime: date.toISOString() }));
+            }}
+          />
+        </div>
+      </div>
 
-      <div className="mb-4">
+      <div className="mb-2">
         {/* Sport selection dropdown */}
         <label className="block text-gray-700">Sport</label>
         <select
@@ -85,7 +117,7 @@ export default function AddActivityForm({ onClose }: { onClose: () => void }) {
           ))}
         </select>
       </div>
-      <div className="mb-4">
+      <div className="mb-2">
         <label className="block text-gray-700">Runner</label>
         <select
           className="w-full border rounded p-2"
@@ -99,57 +131,57 @@ export default function AddActivityForm({ onClose }: { onClose: () => void }) {
         </select>
       </div>
 
-        <DogSelector selectedDogs={formData.dogs} setSelectedDogs={(dogs) => handleInputChange('dogs', dogs)} dogs={dogs} />
+      <DogSelector selectedDogs={formData.dogs} setSelectedDogs={(dogs) => handleInputChange('dogs', dogs)} dogs={dogs} />
 
-        <div className="mb-4 flex gap-4">
+      <div className="mb-2 flex gap-4">
+        <div className="flex-1">
+          <label className="block text-gray-700">Distance (km)</label>
+          <input
+            type="number"
+            step="0.1"
+            className="w-full border rounded p-2"
+            value={formData.distance ?? ''}
+            onChange={e => handleInputChange('distance', parseFloat(e.target.value))}
+          />
+        </div>
+        {selectedSport?.display_mode === 'pace' ? (
           <div className="flex-1">
-            <label className="block text-gray-700">Distance (km)</label>
+            <label className="block text-gray-700">Pace</label>
             <input
-              type="number"
-              step="0.1"
-              className="w-full border rounded p-2"
-              value={formData.distance}
-              onChange={e => handleInputChange('distance', parseFloat(e.target.value))}
-            />
-          </div>
-          {selectedSport?.display_mode === 'pace' ? (
-            <div className="flex-1">
-              <label className="block text-gray-700">Pace</label>
-              <input
               type="text"
               className={`w-full border rounded p-2 ${formData.pace ? 'text-black' : 'text-gray-400'}`}
               placeholder="MM:SS"
               value={formData.pace}
               onChange={e => handlePaceChange(e.target.value)}
-              />
-            </div>
-          ) : (
-            <div className="flex-1">
-              <label className="block text-gray-700">Speed (km/h)</label>
-              <input
-                type="number"
-                step="0.1"
-                className="w-full border rounded p-2"
-                value={formData.speed ?? ''}
-                onChange={e => handleInputChange('speed', parseFloat(e.target.value))}
-              />
-            </div>
-          )}
+            />
           </div>
-        
-        <div className="mb-4">
-          <label className="block text-gray-700">Location</label>
-          <input
-            type="text"
-            className="w-full border rounded p-2" 
-            value={formData.location}
-            onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-          />
+        ) : (
+          <div className="flex-1">
+            <label className="block text-gray-700">Speed (km/h)</label>
+            <input
+              type="number"
+              step="0.1"
+              className="w-full border rounded p-2"
+              value={formData.speed ?? ''}
+              onChange={e => handleInputChange('speed', parseFloat(e.target.value))}
+            />
+          </div>
+        )}
+      </div>
 
-          {/* add other fields like sport, runner dropdown, dogs multiselect, etc. */}
-        </div>
+      <div className="mb-2">
+        <label className="block text-gray-700">Location</label>
+        <input
+          type="text"
+          className="w-full border rounded p-2"
+          value={formData.location}
+          onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+        />
 
-        <div className="mb-4 flex gap-4">
+        {/* add other fields like sport, runner dropdown, dogs multiselect, etc. */}
+      </div>
+
+      <div className="mb-2 flex gap-4">
         <div className="flex-2">
           <label className="block text-gray-700">Conditions</label>
           <input
@@ -181,9 +213,9 @@ export default function AddActivityForm({ onClose }: { onClose: () => void }) {
         </div>
       </div>
 
-        <button type="submit" className="bg-primary text-white py-2 px-4 rounded hover:bg-opacity-90">
-          Save Activity
-        </button>
+      <button type="submit" className="bg-primary text-white py-2 px-4 rounded hover:bg-opacity-90">
+        Save Activity
+      </button>
 
     </form>
   );

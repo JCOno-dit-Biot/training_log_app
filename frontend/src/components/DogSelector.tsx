@@ -1,4 +1,5 @@
 import React from 'react';
+import { useState } from 'react';
 import { Dog, SelectedDog } from '../types/Dog';
 
 
@@ -9,6 +10,9 @@ interface DogSelectorProps {
 }
 
 const DogSelector: React.FC<DogSelectorProps> = ({ selectedDogs, setSelectedDogs, dogs }) => {
+  const [editingRatings, setEditingRatings] = useState<{ [dogId: number]: string }>({});
+
+
   const handleDogToggle = (dogId: number) => {
     const exists = selectedDogs.find(d => d.dogId === dogId);
     if (exists) {
@@ -46,11 +50,35 @@ const DogSelector: React.FC<DogSelectorProps> = ({ selectedDogs, setSelectedDogs
               {selected && (
                 <input
                   type="number"
-                  min={1}
+                  min={0}
                   max={10}
-                  value={selected.rating}
-                  onChange={e => handleRatingChange(dog.id, Number(e.target.value))}
-                  className="w-full mt-1 text-sm text-center border rounded"
+                  value={editingRatings[dog.id] ?? selected.rating.toString()}
+                  onClick={(e) => e.stopPropagation()}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    if (/^\d{0,2}$/.test(val)) {
+                      setEditingRatings(prev => ({ ...prev, [dog.id]: val }));
+                    }
+                  }}
+                  onBlur={() => {
+                    const input = editingRatings[dog.id];
+                    const rating = Number(input);
+                    if (!isNaN(rating) && rating >= 0 && rating <= 10) {
+                      handleRatingChange(dog.id, rating);
+                    }
+                    setEditingRatings(prev => {
+                      const { [dog.id]: _, ...rest } = prev;
+                      return rest;
+                    });
+                  }}
+                  className={`w-full mt-1 text-sm text-center border rounded appearance-none 
+                      [&::-webkit-outer-spin-button]:appearance-none 
+                      [&::-webkit-inner-spin-button]:appearance-none 
+                      [appearance:textfield] ${editingRatings[dog.id] !== undefined &&
+                      (Number(editingRatings[dog.id]) < 0 || Number(editingRatings[dog.id]) > 10)
+                      ? 'border-red-500'
+                      : ''
+                    }`}
                 />
               )}
             </div>
