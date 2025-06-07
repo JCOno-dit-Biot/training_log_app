@@ -85,7 +85,7 @@ export default function AddActivityForm({ onClose }: { onClose: () => void }) {
           ))}
         </select>
       </div>
-
+      <div className="mb-4">
         <label className="block text-gray-700">Runner</label>
         <select
           className="w-full border rounded p-2"
@@ -97,6 +97,7 @@ export default function AddActivityForm({ onClose }: { onClose: () => void }) {
             <option key={id} value={id}>{runner.name}</option>
           ))}
         </select>
+      </div>
 
         <DogSelector selectedDogs={formData.dogs} setSelectedDogs={(dogs) => handleInputChange('dogs', dogs)} dogs={dogs} />
 
@@ -136,17 +137,50 @@ export default function AddActivityForm({ onClose }: { onClose: () => void }) {
           )}
           </div>
         
-        <div>
+        <div className="mb-4">
+          <label className="block text-gray-700">Location</label>
           <input
             type="text"
-            placeholder="Location"
-            className="input"
+            className="w-full border rounded p-2" 
             value={formData.location}
             onChange={(e) => setFormData({ ...formData, location: e.target.value })}
           />
 
           {/* add other fields like sport, runner dropdown, dogs multiselect, etc. */}
         </div>
+
+        <div className="mb-4 flex gap-4">
+        <div className="flex-2">
+          <label className="block text-gray-700">Conditions</label>
+          <input
+            type="text"
+            className="w-full border rounded p-2"
+            value={formData.condition ?? ''}
+            onChange={e => handleInputChange('condition', e.target.value)}
+          />
+        </div>
+        <div className="flex-1">
+          <label className="block text-gray-700">T (°C)</label>
+          <input
+            type="number"
+            step="0.1"
+            className="w-full border rounded p-2"
+            value={formData.temperature ?? ''}
+            onChange={e => handleInputChange('temperature', e.target.value)}
+          />
+        </div>
+        <div className="flex-1">
+          <label className="block text-gray-700">Humidity (%)</label>
+          <input
+            type="number"
+            step="1"
+            className="w-full border rounded p-2"
+            value={formData.humidity ?? ''}
+            onChange={e => handleInputChange('humidity', e.target.value)}
+          />
+        </div>
+      </div>
+
         <button type="submit" className="bg-primary text-white py-2 px-4 rounded hover:bg-opacity-90">
           Save Activity
         </button>
