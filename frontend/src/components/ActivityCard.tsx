@@ -36,7 +36,7 @@ export default function ActivityCard({ activity }: { activity: Activity }) {
       <div className="flex flex-wrap gap-4 text-sm text-stone">
         <span className="capitalize">Sport: {sport.name}</span>
         <span>Distance: {activity.distance} km</span>
-        {activity.pace ? <span>Pace: {speedOrPace}</span> 
+        {sport.display_mode === 'pace' ? <span>Pace: {speedOrPace}</span> 
           : activity.speed !== undefined
           ? <span>Speed: {activity.speed.toFixed(1)} km/h</span>
           : null}
