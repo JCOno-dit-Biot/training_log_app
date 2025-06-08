@@ -2,12 +2,14 @@
 import { useState } from "react";
 import { useGlobalCache } from "../context/GlobalCacheContext";
 import DogSelector from "./DogSelector";
+import LapEditor from './LapEditor';
+
 import { SelectedDog } from "../types/Dog";
+import { Lap } from "../types/Activity";
 // import { Dog } from "../types/Dog";
 // import { Runner } from "../types/Runner";
 // import { Weather } from "../types/Weather";
 // import { Sport } from "../types/Sport";
-
 
 interface ActivityForm {
   datetime: string
@@ -20,6 +22,8 @@ interface ActivityForm {
   temperature?: number;
   humidity?: number;
   condition?: string;
+  is_workout: boolean;
+  laps: Lap[];
 }
 
 export default function AddActivityForm({ onClose }: { onClose: () => void }) {
@@ -34,7 +38,9 @@ export default function AddActivityForm({ onClose }: { onClose: () => void }) {
     pace: '',
     temperature: undefined,
     humidity: undefined,
-    condition: ''
+    condition: '',
+    is_workout: false,
+    laps: [{ distance: 0, lap_time: '' }]
   });
 
   const { runners, dogs, sports } = useGlobalCache();
@@ -134,7 +140,7 @@ export default function AddActivityForm({ onClose }: { onClose: () => void }) {
       <DogSelector selectedDogs={formData.dogs} setSelectedDogs={(dogs) => handleInputChange('dogs', dogs)} dogs={dogs} />
 
       <div className="mb-2 flex gap-4">
-        <div className="flex-1">
+        <div className="flex-2">
           <label className="block text-gray-700">Distance (km)</label>
           <input
             type="number"
@@ -145,7 +151,7 @@ export default function AddActivityForm({ onClose }: { onClose: () => void }) {
           />
         </div>
         {selectedSport?.display_mode === 'pace' ? (
-          <div className="flex-1">
+          <div className="flex-2">
             <label className="block text-gray-700">Pace</label>
             <input
               type="text"
@@ -156,7 +162,7 @@ export default function AddActivityForm({ onClose }: { onClose: () => void }) {
             />
           </div>
         ) : (
-          <div className="flex-1">
+          <div className="flex-2">
             <label className="block text-gray-700">Speed (km/h)</label>
             <input
               type="number"
@@ -167,8 +173,29 @@ export default function AddActivityForm({ onClose }: { onClose: () => void }) {
             />
           </div>
         )}
-      </div>
 
+        <div className="mb-4 flex-1 flex flex-col items-center gap-2">
+          <label className="text-gray-700 flex-1 font-medium">Workout
+            <input
+              type="checkbox"
+              checked={formData.is_workout}
+              className="flex-1 peer appearance-none "
+              onChange={(e) => setFormData(prev => ({
+                ...prev,
+                is_workout: e.target.checked,
+                laps: e.target.checked ? [{ distance: 0, lap_time: '' }] : [],
+              }))}
+            />
+            <span className="w-14 h-8 flex items-center flex-shrink-0 ml-1 mt-1 p-1 bg-gray-300 rounded-full duration-300 ease-in-out peer-checked:bg-secondary after:w-6 after:h-6 after:bg-white after:rounded-full after:shadow-md after:duration-300 peer-checked:after:translate-x-6"></span>
+          </label>
+        </div>
+      </div>
+      {formData.is_workout && (
+        <LapEditor
+          laps={formData.laps}
+          setLaps={(laps) => setFormData(prev => ({ ...prev, laps }))}
+        />
+      )}
       <div className="mb-2">
         <label className="block text-gray-700">Location</label>
         <input
@@ -213,7 +240,7 @@ export default function AddActivityForm({ onClose }: { onClose: () => void }) {
         </div>
       </div>
 
-      <button type="submit" className="bg-primary text-white py-2 px-4 rounded hover:bg-opacity-90">
+      <button type="submit" className="bg-primary text-white py-2 px-4 mt-2 rounded hover:bg-opacity-90">
         Save Activity
       </button>
 
