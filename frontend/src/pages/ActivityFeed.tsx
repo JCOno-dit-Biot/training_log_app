@@ -31,8 +31,8 @@ export default function ActivityFeed() {
       <AddActivityButton onClick={() => setShowModal(true)} />
 
       {showModal && (
-        <div className="fixed inset-0 bg-primary bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-md max-w-xl w-full relative">
+        <div className="fixed inset-0 bg-primary/80 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-md max-w-xl max-h-[95vh] w-full overflow-y-auto p-6 relative">
             <button
               onClick={() => setShowModal(false)}
               className="absolute top-2 right-2 text-gray-600 hover:text-black"
