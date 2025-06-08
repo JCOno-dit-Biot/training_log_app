@@ -5,11 +5,9 @@ export default function ActivityCard({ activity }: { activity: Activity }) {
 
   const DEFAULT_AVATAR = 'https://www.gravatar.com/avatar/?d=mp';
   const { runners, dogs, sports } = useGlobalCache();
-  console.log(sports)
   const date = new Date(activity.timestamp).toLocaleString();
   const dogNames = activity.dogs.map((d) => d.dog.name).join(', ');
   const sport = [...sports.values()].find(s => s.name === activity.sport.name);
-  console.log(sport?.display_mode)
   const speedOrPace =
     sport?.display_mode === 'pace' ? `${activity.pace}` : `${activity.speed.toFixed(1)} km/h`;
   const runnerImageUrl = runners.get(activity.runner.id)
