@@ -18,3 +18,8 @@ id: number;
   weather: Weather;
   notes: string;
 }
+
+export interface Lap {
+  distance: number;
+  lap_time: string;
+}
