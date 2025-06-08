@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { Dog, SelectedDog } from '../types/Dog';
 
 
+
 interface DogSelectorProps {
   selectedDogs: SelectedDog[];
   setSelectedDogs: (dogs: SelectedDog[]) => void;
@@ -36,7 +37,7 @@ const DogSelector: React.FC<DogSelectorProps> = ({ selectedDogs, setSelectedDogs
           return (
             <div
               key={dog.id}
-              className={`p-2 border rounded cursor-pointer ${selected ? 'border-green-500' : 'border-gray-300'}`}
+              className={`p-2 border rounded cursor-pointer ${selected ? 'border-success' : 'border-gray-300'}`}
               onClick={() => handleDogToggle(dog.id)}
             >
               <img

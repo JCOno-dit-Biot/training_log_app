@@ -42,7 +42,7 @@ export default function AddActivityForm({ onClose }: { onClose: () => void }) {
     is_workout: false,
     laps: [{ distance: 0, lap_time: '' }]
   });
-
+  console.log(formData)
   const { runners, dogs, sports } = useGlobalCache();
 
   const handleInputChange = (field: keyof ActivityForm, value: any) => {
@@ -56,6 +56,7 @@ export default function AddActivityForm({ onClose }: { onClose: () => void }) {
     } else {
       setFormData(prev => ({ ...prev, [field]: value }));
     }
+    console.log(formData)
   };
 
   const handlePaceChange = (value: string) => {
@@ -146,7 +147,7 @@ export default function AddActivityForm({ onClose }: { onClose: () => void }) {
             type="number"
             step="0.1"
             className="w-full border rounded p-2"
-            value={formData.distance ?? ''}
+            value={formData.distance === 0 ? '': formData.distance.toString() }
             onChange={e => handleInputChange('distance', parseFloat(e.target.value))}
           />
         </div>
@@ -186,7 +187,7 @@ export default function AddActivityForm({ onClose }: { onClose: () => void }) {
                 laps: e.target.checked ? [{ distance: 0, lap_time: '' }] : [],
               }))}
             />
-            <span className="w-14 h-8 flex items-center flex-shrink-0 ml-1 mt-1 p-1 bg-gray-300 rounded-full duration-300 ease-in-out peer-checked:bg-secondary after:w-6 after:h-6 after:bg-white after:rounded-full after:shadow-md after:duration-300 peer-checked:after:translate-x-6"></span>
+            <span className="w-14 h-8 flex items-center flex-shrink-0 ml-1 mt-1 p-1 bg-gray-300 rounded-full duration-300 ease-in-out peer-checked:bg-success after:w-6 after:h-6 after:bg-white after:rounded-full after:shadow-md after:duration-300 peer-checked:after:translate-x-6"></span>
           </label>
         </div>
       </div>
