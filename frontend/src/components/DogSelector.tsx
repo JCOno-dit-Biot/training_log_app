@@ -17,9 +17,7 @@ const DogSelector: React.FC<DogSelectorProps> = ({ selectedDogs, setSelectedDogs
     const exists = selectedDogs.find(d => d.dogId === dogId);
     if (exists) {
       setSelectedDogs(selectedDogs.filter(d => d.dogId !== dogId));
-      console.log(selectedDogs)
     } else {
-      console.log(selectedDogs)
       setSelectedDogs([...selectedDogs, { dogId, rating: 10 }]);
     }
   };
