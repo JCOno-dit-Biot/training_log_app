@@ -19,6 +19,7 @@ class activity_repository(abstract_repository):
                         SELECT 
                             a.*, 
                             r.name AS runner_name,
+                            r.id AS runner_id,
                             s.name AS sport_name,
                             k.name AS kennel_name,
                             s.type AS sport_type,
@@ -52,7 +53,7 @@ class activity_repository(abstract_repository):
                         GROUP BY 
                         a.id, a.runner_id, a.sport_id, a.timestamp, a.notes, a.location,
                         a.workout, a.speed, a.distance,
-                        r.name, s.name, s.type, k.name, k.id,
+                        r.name, r.id, s.name, s.type, k.name, k.id,
                         w.temperature, w.humidity, w.condition
                         ORDER BY a.timestamp DESC LIMIT 5;
                     """
@@ -70,6 +71,7 @@ class activity_repository(abstract_repository):
                         SELECT 
                             a.*, 
                             r.name AS runner_name,
+                            r.id AS runner_id,
                             s.name AS sport_name,
                             s.type AS sport_type,
                             k.name AS kennel_name,
@@ -103,7 +105,7 @@ class activity_repository(abstract_repository):
                         GROUP BY 
                         a.id, a.runner_id, a.sport_id, a.timestamp, a.notes, a.location,
                         a.workout, a.speed, a.distance,
-                        r.name, s.name, s.type, k.name, k.id, w.temperature, w.humidity, w.condition
+                        r.name, r.id, s.name, s.type, k.name, k.id, w.temperature, w.humidity, w.condition
                     """
             cur.execute(query, (activity_id,))
             row = cur.fetchone()

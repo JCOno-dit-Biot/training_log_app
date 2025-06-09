@@ -12,7 +12,7 @@ def activity_entry(JC):
     training_entry= Activity (
         timestamp = datetime.now(),
         runner = JC,
-        sport = Sport(name= 'Canicross', type= 'dryland'),
+        sport = Sport(name= 'Canicross', type= 'dryland', display_mode = 'pace'),
         location = 'Christie',
         distance = 2.4,
         workout = False,
@@ -67,15 +67,16 @@ def test_dog_weight_recalculate_dog_age(Luna):
     weight_entry=DogWeightEntry(dog = Luna, date = date(2023, 3, 27), weight = 35, age = 1)
     assert int(weight_entry.age*100)/100 == 5.93
 
-def test_activity_calculates_pace_automatically_if_running(activity_entry):
+def test_activity_calculates_pace_automatically(activity_entry):
     assert activity_entry.pace is not None 
     assert activity_entry.pace == '03:20'
+    
 
-def test_activity_no_pace_if_not_running(JC, Luna):
+def test_activity_calculate_pace_for_all_sports(JC, Luna):
     bike_activity = Activity (
         timestamp = datetime.now(),
         runner = JC,
-        sport = Sport(name= 'Bikejoring', type= 'dryland'),
+        sport = Sport(name= 'Bikejoring', type= 'dryland', display_mode= 'speed'),
         speed = 21.9,
         location = 'Christie',
         distance = 2.4,
@@ -86,30 +87,59 @@ def test_activity_no_pace_if_not_running(JC, Luna):
 
         )]
     )    
-    assert bike_activity.pace is None
+    assert bike_activity.pace is not None
 
-def test_no_speed_pace_raises_ValError(JC):
-    with pytest.raises(ValueError):
+def test_no_speed_pace_raises_ValError(JC,Luna):
+    with pytest.raises(ValueError, match = 'must be provided the activity'):
         training_entry= Activity (
         timestamp = datetime.now(),
         runner = JC,
-        sport = Sport(name= 'Canicross', type= 'dryland'),
+        dogs = [ActivityDogs(
+            dog = Luna,
+            rating = 8
+        )],
+        sport = Sport(name= 'Canicross', type= 'dryland', display_mode = 'pace'),
         location = 'Christie',
         distance = 2.4,
         workout = False
     )
 
-def test_activity_workout_without_lap_raise():
-    with pytest.raises(ValueError):
+def test_activity_workout_without_lap_raise(Luna, JC):
+    with pytest.raises(ValueError, match = 'Laps cannot be None'):
         training_entry= Activity (
         timestamp = datetime.now(),
         runner = JC,
-        sport = Sport(name= 'Canicross', type= 'dryland'),
+        dogs = [ActivityDogs(
+            dog = Luna,
+            rating = 8
+
+        )],
+        speed = 20.1,
+        sport = Sport(name= 'Canicross', type= 'dryland', display_mode = 'pace'),
         location = 'Christie',
         distance = 2.4,
         workout = True,
         laps=[]
     )
+        
+def test_activity_with_pace_no_speed(JC, Luna):
+    bike_activity = Activity (
+        timestamp = datetime.now(),
+        runner = JC,
+        sport = Sport(name= 'Bikejoring', type= 'dryland', display_mode= 'speed'),
+        pace = "02:44",
+        location = 'Christie',
+        distance = 2.4,
+        workout = False,
+        dogs = [ActivityDogs(
+            dog = Luna,
+            rating = 8
+
+        )]
+    )
+    print(bike_activity)
+    assert bike_activity.speed is not None
+
 def test_activity_lap_no_speed_raise():
  with pytest.raises(ValueError):
     ActivityLaps(lap_number=1)
@@ -131,7 +161,7 @@ def test_activity_workout_with_lap(JC, Luna):
     workout = Activity (
         timestamp = datetime.now(),
         runner = JC,
-        sport = Sport(name= 'Canicross', type= 'dryland'),
+        sport = Sport(name= 'Canicross', type= 'dryland', display_mode='pace'),
         location = 'Christie',
         distance = 2.4,
         workout = True,
