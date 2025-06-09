@@ -6,12 +6,13 @@ import LapEditor from './LapEditor';
 
 import { SelectedDog } from "../types/Dog";
 import { Lap } from "../types/Activity";
+import { postActivity } from "../api/activities";
 // import { Dog } from "../types/Dog";
 // import { Runner } from "../types/Runner";
 // import { Weather } from "../types/Weather";
 // import { Sport } from "../types/Sport";
 
-interface ActivityForm {
+export interface ActivityForm {
   datetime: string
   runner_id: number | null;
   sport_id: number | null;
@@ -27,6 +28,9 @@ interface ActivityForm {
 }
 
 export default function AddActivityForm({ onClose }: { onClose: () => void }) {
+
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const [formData, setFormData] = useState<ActivityForm>({
     datetime: new Date().toISOString(),
@@ -68,9 +72,19 @@ export default function AddActivityForm({ onClose }: { onClose: () => void }) {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    setLoading(true);
+    setError(null);
     // TODO: Call backend API with formData
-    console.log(formData);
-    onClose();
+    try {
+      const response = postActivity(formData)
+      console.log('Activity created:', response);
+      onClose(); // close the modal or reset form as needed
+    } catch (err: any) {
+      console.error('Submission error:', err);
+      setError(err.response?.data?.message || 'Something went wrong.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const selectedSport = formData.sport_id ? sports.get(formData.sport_id) : null;
@@ -147,7 +161,7 @@ export default function AddActivityForm({ onClose }: { onClose: () => void }) {
             type="number"
             step="0.1"
             className="w-full border rounded p-2"
-            value={formData.distance === 0 ? '': formData.distance.toString() }
+            value={formData.distance === 0 ? '' : formData.distance.toString()}
             onChange={e => handleInputChange('distance', parseFloat(e.target.value))}
           />
         </div>
@@ -241,8 +255,8 @@ export default function AddActivityForm({ onClose }: { onClose: () => void }) {
         </div>
       </div>
 
-      <button type="submit" className="bg-primary text-white py-2 px-4 mt-2 rounded hover:bg-opacity-90">
-        Save Activity
+      <button type="submit" className="bg-primary text-white py-2 px-4 mt-2 rounded hover:bg-opacity-90" disabled={loading}>
+        {loading ? 'Saving...' : 'Save Activity'}
       </button>
 
     </form>
