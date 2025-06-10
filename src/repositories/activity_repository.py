@@ -1,5 +1,5 @@
 from src.models.runner import Runner
-from src.models.activity import Activity, ActivityLaps
+from src.models.activity import Activity, ActivityLaps, ActivityCreate
 from src.parsers.activity_parser import parse_activity_from_row
 from .abstract_repository import abstract_repository
 from typing import List, Optional
@@ -111,7 +111,7 @@ class activity_repository(abstract_repository):
             row = cur.fetchone()
         return parse_activity_from_row(row)
     
-    def create(self, activity: Activity) -> int:
+    def create(self, activity: ActivityCreate) -> int:
         with self._connection.cursor(cursor_factory= RealDictCursor) as cur:
             try:
                 query = """
@@ -121,8 +121,8 @@ class activity_repository(abstract_repository):
                     RETURNING id
                     """
                 cur.execute(query, (
-                    activity.runner.id,
-                    activity.sport.id,
+                    activity.runner_id,
+                    activity.sport_id,
                     activity.timestamp,
                     activity.notes,
                     activity.location,
@@ -137,7 +137,7 @@ class activity_repository(abstract_repository):
                     cur.execute("""
                         INSERT INTO activity_dogs (activity_id, dog_id, rating)
                         VALUES (%s, %s, %s)
-                    """, (activity_id, dog.id, dog.rating)) #this assumes dogs have their id set
+                    """, (activity_id, dog.dog_id, dog.rating)) #this assumes dogs have their id set, they should from the frontend
 
                 if len(activity.laps) > 0:
                     for lap in activity.laps:

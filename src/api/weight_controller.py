@@ -11,7 +11,7 @@ from src.deps import (
 router = APIRouter()
 
 @cbv(router)
-class DogController:
+class WeightController:
     def __init__(self, weight_repo: weight_repository = Depends(get_weight_repo)):
         self.repo = weight_repo
 

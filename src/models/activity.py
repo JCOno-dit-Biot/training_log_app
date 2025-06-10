@@ -90,7 +90,7 @@ class ActivityLaps(BaseModel):
         return values
 
 class ActivityCreate(BaseModel):
-    d: Optional[int] = None
+    id: Optional[int] = None
     timestamp: datetime
     runner_id: int
     sport_id: int
