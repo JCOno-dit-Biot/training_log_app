@@ -104,6 +104,23 @@ class ActivityCreate(BaseModel):
     speed: Optional[float] = Field(None, description="Speed in km per hours")
     pace: Optional[str] = Field(None, description="Pace in min per km")
 
+    @model_validator(mode="after")
+    def ensure_at_least_one_metric(cls, values):
+        if values.speed is None and values.pace is None:
+            raise ValueError(f"At least one of 'speed' or 'pace' must be provided the activity")
+        
+        # calculate pace from speed if not provided
+        if values.speed and values.pace is None:
+            values.pace = ch.calculate_pace_from_speed(values.speed)
+
+        if values.pace and values.speed is None:
+            values.speed = ch.calculate_speed_from_pace(values.pace)
+
+        # Ensure at least one lap is provided if workout is set to true
+        if values.workout and (values.laps is None or len(values.laps) == 0):
+            raise ValueError(f"Laps cannot be None or an empty list if Workout is set to True")
+        return values
+    
 class ActivityDogs(BaseModel):
     id: Optional[int] = None
     dog: Dog
