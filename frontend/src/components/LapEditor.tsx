@@ -10,8 +10,8 @@ interface LapEditorProps {
 const LapEditor: React.FC<LapEditorProps> = ({ laps, setLaps }) => {
     const handleDistanceChange = (index: number, value: string) => {
         const updated = [...laps];
-        updated[index].distance = value === '' ? 0 : parseFloat(value) || 0;
-
+        updated[index].lap_distance = value === '' ? 0 : parseFloat(value) || 0;
+        console.log(laps)
         setLaps(updated);
     };
 
@@ -25,7 +25,7 @@ const LapEditor: React.FC<LapEditorProps> = ({ laps, setLaps }) => {
     };
 
     const addLap = () => {
-        setLaps([...laps, { distance: 0, lap_time: '' }]);
+        setLaps([...laps, { lap_distance: 0, lap_time: '' }]);
     };
 
     const removeLap = (index: number) => {
@@ -53,7 +53,7 @@ const LapEditor: React.FC<LapEditorProps> = ({ laps, setLaps }) => {
               type="number"
               step="0.1"
               className="w-full border rounded p-2 text-sm"
-              value={lap.distance === 0 ? '' : lap.distance.toString()}
+              value={lap.lap_distance != null && lap.lap_distance !== 0 ? lap.lap_distance.toString() : ''}
               onChange={(e) => handleDistanceChange(index, e.target.value)}
             />
 

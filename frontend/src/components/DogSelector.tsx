@@ -11,21 +11,21 @@ interface DogSelectorProps {
 }
 
 const DogSelector: React.FC<DogSelectorProps> = ({ selectedDogs, setSelectedDogs, dogs }) => {
-  const [editingRatings, setEditingRatings] = useState<{ [dogId: number]: string }>({});
+  const [editingRatings, setEditingRatings] = useState<{ [dog_id: number]: string }>({});
 
 
-  const handleDogToggle = (dogId: number) => {
-    const exists = selectedDogs.find(d => d.dogId === dogId);
+  const handleDogToggle = (dog_id: number) => {
+    const exists = selectedDogs.find(d => d.dog_id === dog_id);
     if (exists) {
-      setSelectedDogs(selectedDogs.filter(d => d.dogId !== dogId));
+      setSelectedDogs(selectedDogs.filter(d => d.dog_id !== dog_id));
     } else {
-      setSelectedDogs([...selectedDogs, { dogId, rating: 10 }]);
+      setSelectedDogs([...selectedDogs, { dog_id, rating: 10 }]);
     }
   };
 
-  const handleRatingChange = (dogId: number, rating: number) => {
+  const handleRatingChange = (dog_id: number, rating: number) => {
     setSelectedDogs(selectedDogs.map(d =>
-      d.dogId === dogId ? { ...d, rating } : d
+      d.dog_id === dog_id ? { ...d, rating } : d
     ));
   };
   return (
@@ -33,7 +33,7 @@ const DogSelector: React.FC<DogSelectorProps> = ({ selectedDogs, setSelectedDogs
       <label className="block text-gray-700 mb-2">Select Dogs</label>
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
         {[...dogs.values()].map(dog => {
-          const selected = selectedDogs.find(d => d.dogId === dog.id);
+          const selected = selectedDogs.find(d => d.dog_id === dog.id);
           return (
             <div
               key={dog.id}

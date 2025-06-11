@@ -20,6 +20,6 @@ id: number;
 }
 
 export interface Lap {
-  distance: number;
+  lap_distance: number;
   lap_time: string;
 }
