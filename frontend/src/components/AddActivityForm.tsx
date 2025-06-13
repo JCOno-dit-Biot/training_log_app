@@ -213,7 +213,7 @@ export default function AddActivityForm({ onClose }: { onClose: () => void }) {
               onChange={(e) => setFormData(prev => ({
                 ...prev,
                 workout: e.target.checked,
-                laps: e.target.checked ? [{ lap_distance: 0, lap_time: '' }] : [],
+                laps: e.target.checked ? [{ lap_number: 0, lap_distance: 0, lap_time: '' }] : [],
               }))}
             />
             <span className="w-14 h-8 flex items-center flex-shrink-0 ml-1 mt-1 p-1 bg-gray-300 rounded-full duration-300 ease-in-out peer-checked:bg-success after:w-6 after:h-6 after:bg-white after:rounded-full after:shadow-md after:duration-300 peer-checked:after:translate-x-6"></span>

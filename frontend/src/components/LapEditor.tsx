@@ -1,5 +1,5 @@
 import React from 'react';
-import { Lap } from '../types/Activity';
+import { Lap } from '../types/Lap';
 import { Trash2 } from 'lucide-react';
 
 interface LapEditorProps {
@@ -25,12 +25,18 @@ const LapEditor: React.FC<LapEditorProps> = ({ laps, setLaps }) => {
     };
 
     const addLap = () => {
-        setLaps([...laps, { lap_distance: 0, lap_time: '' }]);
+        const nextLapNumber = laps.length + 1;
+        setLaps([...laps, { lap_number: nextLapNumber, lap_distance: 0, lap_time: '' }]);
+        console.log(laps)
     };
 
     const removeLap = (index: number) => {
-        const updated = laps.filter((_, i) => i !== index);
+        const updated = laps.filter((_, i) => i !== index).map((lap, i) => ({
+          ...lap,
+          lap_number: i + 1
+        }));
         setLaps(updated);
+        console.log(laps)
     };
 
     return (
@@ -82,7 +88,7 @@ const LapEditor: React.FC<LapEditorProps> = ({ laps, setLaps }) => {
 
       <button
         type="button"
-        onClick={addLap}
+        onClick={() => addLap()}
         className="mt-3 text-sm bg-white text-blue-600 hover:underline"
       >
         + Add Lap
