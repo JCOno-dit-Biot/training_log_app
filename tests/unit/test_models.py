@@ -1,4 +1,16 @@
-from src.models import Activity, Dog, Kennel, Runner, DogWeightEntry, Sport, ActivityLaps, ActivityDogs, Weather
+from src.models import (
+    Activity, 
+    Dog, 
+    Kennel, 
+    Runner, 
+    DogWeightEntry, 
+    Sport, 
+    ActivityLaps, 
+    ActivityDogs, 
+    Weather, 
+    commentCreate,
+    commentOut
+)
 import pytest
 from pydantic import ValidationError
 from datetime import datetime, date, timedelta
@@ -255,3 +267,29 @@ def test_weather_no_t_humidity_raise():
         weather = Weather (
             condition = "wet"
         )
+
+def test_comment_create_init():
+    comment = commentCreate(
+        user_id = 1,
+        activity_id= 1,
+        comment= "test_comment"
+    )
+    assert comment.comment == "test_comment"
+    assert comment.user_id== 1
+    assert comment.activity_id == 1
+    
+def test_comment_out_init():
+    now_ts = datetime.now()
+    comment = commentOut(
+        id = 1,
+        user_id = 1,
+        activity_id= 1,
+        created_at= now_ts,
+        comment= "test_comment"
+    )
+    assert comment.comment == "test_comment"
+    assert comment.user_id== 1
+    assert comment.activity_id == 1
+    assert comment.created_at ==  now_ts
+    assert comment.id == 1
+    assert comment.updated_at is None

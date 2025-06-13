@@ -21,5 +21,9 @@ class abstract_repository(abc.ABC):
         raise NotImplementedError
 
     @abc.abstractmethod
+    def update(self, obj):
+        raise NotImplementedError
+    
+    @abc.abstractmethod
     def delete(self, id: int):
         pass
