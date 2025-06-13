@@ -5,3 +5,4 @@ from .activity import Activity, ActivityLaps, ActivityDogs
 from .sport import Sport
 from .dog_weight import DogWeightEntry
 from .weather import Weather
+from .comment import commentCreate, commentOut
