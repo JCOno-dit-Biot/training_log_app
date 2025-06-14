@@ -14,7 +14,23 @@ class comment_repository(abstract_repository):
         return super().get_by_name(name)
     
     def get_by_id(self, id):
-        return super().get_by_id(id)
+        with self._connection.cursor(cursor_factory= RealDictCursor) as cur:
+            query = """ SELECT 
+                            id, 
+                            user_id, 
+                            activity_id, 
+                            comment, 
+                            created_at, 
+                            updated_at
+                        FROM
+                            activity_comments
+                        WHERE 
+                            id = %s;
+                    """
+            cur.execute(query, (id,))
+            result = cur.fetchone()
+
+        return commentOut(**result)
     
     def get_all(self, activity_id: int):
         with self._connection.cursor(cursor_factory= RealDictCursor) as cur:
@@ -28,7 +44,7 @@ class comment_repository(abstract_repository):
                         FROM
                             activity_comments
                         WHERE 
-                            id = %s;
+                            activity_id = %s;
                     """
             cur.execute(query, (activity_id,))
             comments = []
@@ -59,10 +75,10 @@ class comment_repository(abstract_repository):
             try:
                 query = """
                     UPDATE activity_comments
-                    SET comment = %s, updated_at = CURRENT_TIMESTAMP()
+                    SET comment = %s, updated_at = CURRENT_TIMESTAMP
                     WHERE id = %s;
                 """
-                cur.execute(query, (comment.comment, comment_id))
+                cur.execute(query, (comment.comment, comment_id,))
             except Exception as e:
                 print(e)
                 self._connection.rollback()
@@ -72,7 +88,7 @@ class comment_repository(abstract_repository):
 
     def delete(self, id: int):
         with self._connection.cursor(cursor_factory= RealDictCursor) as cur:
-            cur.execute("""DELETE FROM activity_comments WHERE id = %s); """,
+            cur.execute("""DELETE FROM activity_comments WHERE id = %s; """,
                          (id,))
             self._connection.commit()
 
