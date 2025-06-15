@@ -159,10 +159,11 @@ class activity_repository(abstract_repository):
             except Exception as e:
                 print(e)
                 self._connection.rollback()
+                return None
             finally:
                 self._connection.commit()
                 return activity_id
-        return None
+        
 
     def delete(self, activity_id: int):
         with self._connection.cursor(cursor_factory= RealDictCursor) as cur:

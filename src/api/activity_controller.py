@@ -1,4 +1,5 @@
-from fastapi import Depends, APIRouter, Request, HTTPException
+from fastapi import Depends, APIRouter, Request, HTTPException, Body
+from fastapi.requests import Request
 from fastapi_utils.cbv import cbv
 from src.repositories.activity_repository import activity_repository
 from src.models.activity import Activity, ActivityCreate, ActivityUpdate
@@ -23,8 +24,12 @@ class ActivityController:
             return HTTPException(status_code=400, detail ='Bad request, activity could not be created')
 
     @router.put("/activities/{activity_id}", status_code=200)
-    def update_activity(self, activity_id: int, payload: ActivityUpdate):
-        updated_fields = payload.model_dump(exclude_none=True)
+    async def update_activity(self, request: Request, activity_id: int, activity_update: ActivityUpdate = Body(...)):
+        body = await request.body()
+        print("RAW BODY:", body)
+        print(activity_id)
+        print(f"payload:{activity_update}")
+        updated_fields = activity_update.model_dump(exclude_none=True)
         if not updated_fields:
             raise HTTPException(status_code=400, detail="No data to update")
 
