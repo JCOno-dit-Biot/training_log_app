@@ -121,7 +121,6 @@ class ActivityCreate(BaseModel):
         return values
     
 class ActivityUpdate(BaseModel):
-    id: int
     timestamp: Optional[datetime] = None
     runner_id: Optional[int] = None
     sport_id: Optional[int] = None
@@ -143,7 +142,7 @@ class ActivityUpdate(BaseModel):
         # Ensure at least one lap is provided if workout is set to true
         if values.workout and (values.laps is None or len(values.laps) == 0):
             raise ValueError(f"Laps cannot be None or an empty list if Workout is set to True")
-
+        return values
 
 class ActivityDogs(BaseModel):
     id: Optional[int] = None

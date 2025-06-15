@@ -58,10 +58,9 @@ def test_create_activity(test_app, mock_repo, test_activity_create):
 
 def test_update_activity(test_app, mock_repo):
     client = TestClient(test_app)
-    payload = {'id': 2, 'location':'Beach'}
+    payload = {'speed':13.5}
     response =  client.put("/activities/2", json=payload)
-    print(response)
     assert response.status_code == 200
     mock_repo.update.assert_called_once()
-    mock_repo.update.assert_called_with(ActivityUpdate(**payload),2)
+    mock_repo.update.assert_called_with(2, payload)
 

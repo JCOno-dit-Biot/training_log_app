@@ -24,7 +24,7 @@ class ActivityController:
             return HTTPException(status_code=400, detail ='Bad request, activity could not be created')
 
     @router.put("/activities/{activity_id}", status_code=200)
-    async def update_activity(self, request: Request, activity_id: int, activity_update: ActivityUpdate = Body(...)):
+    async def update_activity(self, request: Request, activity_id: int, activity_update: ActivityUpdate):
         body = await request.body()
         print("RAW BODY:", body)
         print(activity_id)
