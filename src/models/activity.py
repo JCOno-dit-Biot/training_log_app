@@ -20,7 +20,6 @@ class Activity(BaseModel):
     dogs: List["ActivityDogs"]
     weather: Optional[Weather] = Field(None, description="Weather entry for the training")
     laps: Optional[List["ActivityLaps"]] = Field([], description="list of laps with pace or speed")
-    notes: Optional[str] = Field(None, description="Short comment regarding the training")
     speed: Optional[float] = Field(None, description="Speed in km per hours")
     pace: Optional[str] = Field(None, description="Pace in min per km")
 
@@ -100,7 +99,6 @@ class ActivityCreate(BaseModel):
     dogs: List["ActivityDogsCreate"]
     weather: Optional[Weather] = Field(None, description="Weather entry for the training")
     laps: Optional[List[ActivityLaps]] = Field([], description="list of laps with pace or speed")
-    notes: Optional[str] = Field(None, description="Short comment regarding the training")
     speed: Optional[float] = Field(None, description="Speed in km per hours")
     pace: Optional[str] = Field(None, description="Pace in min per km")
 
@@ -121,6 +119,31 @@ class ActivityCreate(BaseModel):
             raise ValueError(f"Laps cannot be None or an empty list if Workout is set to True")
         return values
     
+class ActivityUpdate(BaseModel):
+    id: int
+    timestamp: Optional[datetime] = None
+    runner_id: Optional[int] = None
+    sport_id: Optional[int] = None
+    location: Optional[str] = None
+    distance: Optional[float] = None
+    workout: Optional[bool] = None
+    dogs: Optional[List["ActivityDogsCreate"]] = None
+    weather: Optional[Weather] = None
+    laps: Optional[List[ActivityLaps]] = None
+    speed: Optional[float] = None
+    pace: Optional[str] = None
+
+    @model_validator(mode="after")
+    def ensure_needed_metrics_are_present(cls, values):
+        #the db only saves speed not pace
+        if values.pace and values.speed is None:
+            values.speed = ch.calculate_speed_from_pace(values.pace)
+
+        # Ensure at least one lap is provided if workout is set to true
+        if values.workout and (values.laps is None or len(values.laps) == 0):
+            raise ValueError(f"Laps cannot be None or an empty list if Workout is set to True")
+
+
 class ActivityDogs(BaseModel):
     id: Optional[int] = None
     dog: Dog
