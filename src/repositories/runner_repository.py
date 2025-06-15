@@ -119,3 +119,5 @@ class runner_repository(abstract_repository):
             self._connection.commit()
 
 
+    def update(self, obj):
+        return super().update(obj)

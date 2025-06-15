@@ -73,3 +73,5 @@ class sport_repository(abstract_repository):
     def delete(self):
         raise NotImplementedError
 
+    def update(self, obj):
+        return super().update(obj)

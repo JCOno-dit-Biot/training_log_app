@@ -128,4 +128,5 @@ class dog_repository(abstract_repository):
                          (dog.name, dog.kennel.name))
             self._connection.commit()
 
-
+    def update(self, obj):
+        return super().update(obj)

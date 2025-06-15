@@ -78,3 +78,6 @@ class weight_repository(abstract_repository):
             cur.execute("""DELETE FROM weight_entries WHERE id = %s; """,
                          (weigth_entry.id,))
             self._connection.commit()
+
+    def update(self, obj):
+        return super().update(obj)
