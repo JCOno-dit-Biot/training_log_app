@@ -7,6 +7,7 @@ from src.models.kennel import Kennel
 from src.models.weather import Weather
 from src.repositories.activity_repository import activity_repository
 from datetime import date, timezone, datetime, timedelta
+from psycopg2.extras import RealDictCursor
 
 @pytest.fixture
 def activity_repo(test_db_conn):
@@ -66,6 +67,8 @@ def test_activity():
 
     )
     return test_activity
+
+def test_activity_create()
 
 
 def test_get_by_id(activity_repo):
@@ -129,3 +132,100 @@ def test_delete_activity(activity_repo, test_activity):
         cur.execute("""SELECT * FROM activities WHERE id = %s""", (test_activity.id,))
         result = cur.fetchone()
         assert result is None
+
+
+# Update method related test
+def test_update_base_fields(activity_repo):
+    fields = {
+        "location": "New Trail",
+        "speed": 12.0
+    }
+    activity_repo.update(1, fields)
+
+    with activity_repo._connection.cursor(cursor_factory=RealDictCursor) as cur:
+        cur.execute("SELECT location, speed FROM activities WHERE id = 1")
+        result = cur.fetchone()
+        assert result["location"] == "New Trail"
+        assert result["speed"] == 12.0
+
+
+def test_update_laps(activity_repo):
+    fields = {
+        "laps": [
+            {
+                "lap_number": 1,
+                "lap_time": '06:00',
+                "lap_distance": 1.5,
+                "speed": 11.0
+            }
+        ]
+    }
+    activity_repo.update(1, fields)
+
+    with activity_repo._connection.cursor(cursor_factory=RealDictCursor) as cur:
+        cur.execute("SELECT lap_time, lap_distance, speed FROM workout_laps WHERE activity_id = 1 AND lap_number = 1")
+        result = cur.fetchone()
+        assert result["lap_time"] == timedelta(minutes=6)
+        assert result["lap_distance"] == 1.5
+        assert result["speed"] == 11.0
+
+
+def test_update_weather(activity_repo):
+    fields = {
+        "weather": {
+            "temperature": 22.0,
+            "humidity": 40.0/100,
+            "condition": "Sunny"
+        }
+    }
+    activity_repo.update(1, fields)
+
+    with activity_repo._connection.cursor(cursor_factory=RealDictCursor) as cur:
+        cur.execute("SELECT temperature, humidity, condition FROM weather_entries WHERE activity_id = 1")
+        result = cur.fetchone()
+        assert result["temperature"] == 22.0
+        assert result["humidity"] == 0.4
+        assert result["condition"] == "Sunny"
+
+
+def test_update_dogs(activity_repo):
+    fields = {
+        "dogs": [
+            {"dog_id": 1, "rating": 5}
+        ]
+    }
+    activity_repo.update(1, fields)
+
+    with activity_repo._connection.cursor(cursor_factory=RealDictCursor) as cur:
+        cur.execute("SELECT dog_id, rating FROM activity_dogs WHERE activity_id = 1")
+        result = cur.fetchone()
+        assert result["dog_id"] == 1
+        assert result["rating"] == 5
+
+
+def test_update_all_components(activity_repo):
+    fields = {
+        "location": "Beach",
+        "weather": {"temperature": 25.0, "humidity": 35.0/100, "condition": "Clear"},
+        "dogs": [{"dog_id": 1, "rating": 4}],
+        "laps": [{"lap_number": 2, "lap_time": '04:00', "lap_distance": 1.0, "speed": 13.5}]
+    }
+    activity_repo.update(1, fields)
+
+    with activity_repo._connection.cursor(cursor_factory=RealDictCursor) as cur:
+        cur.execute("SELECT location FROM activities WHERE id = 1")
+        assert cur.fetchone()["location"] == "Beach"
+        cur.execute("SELECT lap_time, lap_distance, speed FROM workout_laps WHERE activity_id = 1 AND lap_number = 2")
+        lap = cur.fetchone()
+        assert lap["speed"] == 13.5
+
+
+
+def test_update_invalid_id(activity_repo):
+    fields = {"location": "Nowhere"}
+    activity_repo.update(99999, fields)  # Should not fail, but shouldn't affect data
+
+    with activity_repo._connection.cursor(cursor_factory=RealDictCursor) as cur:
+        cur.execute("SELECT COUNT(*) FROM activities WHERE id = 99999")
+        assert cur.fetchone()["count"] == 0
+
