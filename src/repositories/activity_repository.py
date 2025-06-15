@@ -1,5 +1,6 @@
 from src.models.runner import Runner
-from src.models.activity import Activity, ActivityLaps, ActivityCreate
+from src.models.activity import Activity, ActivityLaps, ActivityCreate, ActivityDogsCreate
+from src.models.weather import Weather
 from src.parsers.activity_parser import parse_activity_from_row
 from .abstract_repository import abstract_repository
 from typing import List, Optional
@@ -157,7 +158,8 @@ class activity_repository(abstract_repository):
                 self._connection.rollback()
             finally:
                 self._connection.commit()
-        return activity_id
+                return activity_id
+        return None
 
     def delete(self, activity: Activity):
         with self._connection.cursor(cursor_factory= RealDictCursor) as cur:
@@ -176,4 +178,67 @@ class activity_repository(abstract_repository):
                          (activity.id,))
             self._connection.commit()
 
+    def update(self, activity_id: int, fields: dict):
+
+        laps = fields.pop("laps", None)
+        weather_dict = fields.pop("weather", None)
+        dogs = fields.pop("dogs", None)
+
+        keys = list(fields.keys())
+        values = list(fields.values())
+
+        set_clause = ", ".join([f"{key} = %s" for key in keys])
+
+        query = f"""
+            UPDATE activities
+            SET {set_clause}
+            WHERE id = %s
+        """
+        
+        values.append(activity_id)
+
+        try:
+            with self._connection.cursor(cursor_factory= RealDictCursor) as cur:
+                if keys:
+                    cur.execute(query, values)
+
+                # Workout laps update
+                if laps:
+                    for lap in laps:
+                        lap=ActivityLaps(**lap)
+                        cur.execute("""
+                            UPDATE workout_laps 
+                            SET lap_time = %s,
+                                lap_distance = %s,
+                                speed = %s
+                            WHERE activity_id = %s AND lap_number = %s
+                        """, (lap.lap_time_delta, lap.lap_distance, lap.speed, activity_id, lap.lap_number))
+
+                # Weather update
+                if weather_dict:
+                    weather= Weather(**weather_dict)
+                    cur.execute("""
+                        UPDATE weather_entries
+                        SET temperature = %s,
+                            humidity = %s,
+                            condition = %s
+                        WHERE activity_id = %s
+                    """, (weather.temperature, weather.humidity, weather.condition, activity_id))
+
+                # Dogs update — e.g., clear and re-insert
+                if dogs:
+                    
+                    cur.execute("DELETE FROM activity_dogs WHERE activity_id = %s", (activity_id,))
+                    for dog in dogs:
+                        dog = ActivityDogsCreate(**dog)
+                        cur.execute("""
+                            INSERT INTO activity_dogs (activity_id, dog_id, rating)
+                            VALUES (%s, %s, %s)
+                        """, (activity_id, dog.dog_id, dog.rating))
+
+        except Exception as e:
+                print(f"[update activity error]: {e}")
+                self._connection.rollback()
+        finally:
+                self._connection.commit()
 
