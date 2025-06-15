@@ -119,6 +119,7 @@ def test_get_by_id(activity_repo):
     assert activity.weather.temperature == 10.4
     assert activity.weather.humidity == .67
     assert activity.weather.condition == "sunny"
+    assert activity.comment_count == 1
     
 
 def test_get_all(activity_repo):
@@ -134,6 +135,9 @@ def test_get_all(activity_repo):
     assert act2.weather.temperature == 1.4
     assert act2.weather.humidity is None
     assert act2.weather.condition is None
+    assert act2.comment_count == 2
+    
+
     
 def test_create_activity(test_activity_create, activity_repo):
     id = activity_repo.create(test_activity_create)

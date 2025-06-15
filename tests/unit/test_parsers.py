@@ -24,6 +24,7 @@ def default_activity_row():
         "sport_type": "dryland",
         "kennel_id" : 1,
         "kennel_name": "test_kennel",
+        "comment_count":3,
         "dogs": [
             {
             "id": 10,
@@ -146,6 +147,7 @@ def test_activity_parser(default_activity_row):
     assert activity.dogs[0].dog.name == 'Bolt'
     assert activity.laps[1].lap_number == 2
     assert round(activity.laps[1].speed,1) == 20.1
+    assert activity.comment_count == 3
     
 def test_activity_parser_no_laps(default_activity_row):
     default_activity_row['laps'] = []

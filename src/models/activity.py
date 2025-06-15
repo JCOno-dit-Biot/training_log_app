@@ -22,6 +22,7 @@ class Activity(BaseModel):
     laps: Optional[List["ActivityLaps"]] = Field([], description="list of laps with pace or speed")
     speed: Optional[float] = Field(None, description="Speed in km per hours")
     pace: Optional[str] = Field(None, description="Pace in min per km")
+    comment_count: Optional[int] = Field(None, description="number of comment for an activity")
 
     @model_validator(mode="after")
     def ensure_at_least_one_metric(cls, values):

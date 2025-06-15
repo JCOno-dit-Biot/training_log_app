@@ -26,6 +26,7 @@ class activity_repository(abstract_repository):
                             s.type AS sport_type,
                             k.id as kennel_id,
                             w.temperature, w.humidity, w.condition,
+                            COUNT(ac.id) as comment_count,
                             -- Aggregate dogs
                             json_agg(DISTINCT jsonb_build_object(
                                 'id', d.id,
@@ -50,6 +51,7 @@ class activity_repository(abstract_repository):
                         LEFT JOIN dogs d ON ad.dog_id = d.id
                         LEFT JOIN workout_laps wl ON wl.activity_id = a.id
                         LEFT JOIN weather_entries w ON w.activity_id = a.id
+                        LEFT JOIN activity_comments ac ON ac.activity_id = a.id
                         WHERE r.kennel_id = %s
                         GROUP BY 
                         a.id, a.runner_id, a.sport_id, a.timestamp, a.notes, a.location,
@@ -78,6 +80,7 @@ class activity_repository(abstract_repository):
                             k.name AS kennel_name,
                             k.id as kennel_id,
                             w.temperature, w.humidity, w.condition,
+                            COUNT(DISTINCT ac.id) as comment_count,
                             -- Aggregate dogs
                             json_agg(DISTINCT jsonb_build_object(
                                 'id', d.id,
@@ -102,6 +105,7 @@ class activity_repository(abstract_repository):
                         LEFT JOIN dogs d ON ad.dog_id = d.id
                         LEFT JOIN workout_laps wl ON wl.activity_id = a.id
                         LEFT JOIN weather_entries w ON w.activity_id = a.id
+                        LEFT JOIN activity_comments ac ON ac.activity_id = a.id
                         WHERE a.id = %s
                         GROUP BY 
                         a.id, a.runner_id, a.sport_id, a.timestamp, a.notes, a.location,
@@ -117,15 +121,14 @@ class activity_repository(abstract_repository):
             try:
                 query = """
                     INSERT INTO activities (
-                        runner_id, sport_id, timestamp, notes, location, workout, speed, distance
-                    ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                        runner_id, sport_id, timestamp, location, workout, speed, distance
+                    ) VALUES (%s, %s, %s, %s, %s, %s, %s)
                     RETURNING id
                     """
                 cur.execute(query, (
                     activity.runner_id,
                     activity.sport_id,
                     activity.timestamp,
-                    activity.notes,
                     activity.location,
                     activity.workout,
                     activity.speed,
