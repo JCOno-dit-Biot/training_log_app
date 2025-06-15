@@ -1,5 +1,5 @@
 import pytest
-from src.models.activity import Activity, ActivityLaps, ActivityDogs
+from src.models.activity import Activity, ActivityLaps, ActivityDogs, ActivityCreate, ActivityDogsCreate
 from src.models.dog import Dog
 from src.models.runner import Runner
 from src.models.sport import Sport, SportType
@@ -32,25 +32,62 @@ def test_activity():
         speed=20.3,
         dogs=[
             ActivityDogs(
-                id=None,
-                dog=Dog(
-                    id=1,
-                    name="Milou",
-                    breed="Terrier",
-                    date_of_birth=date(2023, 1, 1),
-                    kennel=Kennel(id=1, name="Les Gaulois")
+                    id=None,
+                    dog=Dog(
+                        id=1,
+                        name="Milou",
+                        breed="Terrier",
+                        date_of_birth=date(2023, 1, 1),
+                        kennel=Kennel(id=1, name="Les Gaulois")
+                    ),
+                    rating=9
                 ),
-                rating=9
+                ActivityDogs(
+                    id=None,
+                    dog=Dog(
+                        id=2,
+                        name="Fido",
+                        breed="Golden Retriever",
+                        date_of_birth=date(2020, 7, 1),
+                        kennel=Kennel(id=1, name="Les Gaulois")
+                    ),
+                    rating=8
+                )
+        ],
+        laps=[
+            ActivityLaps(lap_number=1, speed=21.0, pace="02:51", lap_distance = 1, lap_time_delta=timedelta(minutes = 2, seconds = 51) ),
+            ActivityLaps(lap_number=2, speed=20.1, pace="02:59", lap_distance = 1, lap_time_delta=timedelta(minutes = 2, seconds = 59)),
+            ActivityLaps(lap_number=3, speed=19.8, pace="03:01", lap_distance = 1, lap_time_delta=timedelta(minutes = 3, seconds = 1))
+        ],
+        weather=Weather(
+            temperature=9.5,
+            humidity=0.85,
+            condition = "rainy"
+        )
+
+    )
+    return test_activity
+
+@pytest.fixture()
+def test_activity_create():
+    test_activity = ActivityCreate(
+        id=None,
+        timestamp=datetime(2025, 4, 1, 9, 30, tzinfo=timezone.utc),
+        runner_id=2,
+        sport_id=1,
+        location="Forest Loop",
+        distance=8.0,
+        workout=True,
+        speed=20.3,
+        dogs=[
+            ActivityDogsCreate(
+            id=None,
+            dog_id=1,
+            rating=9
             ),
-            ActivityDogs(
+            ActivityDogsCreate(
                 id=None,
-                dog=Dog(
-                    id=2,
-                    name="Fido",
-                    breed="Golden Retriever",
-                    date_of_birth=date(2020, 7, 1),
-                    kennel=Kennel(id=1, name="Les Gaulois")
-                ),
+                dog_id = 2,
                 rating=8
             )
         ],
@@ -68,7 +105,6 @@ def test_activity():
     )
     return test_activity
 
-def test_activity_create()
 
 
 def test_get_by_id(activity_repo):
@@ -99,8 +135,8 @@ def test_get_all(activity_repo):
     assert act2.weather.humidity is None
     assert act2.weather.condition is None
     
-def test_create_activity(test_activity, activity_repo):
-    id = activity_repo.create(test_activity)
+def test_create_activity(test_activity_create, activity_repo):
+    id = activity_repo.create(test_activity_create)
     assert id == 4
     with activity_repo._connection.cursor() as cur:
         cur.execute("""SELECT * FROM activities WHERE id = %s""", (id,))
@@ -125,8 +161,7 @@ def test_create_activity(test_activity, activity_repo):
         assert weather[4] == "rainy"
 
 def test_delete_activity(activity_repo, test_activity):
-    test_activity.id = 4
-    activity_repo.delete(test_activity)
+    activity_repo.delete(test_activity.id)
     # checking activities table should be enough for now as the other two have foreign key on activity.id
     with activity_repo._connection.cursor() as cur:
         cur.execute("""SELECT * FROM activities WHERE id = %s""", (test_activity.id,))
