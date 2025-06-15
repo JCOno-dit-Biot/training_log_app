@@ -161,21 +161,20 @@ class activity_repository(abstract_repository):
                 return activity_id
         return None
 
-    def delete(self, activity: Activity):
+    def delete(self, activity_id: int):
         with self._connection.cursor(cursor_factory= RealDictCursor) as cur:
             # If the activity was a workout, delete all associated laps
-            if activity.workout:
-                cur.execute("""DELETE FROM workout_laps WHERE activity_id = %s;""", (activity.id,))
+            cur.execute("""DELETE FROM workout_laps WHERE activity_id = %s;""", (activity_id,))
 
             # Delete activity from dog activity table first
-            cur.execute("""DELETE FROM activity_dogs WHERE activity_id = %s;""", (activity.id,))
+            cur.execute("""DELETE FROM activity_dogs WHERE activity_id = %s;""", (activity_id,))
 
             # Delete weather entry
-            cur.execute("""DELETE FROM weather_entries WHERE activity_id = %s;""", (activity.id,)) 
+            cur.execute("""DELETE FROM weather_entries WHERE activity_id = %s;""", (activity_id,)) 
 
             # Finally delete the main activity
             cur.execute("""DELETE FROM activities WHERE id = %s; """,
-                         (activity.id,))
+                         (activity_id,))
             self._connection.commit()
 
     def update(self, activity_id: int, fields: dict):
