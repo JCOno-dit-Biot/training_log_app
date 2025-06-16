@@ -12,7 +12,7 @@ from src.repositories import (
 )
 from .config import settings
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="http://localhost:8001/token")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="http://localhost:8001/auth/token")
 
 def get_db(request: Request):
     return request.app.state.db
