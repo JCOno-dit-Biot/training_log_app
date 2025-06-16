@@ -4,6 +4,8 @@ from fastapi_utils.cbv import cbv
 from src.repositories.activity_repository import activity_repository
 from src.models.activity import Activity, ActivityCreate, ActivityUpdate
 from src.deps import get_activity_repo
+from src.utils import paginate_results
+from src.models.pagination import PaginationParams
 
 router = APIRouter()
 
@@ -13,9 +15,9 @@ class ActivityController:
         self.repo = activity_repo
 
     @router.get("/activities", response_model=list[Activity], status_code=200)
-    def list_dogs(self, request: Request):
+    def list_dogs(self, request: Request, pagination: PaginationParams = Depends()):
         kennel_id = request.state.kennel_id
-        return self.repo.get_all(kennel_id)
+        return self.repo.get_all(kennel_id, pagination.limit, pagination.offset)
 
     @router.post("/activities", status_code=201)
     def create_dog(self, activity_entry: ActivityCreate):

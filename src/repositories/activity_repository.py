@@ -14,7 +14,7 @@ class activity_repository(abstract_repository):
     def get_by_name(self, name):
         return super().get_by_name(name)
     
-    def get_all(self, kennel_id: int) -> List[Runner]:
+    def get_all(self, kennel_id: int, limit: int, offset: int) -> List[Runner]:
         with self._connection.cursor(cursor_factory= RealDictCursor) as cur:
             query = """ 
                         SELECT 
@@ -58,9 +58,10 @@ class activity_repository(abstract_repository):
                         a.workout, a.speed, a.distance,
                         r.name, r.id, s.name, s.type, k.name, k.id,
                         w.temperature, w.humidity, w.condition
-                        ORDER BY a.timestamp DESC LIMIT 5;
+                        ORDER BY a.timestamp DESC
+                        LIMIT %s OFFSET %s;
                     """
-            cur.execute(query, (kennel_id,))
+            cur.execute(query, (kennel_id, limit, offset))
             activities = []
             for row in cur.fetchall():
                 activity = parse_activity_from_row(row)
