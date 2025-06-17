@@ -5,7 +5,7 @@ from src.repositories.activity_repository import activity_repository
 from src.models.activity import Activity, ActivityCreate, ActivityUpdate
 from src.deps import get_activity_repo
 from src.utils.pagination import paginate_results
-from src.models.common import PaginationParams
+from src.models.common import PaginationParams, ActivityQueryFilters
 
 router = APIRouter()
 
@@ -15,10 +15,10 @@ class ActivityController:
         self.repo = activity_repo
 
     @router.get("/activities", response_model=dict, status_code=200)
-    def list_dogs(self, request: Request, pagination: PaginationParams = Depends()):
+    def list_dogs(self, request: Request, pagination: PaginationParams = Depends(), filters: ActivityQueryFilters = Depends()):
         kennel_id = request.state.kennel_id
-        activities = self.repo.get_all(kennel_id, pagination.limit, pagination.offset)
-        entry_count = self.repo.get_total_count(kennel_id)
+        activities = self.repo.get_all(kennel_id, pagination.limit, pagination.offset, filters)
+        entry_count = self.repo.get_total_count(kennel_id, filters)
 
         return paginate_results(activities, entry_count, request, pagination.limit, pagination.offset)
 

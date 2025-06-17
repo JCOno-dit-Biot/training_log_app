@@ -125,12 +125,17 @@ class activity_repository(abstract_repository):
             row = cur.fetchone()
         return parse_activity_from_row(row)
     
-    def get_total_count(self, kennel_id):
+    def get_total_count(self, kennel_id, filters):
+        where_clause, values = build_conditions(filters)
         with self._connection.cursor(cursor_factory= RealDictCursor) as cur:
-            query = """
-            SELECT COUNT(*) FROM activities;
+            query = f"""
+            SELECT COUNT(*) FROM activities a
+            JOIN runners r ON a.runner_id = r.id
+            WHERE r.kennel_id = %s {where_clause};
             """
-            cur.execute(query)
+            values.insert(0, kennel_id)
+
+            cur.execute(query, values)
             count = cur.fetchone()["count"]
         return count
 
