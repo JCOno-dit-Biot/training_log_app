@@ -1,7 +1,7 @@
 from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
-from .utils import get_connection
+from .utils.db import get_connection
 from src.api.dog_controller import router as dog_router
 from src.api.runner_controller import router as runner_router
 from src.api.activity_controller import router as activity_router

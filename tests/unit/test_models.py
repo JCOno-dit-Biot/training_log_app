@@ -14,7 +14,7 @@ from src.models import (
 import pytest
 from pydantic import ValidationError
 from datetime import datetime, date, timedelta
-from src import calculation_helpers as ch
+from src.utils import calculation_helpers as ch
 
 
 

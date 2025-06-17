@@ -5,7 +5,7 @@ from .runner import Runner
 from .sport import Sport
 from .dog import Dog
 from .weather import Weather
-import src.calculation_helpers as ch
+import src.utils.calculation_helpers as ch
 
 # SPORT_PACE_DISPLAY = {'canicross', 'canihike', 'canirando', 'skijoring'}
 

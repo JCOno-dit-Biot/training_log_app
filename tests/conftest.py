@@ -17,7 +17,7 @@ if os.getenv("CI") != "true":
     print("loading local .env file")
     load_dotenv(dotenv_path='config/.env.test', override= True)
 
-from src.utils import get_connection
+from src.utils.db import get_connection
 
 @pytest.fixture(scope="session")
 def test_db_conn():

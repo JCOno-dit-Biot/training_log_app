@@ -1,6 +1,6 @@
 from src.models import *
 import pytest
-from src import calculation_helpers as ch
+from src.utils import calculation_helpers as ch
 
 @pytest.mark.parametrize('pace,expected', [('3:20', 18.0), ('5:30', 10.91), ('0:05:30', 10.91), (5.5, 10.91), ('2:00', 30.0)])
 def test_pace_to_speed(pace, expected):

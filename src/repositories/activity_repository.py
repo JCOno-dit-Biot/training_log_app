@@ -5,7 +5,7 @@ from src.parsers.activity_parser import parse_activity_from_row
 from .abstract_repository import abstract_repository
 from typing import List, Optional
 from psycopg2.extras import RealDictCursor
-from src.utils import paginate_results
+from src.utils.pagination import paginate_results
 
 class activity_repository(abstract_repository):
 

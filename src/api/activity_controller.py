@@ -4,8 +4,8 @@ from fastapi_utils.cbv import cbv
 from src.repositories.activity_repository import activity_repository
 from src.models.activity import Activity, ActivityCreate, ActivityUpdate
 from src.deps import get_activity_repo
-from src.utils import paginate_results
-from src.models.pagination import PaginationParams
+from src.utils.pagination import paginate_results
+from src.models.common import PaginationParams
 
 router = APIRouter()
 
