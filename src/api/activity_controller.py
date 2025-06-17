@@ -14,10 +14,13 @@ class ActivityController:
     def __init__(self, activity_repo: activity_repository = Depends(get_activity_repo)):
         self.repo = activity_repo
 
-    @router.get("/activities", response_model=list[Activity], status_code=200)
+    @router.get("/activities", response_model=dict, status_code=200)
     def list_dogs(self, request: Request, pagination: PaginationParams = Depends()):
         kennel_id = request.state.kennel_id
-        return self.repo.get_all(kennel_id, pagination.limit, pagination.offset)
+        activities = self.repo.get_all(kennel_id, pagination.limit, pagination.offset)
+        entry_count = self.repo.get_total_count(kennel_id)
+
+        return paginate_results(activities, entry_count, request, pagination.limit, pagination.offset)
 
     @router.post("/activities", status_code=201)
     def create_dog(self, activity_entry: ActivityCreate):

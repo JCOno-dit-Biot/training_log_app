@@ -5,6 +5,7 @@ from src.parsers.activity_parser import parse_activity_from_row
 from .abstract_repository import abstract_repository
 from typing import List, Optional
 from psycopg2.extras import RealDictCursor
+from src.utils import paginate_results
 
 class activity_repository(abstract_repository):
 
@@ -61,7 +62,7 @@ class activity_repository(abstract_repository):
                         ORDER BY a.timestamp DESC
                         LIMIT %s OFFSET %s;
                     """
-            cur.execute(query, (kennel_id, limit, offset))
+            cur.execute(query, (kennel_id, limit, offset,))
             activities = []
             for row in cur.fetchall():
                 activity = parse_activity_from_row(row)
@@ -117,6 +118,15 @@ class activity_repository(abstract_repository):
             row = cur.fetchone()
         return parse_activity_from_row(row)
     
+    def get_total_count(self, kennel_id):
+        with self._connection.cursor(cursor_factory= RealDictCursor) as cur:
+            query = """
+            SELECT COUNT(*) FROM activities;
+            """
+            cur.execute(query)
+            count = cur.fetchone()["count"]
+        return count
+
     def create(self, activity: ActivityCreate) -> int:
         with self._connection.cursor(cursor_factory= RealDictCursor) as cur:
             try:
