@@ -38,5 +38,5 @@ def build_conditions(filters: WeightQueryFilter | ActivityQueryFilters):
             conditions.append("a.runner_id = %s")
             values.append(filters.runner_id)
             
-    where_clause = " AND ".join(conditions) if conditions else "TRUE"
+    where_clause = " AND ".join(conditions) if conditions else ""
     return where_clause, values

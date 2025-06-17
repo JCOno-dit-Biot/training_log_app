@@ -6,6 +6,7 @@ from .abstract_repository import abstract_repository
 from typing import List, Optional
 from psycopg2.extras import RealDictCursor
 from src.utils.pagination import paginate_results
+from src.utils.db import build_conditions
 
 class activity_repository(abstract_repository):
 
@@ -15,9 +16,11 @@ class activity_repository(abstract_repository):
     def get_by_name(self, name):
         return super().get_by_name(name)
     
-    def get_all(self, kennel_id: int, limit: int, offset: int) -> List[Runner]:
+    def get_all(self, kennel_id: int, limit: int, offset: int, filters) -> List[Runner]:
+
+        where_clause, values = build_conditions(filters)
         with self._connection.cursor(cursor_factory= RealDictCursor) as cur:
-            query = """ 
+            query = f""" 
                         SELECT 
                             a.*, 
                             r.name AS runner_name,
@@ -53,7 +56,7 @@ class activity_repository(abstract_repository):
                         LEFT JOIN workout_laps wl ON wl.activity_id = a.id
                         LEFT JOIN weather_entries w ON w.activity_id = a.id
                         LEFT JOIN activity_comments ac ON ac.activity_id = a.id
-                        WHERE r.kennel_id = %s
+                        WHERE r.kennel_id = %s {where_clause}
                         GROUP BY 
                         a.id, a.runner_id, a.sport_id, a.timestamp, a.notes, a.location,
                         a.workout, a.speed, a.distance,
@@ -62,7 +65,11 @@ class activity_repository(abstract_repository):
                         ORDER BY a.timestamp DESC
                         LIMIT %s OFFSET %s;
                     """
-            cur.execute(query, (kennel_id, limit, offset,))
+            
+            values.insert(0, kennel_id)
+            values.extend([limit,offset])
+
+            cur.execute(query, values)
             activities = []
             for row in cur.fetchall():
                 activity = parse_activity_from_row(row)

@@ -10,6 +10,9 @@ class Filter(BaseModel):
     start_date: Optional[date] = None
     end_date: Optional[date] = None
 
+    def is_empty(self) -> bool:
+        return not any(self.model_dump(exclude_none=True).values())
+
 class ActivityQueryFilters(Filter):
     dog_id: Optional[int] = None
     runner_id:Optional[int] = None
