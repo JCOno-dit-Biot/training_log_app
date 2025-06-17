@@ -2,6 +2,7 @@ import psycopg2
 from ..config import settings
 from fastapi import Request
 from urllib.parse import urlencode
+from src.models.common import Filter, WeightQueryFilter, ActivityQueryFilters
 
 def get_connection() -> psycopg2.extensions.connection:
     db_url = (
@@ -11,3 +12,31 @@ def get_connection() -> psycopg2.extensions.connection:
     )
     return psycopg2.connect(db_url)
 
+
+def build_conditions(filters: WeightQueryFilter | ActivityQueryFilters):
+    conditions = []
+    values = []
+
+    if filters.start_date:
+        conditions.append("a.timestamp >= %s")
+        values.append(filters.start_date)
+
+    if filters.end_date:
+        conditions.append("a.timestamp <= %s")
+        values.append(filters.end_date)
+
+    if filters.dog_id:
+        conditions.append("ad.dog_id = %s")
+        values.append(filters.dog_id)
+
+    if isinstance(filters, ActivityQueryFilters):
+        if filters.sport_id:
+            conditions.append("a.sport_id = %s")
+            values.append(filters.sport_id)
+
+        if filters.sport_id:
+            conditions.append("a.runner_id = %s")
+            values.append(filters.runner_id)
+            
+    where_clause = " AND ".join(conditions) if conditions else "TRUE"
+    return where_clause, values
