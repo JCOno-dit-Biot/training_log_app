@@ -19,8 +19,9 @@ class activity_repository(abstract_repository):
     def get_all(self, kennel_id: int, limit: int, offset: int, filters) -> List[Runner]:
 
         where_clause, values = build_conditions(filters)
-        with self._connection.cursor(cursor_factory= RealDictCursor) as cur:
-            query = f""" 
+        try:
+            with self._connection.cursor(cursor_factory= RealDictCursor) as cur:
+                query = f""" 
                         SELECT 
                             a.*, 
                             r.name AS runner_name,
@@ -56,7 +57,7 @@ class activity_repository(abstract_repository):
                         LEFT JOIN workout_laps wl ON wl.activity_id = a.id
                         LEFT JOIN weather_entries w ON w.activity_id = a.id
                         LEFT JOIN activity_comments ac ON ac.activity_id = a.id
-                        WHERE r.kennel_id = %s {where_clause}
+                        WHERE r.kennel_id = %s AND {where_clause}
                         GROUP BY 
                         a.id, a.runner_id, a.sport_id, a.timestamp, a.notes, a.location,
                         a.workout, a.speed, a.distance,
@@ -66,17 +67,21 @@ class activity_repository(abstract_repository):
                         LIMIT %s OFFSET %s;
                     """
             
-            values.insert(0, kennel_id)
-            values.extend([limit,offset])
+                values.insert(0, kennel_id)
+                values.extend([limit,offset])
 
-            cur.execute(query, values)
-            activities = []
-            for row in cur.fetchall():
-                activity = parse_activity_from_row(row)
-                activities.append(activity)
+                cur.execute(query, values)
+                activities = []
+                for row in cur.fetchall():
+                    activity = parse_activity_from_row(row)
+                    activities.append(activity)
 
             return activities
-            
+        except Exception as e:
+            print(f"Select failed: {e}")
+            self._connection.rollback()
+            return None
+    
     def get_by_id(self, activity_id: int) -> Optional[Activity]:
         with self._connection.cursor(cursor_factory= RealDictCursor) as cur:
             query = """
@@ -127,18 +132,23 @@ class activity_repository(abstract_repository):
     
     def get_total_count(self, kennel_id, filters):
         where_clause, values = build_conditions(filters)
-        with self._connection.cursor(cursor_factory= RealDictCursor) as cur:
-            query = f"""
-            SELECT COUNT(*) FROM activities a
-            JOIN runners r ON a.runner_id = r.id
-            WHERE r.kennel_id = %s {where_clause};
-            """
-            values.insert(0, kennel_id)
+        try:
+            with self._connection.cursor(cursor_factory= RealDictCursor) as cur:
+                query = f"""
+                SELECT COUNT(*) FROM activities a
+                JOIN runners r ON a.runner_id = r.id
+                WHERE r.kennel_id = %s AND {where_clause};
+                """
+                values.insert(0, kennel_id)
 
-            cur.execute(query, values)
-            count = cur.fetchone()["count"]
-        return count
-
+                cur.execute(query, values)
+                count = cur.fetchone()["count"]
+            return count
+        except Exception as e:
+            print(f"Select failed: {e}")
+            self._connection.rollback()
+            return None
+        
     def create(self, activity: ActivityCreate) -> int:
         with self._connection.cursor(cursor_factory= RealDictCursor) as cur:
             try:
