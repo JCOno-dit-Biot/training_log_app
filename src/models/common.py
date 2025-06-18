@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from typing import Optional
+from typing import Optional, List
 from datetime import date
 
 class PaginationParams(BaseModel):
@@ -14,14 +14,14 @@ class Filter(BaseModel):
         return not any(self.model_dump(exclude_none=True).values())
 
 class ActivityQueryFilters(Filter):
-    dog_id: Optional[int] = None
+    dog_id: Optional[List[int]] = None
     runner_id:Optional[int] = None
     sport_id: Optional[int] = None
     location: Optional[str] =  None
     workout: Optional[bool] = None
     
 class WeightQueryFilter(Filter):
-    dog_id: Optional[int] = None
+    dog_id: Optional[List[int]] = None
 
 
 

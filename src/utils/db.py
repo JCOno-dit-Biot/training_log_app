@@ -26,7 +26,7 @@ def build_conditions(filters: WeightQueryFilter | ActivityQueryFilters):
         values.append(filters.end_date)
 
     if filters.dog_id:
-        conditions.append("ad.dog_id = %s")
+        conditions.append("ad.dog_id in %s")
         values.append(filters.dog_id)
 
     if isinstance(filters, ActivityQueryFilters):
