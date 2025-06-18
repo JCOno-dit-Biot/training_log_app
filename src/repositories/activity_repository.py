@@ -135,8 +135,9 @@ class activity_repository(abstract_repository):
         try:
             with self._connection.cursor(cursor_factory= RealDictCursor) as cur:
                 query = f"""
-                SELECT COUNT(*) FROM activities a
+                SELECT COUNT(DISTINCT a.id) FROM activities a
                 JOIN runners r ON a.runner_id = r.id
+                LEFT JOIN activity_dogs ad ON a.id = ad.activity_id
                 WHERE r.kennel_id = %s AND {where_clause};
                 """
                 values.insert(0, kennel_id)

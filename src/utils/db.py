@@ -41,6 +41,11 @@ def build_conditions(filters: WeightQueryFilter | ActivityQueryFilters):
         if filters.workout:
             conditions.append("a.workout = %s")
             values.append(filters.workout)
-            
+        
+        # case insensitive and partial match
+        if filters.location:
+            conditions.append("a.location ILIKE %s")
+            values.append(f"%{filters.location}%") 
+
     where_clause = " AND ".join(conditions) if conditions else "TRUE"
     return where_clause, values
