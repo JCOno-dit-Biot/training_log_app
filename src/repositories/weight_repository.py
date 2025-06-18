@@ -4,7 +4,7 @@ from typing import List
 from src.repositories.abstract_repository import abstract_repository
 from psycopg2.extras import RealDictCursor
 from src.parsers.weight_parser import parse_weight_from_row
-
+from src.utils.db import build_conditions
 
 class weight_repository(abstract_repository):
 
@@ -31,9 +31,11 @@ class weight_repository(abstract_repository):
             row = cur.fetchone()
             return parse_weight_from_row(row)
 
-    def get_all(self, dog_id: int) -> List[DogWeightEntry]:
+    def get_all(self, kennel_id: int, filters) -> List[DogWeightEntry]:
+
+        where_clause, values = build_conditions(filters)
         with self._connection.cursor(cursor_factory= RealDictCursor) as cur:
-            query = """
+            query = f"""
                     SELECT 
                         w.id, w.date, w.weight,
                         d.id as dog_id, d.name, d.date_of_birth, d.breed, 
@@ -45,9 +47,10 @@ class weight_repository(abstract_repository):
                     JOIN 
                         kennels ON d.kennel_id = kennels.id
                     WHERE 
-                        w.dog_id = %s
+                        d.kennel_id = %s AND {where_clause}
                 """
-            cur.execute(query, (dog_id,))
+            values.insert(0, kennel_id)
+            cur.execute(query, values)
             rows = cur.fetchall()
             weight_entries = []
             for row in rows:
@@ -55,6 +58,31 @@ class weight_repository(abstract_repository):
                     parse_weight_from_row(row)
                 )
         return weight_entries
+
+    def get_total_count(self, kennel_id, filters):
+        where_clause, values = build_conditions(filters)
+        try:
+            with self._connection.cursor(cursor_factory= RealDictCursor) as cur:
+                #must count dictinct because of the join on activity dogs
+                query = f"""
+                SELECT COUNT(*) FROM weight_entries w
+                JOIN 
+                    dogs d ON d.id = w.dog_id
+                JOIN 
+                    kennels ON d.kennel_id = kennels.id
+                WHERE 
+                    d.kennel_id = %s AND {where_clause};
+                """
+                values.insert(0, kennel_id)
+
+                cur.execute(query, values)
+                count = cur.fetchone()["count"]
+            return count
+        except Exception as e:
+            print(f"Select failed: {e}")
+            self._connection.rollback()
+            return None
+
 
     def get_by_name(self, name):
         return super().get_by_name(name)
