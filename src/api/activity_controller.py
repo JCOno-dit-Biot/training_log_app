@@ -26,11 +26,13 @@ class ActivityController:
     def create_activity(self, activity_entry: ActivityCreate):
         activity_id = self.repo.create(activity_entry)
         if activity_id is None: 
-            return HTTPException(status_code=400, detail ='Bad request, activity could not be created')
-
+            raise HTTPException(status_code=400, detail ='Bad request, activity could not be created')
+        return {"id": activity_id}
+    
     @router.put("/activities/{activity_id}", status_code=200)
     def update_activity(self, request: Request, activity_id: int, activity_update: ActivityUpdate):
         updated_fields = activity_update.model_dump(exclude_none=True)
+        print(not updated_fields)
         if not updated_fields:
             raise HTTPException(status_code=400, detail="No data to update")
 

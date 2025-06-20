@@ -16,7 +16,7 @@ class activity_repository(abstract_repository):
     def get_by_name(self, name):
         return super().get_by_name(name)
     
-    def get_all(self, kennel_id: int, limit: int, offset: int, filters) -> List[Runner]:
+    def get_all(self, kennel_id: int, filters, limit: int = 10, offset: int = 0) -> List[Runner]:
 
         where_clause, values = build_conditions(filters)
         try:

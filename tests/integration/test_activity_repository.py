@@ -1,5 +1,6 @@
 import pytest
 from src.repositories.activity_repository import activity_repository
+from src.models.common import ActivityQueryFilters
 from datetime import date, timezone, datetime, timedelta
 from psycopg2.extras import RealDictCursor
 
@@ -24,7 +25,7 @@ def test_get_by_id(activity_repo):
     
 
 def test_get_all(activity_repo):
-    activities = activity_repo.get_all(kennel_id=2)
+    activities = activity_repo.get_all(kennel_id=2, filters= ActivityQueryFilters(), limit = 10, offset = 0, )
     assert isinstance(activities, list)
     assert len(activities) == 2
     for activity in activities:
@@ -38,8 +39,42 @@ def test_get_all(activity_repo):
     assert act2.weather.condition is None
     assert act2.comment_count == 2
     
+def test_get_all_default_pagination(activity_repo):
+    activities = activity_repo.get_all(kennel_id=2, filters= ActivityQueryFilters() )
+    assert isinstance(activities, list)
+    assert len(activities) == 2
 
-    
+def test_get_all_with_pagination(activity_repo):
+    activities = activity_repo.get_all(kennel_id=2, filters= ActivityQueryFilters(), limit = 1, offset= 1 )
+    assert isinstance(activities, list)
+    assert len(activities) == 1
+    assert activities[0].runner.id == 2
+    assert len(activities[0].dogs) == 2
+
+def test_get_all_with_filters(activity_repo):
+    filter = ActivityQueryFilters(
+        start_date = "2025-03-01",
+        end_date="2025-04-02"
+    )
+    activities =activity_repo.get_all(kennel_id = 2, filters = filter)
+    assert len(activities) == 1
+    activity = activities[0]
+    assert activity.runner.id == 2
+    assert len(activity.dogs) == 2
+    assert activity.weather.temperature == 10.4
+
+@pytest.mark.parametrize("filter,expected_count",[
+    (ActivityQueryFilters(), 2),
+    (ActivityQueryFilters(
+        start_date = "2025-03-01",
+        end_date="2025-04-02"
+    ), 1)
+])
+def test_get_total_count(activity_repo, filter, expected_count):
+    activity_count = activity_repo.get_total_count(kennel_id = 2, filters=filter)
+    assert activity_count == expected_count
+
+
 def test_create_activity(test_activity_create, activity_repo):
     id = activity_repo.create(test_activity_create)
     assert id == 4
