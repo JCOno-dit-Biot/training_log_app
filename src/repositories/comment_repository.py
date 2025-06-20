@@ -92,4 +92,6 @@ class comment_repository(abstract_repository):
                          (id,))
             self._connection.commit()
 
+    def get_total_count(self):
+        return super().get_total_count()
 

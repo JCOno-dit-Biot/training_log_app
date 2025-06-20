@@ -75,3 +75,6 @@ class sport_repository(abstract_repository):
 
     def update(self, obj):
         return super().update(obj)
+    
+    def get_total_count(self):
+        return super().get_total_count()
