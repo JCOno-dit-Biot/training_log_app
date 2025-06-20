@@ -19,3 +19,8 @@ class DogWeightEntry(BaseModel):
         """
         values.age = values.dog.calculate_dog_age(as_of_date=values.date)
         return values
+    
+
+class DogWeightUpdate(BaseModel):
+    weight: Optional[float] = None
+    date: Optional[date] = None

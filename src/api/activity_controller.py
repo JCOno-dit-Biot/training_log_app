@@ -29,8 +29,7 @@ class ActivityController:
             return HTTPException(status_code=400, detail ='Bad request, activity could not be created')
 
     @router.put("/activities/{activity_id}", status_code=200)
-    async def update_activity(self, request: Request, activity_id: int, activity_update: ActivityUpdate):
-        body = await request.body()
+    def update_activity(self, request: Request, activity_id: int, activity_update: ActivityUpdate):
         updated_fields = activity_update.model_dump(exclude_none=True)
         if not updated_fields:
             raise HTTPException(status_code=400, detail="No data to update")
@@ -38,3 +37,7 @@ class ActivityController:
         self.repo.update(activity_id, updated_fields)
         return {"success": True}
 
+    @router.delete("/activities/{activity_id}", status_code=200)
+    def delete_activity(self, activity_id: int):
+        self.repo.delete(activity_id)
+        return {"success": True}

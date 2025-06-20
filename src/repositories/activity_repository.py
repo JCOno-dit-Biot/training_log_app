@@ -134,6 +134,7 @@ class activity_repository(abstract_repository):
         where_clause, values = build_conditions(filters)
         try:
             with self._connection.cursor(cursor_factory= RealDictCursor) as cur:
+                #must count dictinct because of the join on activity dogs
                 query = f"""
                 SELECT COUNT(DISTINCT a.id) FROM activities a
                 JOIN runners r ON a.runner_id = r.id
@@ -201,19 +202,25 @@ class activity_repository(abstract_repository):
 
     def delete(self, activity_id: int):
         with self._connection.cursor(cursor_factory= RealDictCursor) as cur:
-            # If the activity was a workout, delete all associated laps
-            cur.execute("""DELETE FROM workout_laps WHERE activity_id = %s;""", (activity_id,))
+            try:
+                # If the activity was a workout, delete all associated laps
+                cur.execute("""DELETE FROM workout_laps WHERE activity_id = %s;""", (activity_id,))
 
-            # Delete activity from dog activity table first
-            cur.execute("""DELETE FROM activity_dogs WHERE activity_id = %s;""", (activity_id,))
+                # Delete activity from dog activity table first
+                cur.execute("""DELETE FROM activity_dogs WHERE activity_id = %s;""", (activity_id,))
 
-            # Delete weather entry
-            cur.execute("""DELETE FROM weather_entries WHERE activity_id = %s;""", (activity_id,)) 
+                # Delete weather entry
+                cur.execute("""DELETE FROM weather_entries WHERE activity_id = %s;""", (activity_id,)) 
 
-            # Finally delete the main activity
-            cur.execute("""DELETE FROM activities WHERE id = %s; """,
-                         (activity_id,))
-            self._connection.commit()
+                # Finally delete the main activity
+                cur.execute("""DELETE FROM activities WHERE id = %s; """,
+                            (activity_id,))
+                self._connection.commit()
+                return True
+            except Exception as e:
+                print(f"[delete activity error]: {e}")
+                self._connection.rollback()
+                return False
 
     def update(self, activity_id: int, fields: dict):
 
@@ -272,10 +279,11 @@ class activity_repository(abstract_repository):
                             INSERT INTO activity_dogs (activity_id, dog_id, rating)
                             VALUES (%s, %s, %s)
                         """, (activity_id, dog.dog_id, dog.rating))
-
-        except Exception as e:
-                print(f"[update activity error]: {e}")
-                self._connection.rollback()
-        finally:
                 self._connection.commit()
-
+                return cur.rowcount > 0
+            
+        except Exception as e:
+            print(f"[update activity error]: {e}")
+            self._connection.rollback()
+            return False
+        

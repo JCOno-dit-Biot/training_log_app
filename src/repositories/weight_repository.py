@@ -34,6 +34,7 @@ class weight_repository(abstract_repository):
     def get_all(self, kennel_id: int, filters) -> List[DogWeightEntry]:
 
         where_clause, values = build_conditions(filters)
+        
         with self._connection.cursor(cursor_factory= RealDictCursor) as cur:
             query = f"""
                     SELECT 
@@ -93,19 +94,43 @@ class weight_repository(abstract_repository):
                 cur.execute("""INSERT INTO weight_entries (dog_id, date, weight) VALUES (%s, %s, %s) RETURNING id;""",
                             (weigth_entry.dog.id, weigth_entry.date, weigth_entry.weight) )
                 entry_id = cur.fetchone()['id']
+                self._connection.commit()
             except Exception as e:
                 print(e)
                 self._connection.rollback()
-            finally:
-                self._connection.commit()
         return entry_id
 
 
-    def delete(self, weigth_entry: DogWeightEntry):
+    def delete(self, weight_id: int):
         with self._connection.cursor(cursor_factory= RealDictCursor) as cur:
-            cur.execute("""DELETE FROM weight_entries WHERE id = %s; """,
-                         (weigth_entry.id,))
-            self._connection.commit()
+            try:
+                cur.execute("""DELETE FROM weight_entries WHERE id = %s; """,
+                            (weight_id,))
+                self._connection.commit()
+                return cur.rowcount > 0
+            except Exception as e:
+                self._connection.rollback()
+                return False
+                
 
-    def update(self, obj):
-        return super().update(obj)
+    def update(self, id, fields: dict):
+        with self._connection.cursor(cursor_factory= RealDictCursor) as cur:
+            try:
+                keys = list(fields.keys())
+                values = list(fields.values())
+
+                set_clause = ", ".join([f"{key} = %s" for key in keys])
+
+                query = f"""UPDATE weight_entries 
+                                SET {set_clause}
+                                WHERE id = %s"""
+                
+                #add entry id
+                values.append(id)
+                cur.execute(query, values)
+                self._connection.commit()
+                return cur.rowcount > 0
+            except Exception as e:
+                print(f"Could not update entry {id}: {e}")
+                self._connection.rollback()
+                return False
