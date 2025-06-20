@@ -9,7 +9,11 @@ from src.models import (
     ActivityDogs, 
     Weather, 
     commentCreate,
-    commentOut
+    commentOut,
+    PaginationParams,
+    Filter,
+    ActivityQueryFilters,
+    WeightQueryFilter
 )
 import pytest
 from pydantic import ValidationError
@@ -293,3 +297,23 @@ def test_comment_out_init():
     assert comment.created_at ==  now_ts
     assert comment.id == 1
     assert comment.updated_at is None
+
+def test_pagination_model():
+    pagination_param = PaginationParams(
+        limit=10,
+        offset=1
+    )
+    assert pagination_param.limit == 10
+    assert pagination_param.offset == 1
+
+def test_pagination_raises():
+    with pytest.raises(ValidationError):
+        PaginationParams(
+            limit = 30,
+            offset=1
+        )
+
+def test_filter_is_empty():
+    filter = Filter()
+    assert filter.is_empty()
+
