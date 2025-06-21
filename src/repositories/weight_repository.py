@@ -63,6 +63,7 @@ class weight_repository(abstract_repository):
     def get_total_count(self, kennel_id, filters):
         where_clause, values = build_conditions(filters)
         try:
+            print(where_clause)
             with self._connection.cursor(cursor_factory= RealDictCursor) as cur:
                 #must count dictinct because of the join on activity dogs
                 query = f"""

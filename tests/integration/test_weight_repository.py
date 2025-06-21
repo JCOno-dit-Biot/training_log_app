@@ -1,9 +1,11 @@
 from src.models.dog import Dog
 from src.models.kennel import Kennel
 from src.models.dog_weight import DogWeightEntry
+from src.models.common import WeightQueryFilter
 import pytest
 from src.repositories.weight_repository import weight_repository
 from datetime import date, timedelta
+from datetime import datetime
 
 @pytest.fixture
 def weight_repo(test_db_conn):
@@ -17,13 +19,18 @@ def test_dog():
         name = "Milou",
         breed = "Terrier",
         date_of_birth = date(2023,1,1),
-        kennel = Kennel(name = 'Les Gaulois')
+        kennel = Kennel(id =2, name = 'Les Gaulois')
     )
 
 def test_get_all(weight_repo, test_dog):
-    weight_entries = weight_repo.get_all(test_dog.id)
-    assert len(weight_entries) == 3
-    assert all(x.dog.name == 'Milou' for x in weight_entries)
+    weight_entries = weight_repo.get_all(test_dog.kennel.id, filters=WeightQueryFilter())
+    assert len(weight_entries) == 4
+    assert all(x.dog.name in ('Milou', "Fido") for x in weight_entries)
+
+def test_get_count(weight_repo, test_dog):
+    count = weight_repo.get_total_count(test_dog.kennel.id, filters=WeightQueryFilter(dog_id = [1]))
+    print(count)
+    assert count == 3
 
 def test_get_by_id(weight_repo):
     entry = weight_repo.get_by_id(4)
@@ -54,8 +61,21 @@ def test_delete(weight_repo, test_dog):
         weight = 40.5,
         dog = test_dog
     )
-    weight_repo.delete(weight_entry)
+    weight_repo.delete(weight_entry.id)
     with weight_repo._connection.cursor() as cur:
         cur.execute("""SELECT * FROM weight_entries WHERE id = %s;""", (weight_entry.id,))
         entry = cur.fetchall()
     assert len(entry) == 0
+
+def test_update_base_fields(weight_repo):
+    fields = {
+        "weight": 30.4,
+        "date": '2025-06-10'
+    }
+    weight_repo.update(1, fields)
+
+    with weight_repo._connection.cursor() as cur:
+        cur.execute("SELECT weight, date FROM weight_entries WHERE id = 1")
+        result = cur.fetchone()
+        assert result[0] == 30.4
+        assert result[1] == date(2025, 6, 10)
