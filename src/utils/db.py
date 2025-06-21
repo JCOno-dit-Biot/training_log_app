@@ -38,7 +38,7 @@ def build_conditions(filters: WeightQueryFilter | ActivityQueryFilters):
             conditions.append("a.runner_id = %s")
             values.append(filters.runner_id)
         
-        if filters.workout:
+        if filters.workout is not None:
             conditions.append("a.workout = %s")
             values.append(filters.workout)
         
