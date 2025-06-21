@@ -31,6 +31,16 @@ def test_kennel():
     return Kennel(name = "Test Kennel")
 
 @pytest.fixture()
+def dog_fixture():
+    return Dog(
+                id=1,
+                name="Milou",
+                breed="Terrier",
+                date_of_birth=date(2023, 1, 1),
+                kennel=Kennel(id=1, name="Les Gaulois")
+            )
+
+@pytest.fixture()
 def test_activity():
     test_activity = Activity(
         id=None,

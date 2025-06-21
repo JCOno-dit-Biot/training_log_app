@@ -26,6 +26,7 @@ class WeightController:
     @router.put("/dogs/weights/{weight_id}")
     def update_weight_entry(self, weight_id: int, weight_update: DogWeightUpdate):
         updated_fields = weight_update.model_dump(exclude_none=True)
+        print(updated_fields)
         if not updated_fields:
             raise HTTPException(status_code=400, detail="No data to update")
         self.repo.update(weight_id, updated_fields)

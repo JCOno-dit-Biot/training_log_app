@@ -4,6 +4,7 @@ from src.models import (
     Kennel, 
     Runner, 
     DogWeightEntry, 
+    DogWeightUpdate,
     Sport, 
     ActivityLaps, 
     ActivityDogs, 
@@ -82,6 +83,22 @@ def test_dog_weight_recalculate_dog_age(Luna):
     # Make sure that age gets recalculated even if specified in the input
     weight_entry=DogWeightEntry(dog = Luna, date = date(2023, 3, 27), weight = 35, age = 1)
     assert int(weight_entry.age*100)/100 == 5.93
+
+def test_dog_weight_update():
+    weight_update = DogWeightUpdate(
+        weight = 19.9,
+        date = "2025-01-01"
+    )
+    assert weight_update.weight == 19.9
+    assert weight_update.date == date(2025,1,1)
+
+def test_dog_update_partial():
+    weight_update = DogWeightUpdate(
+        date = date(2025,2,2)
+    )
+    assert weight_update.weight is None
+    assert weight_update.date == date(2025,2,2)
+
 
 def test_activity_calculates_pace_automatically(activity_entry):
     assert activity_entry.pace is not None 
