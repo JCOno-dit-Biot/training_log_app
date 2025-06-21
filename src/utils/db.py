@@ -25,9 +25,10 @@ def build_conditions(filters: WeightQueryFilter | ActivityQueryFilters):
         conditions.append("a.timestamp <= %s")
         values.append(filters.end_date)
 
-    if filters.dog_id and len(filters.dog_id) != 0:
-        conditions.append("ad.dog_id in %s")
-        values.append(tuple(filters.dog_id))
+    if isinstance(filters, WeightQueryFilter):
+        if filters.dog_id and (len(filters.dog_id) != 0 if isinstance(filters.dog_id, (list, tuple)) else True):
+            conditions.append("w.dog_id in %s")
+            values.append(tuple(filters.dog_id) if isinstance(filters.dog_id, (list, tuple)) else (filters.dog_id,))
 
     if isinstance(filters, ActivityQueryFilters):
         if filters.sport_id:
@@ -42,6 +43,10 @@ def build_conditions(filters: WeightQueryFilter | ActivityQueryFilters):
             conditions.append("a.workout = %s")
             values.append(filters.workout)
         
+        if filters.dog_id and (len(filters.dog_id) != 0 if isinstance(filters.dog_id, (list, tuple)) else True):
+            conditions.append("ad.dog_id in %s")
+            values.append(tuple(filters.dog_id) if isinstance(filters.dog_id, (list, tuple)) else (filters.dog_id,))
+
         # case insensitive and partial match
         if filters.location:
             conditions.append("a.location ILIKE %s")

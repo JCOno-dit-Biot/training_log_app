@@ -28,7 +28,7 @@ def test_build_conditions_with_weight_filter(weight_query_filter):
     clause, values = build_conditions(weight_query_filter)
     assert "a.timestamp >= %s" in clause
     assert "a.timestamp <= %s" in clause
-    assert "ad.dog_id in %s" in clause
+    assert "w.dog_id in %s" in clause
     assert values == [date(2025, 1, 1), date(2025, 1, 30), (1,)]
 
 def test_build_conditions_with_activity_filter(activity_query_filter):
@@ -43,9 +43,9 @@ def test_build_conditions_with_activity_filter(activity_query_filter):
     assert values == [
         date(2025, 1, 1),
         date(2025, 1, 30),
-        (1,2),
         2,
         1,
         False,
+        (1,2),
         "%Park%"
     ]
