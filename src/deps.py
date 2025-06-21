@@ -7,11 +7,12 @@ from src.repositories import (
     runner_repository,
     activity_repository,
     weight_repository,
-    sport_repository
+    sport_repository,
+    comment_repository
 )
 from .config import settings
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="http://localhost:8001/token")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="http://localhost:8001/auth/token")
 
 def get_db(request: Request):
     return request.app.state.db
@@ -30,6 +31,9 @@ def get_activity_repo(db=Depends(get_db)):
 
 def get_sport_repo(db=Depends(get_db)):
     return sport_repository(db)
+
+def get_comment_repo(db=Depends(get_db)):
+    return comment_repository(db)
 
 async def verify_jwt(request: Request, token: str = Depends(oauth2_scheme)):
     if not token:

@@ -5,7 +5,7 @@ from .runner import Runner
 from .sport import Sport
 from .dog import Dog
 from .weather import Weather
-import src.calculation_helpers as ch
+import src.utils.calculation_helpers as ch
 
 # SPORT_PACE_DISPLAY = {'canicross', 'canihike', 'canirando', 'skijoring'}
 
@@ -20,9 +20,9 @@ class Activity(BaseModel):
     dogs: List["ActivityDogs"]
     weather: Optional[Weather] = Field(None, description="Weather entry for the training")
     laps: Optional[List["ActivityLaps"]] = Field([], description="list of laps with pace or speed")
-    notes: Optional[str] = Field(None, description="Short comment regarding the training")
     speed: Optional[float] = Field(None, description="Speed in km per hours")
     pace: Optional[str] = Field(None, description="Pace in min per km")
+    comment_count: Optional[int] = Field(None, description="number of comment for an activity")
 
     @model_validator(mode="after")
     def ensure_at_least_one_metric(cls, values):
@@ -89,42 +89,68 @@ class ActivityLaps(BaseModel):
 
         return values
 
-    # @model_validator(mode="after")
-    # def calculate_speed_from_time_distance(cls, values):
-    #     if values.lap_distance is not None and values.lap_time is not None:
-    #         values.lap_time_delta = ch.convert_str_time_to_timedelta(values.lap_time)
-    #         values.speed = ch.calculate_speed_from_time_distance(values.lap_distance, values.lap_time)
-    #     return values
+class ActivityCreate(BaseModel):
+    id: Optional[int] = None
+    timestamp: datetime
+    runner_id: int
+    sport_id: int
+    location: str #could modify and use GPS coordinates instead
+    distance: float
+    workout: bool = False
+    dogs: List["ActivityDogsCreate"]
+    weather: Optional[Weather] = Field(None, description="Weather entry for the training")
+    laps: Optional[List[ActivityLaps]] = Field([], description="list of laps with pace or speed")
+    speed: Optional[float] = Field(None, description="Speed in km per hours")
+    pace: Optional[str] = Field(None, description="Pace in min per km")
 
-    # @model_validator(mode="after")
-    # def calculate_speed_if_not_provided(cls,values):
-    #     """
-    #     Speed is saved the quantity saved in the database so it must always be calculated
-    #     """
-    #     if values.speed is None and values.pace is not None:
-    #         values.speed = ch.calculate_speed_from_pace(values.pace)
-    #     return values
-    
-    # @model_validator(mode="after")
-    # def calculate_lap_time_if_only_delta(cls,values):
-    #     """
-    #     Set lap_time string (MM:SS) based on lap_time_delta if lap_time is missing.
-    #     Speed is saved separately so lap_time must always be consistent.
-    #     """
-    #     if values.lap_time is None and values.lap_time_delta is not None:
-    #         total_seconds = int(values.lap_time_delta.total_seconds())
-    #         minutes, seconds = divmod(total_seconds, 60)
-    #         values.lap_time = f"{minutes:02}:{seconds:02}"
+    @model_validator(mode="after")
+    def ensure_at_least_one_metric(cls, values):
+        if values.speed is None and values.pace is None:
+            raise ValueError(f"At least one of 'speed' or 'pace' must be provided the activity")
+        
+        # calculate pace from speed if not provided
+        if values.speed and values.pace is None:
+            values.pace = ch.calculate_pace_from_speed(values.speed)
 
-    #     return values
+        if values.pace and values.speed is None:
+            values.speed = ch.calculate_speed_from_pace(values.pace)
+
+        # Ensure at least one lap is provided if workout is set to true
+        if values.workout and (values.laps is None or len(values.laps) == 0):
+            raise ValueError(f"Laps cannot be None or an empty list if Workout is set to True")
+        return values
     
-    # @model_validator(mode="after")
-    # def calculate_pace_if_not_provided(cls,values):
-    #     if values.pace is None and values.speed is not None:
-    #         values.pace = ch.calculate_pace_from_speed(values.speed)
-    #     return values
+class ActivityUpdate(BaseModel):
+    timestamp: Optional[datetime] = None
+    runner_id: Optional[int] = None
+    sport_id: Optional[int] = None
+    location: Optional[str] = None
+    distance: Optional[float] = None
+    workout: Optional[bool] = None
+    dogs: Optional[List["ActivityDogsCreate"]] = None
+    weather: Optional[Weather] = None
+    laps: Optional[List[ActivityLaps]] = None
+    speed: Optional[float] = None
+    pace: Optional[str] = None
+
+    @model_validator(mode="after")
+    def ensure_needed_metrics_are_present(cls, values):
+        #the db only saves speed not pace
+        if values.pace and values.speed is None:
+            values.speed = ch.calculate_speed_from_pace(values.pace)
+
+        # Ensure at least one lap is provided if workout is set to true
+        if values.workout and (values.laps is None or len(values.laps) == 0):
+            raise ValueError(f"Laps cannot be None or an empty list if Workout is set to True")
+        return values
 
 class ActivityDogs(BaseModel):
     id: Optional[int] = None
     dog: Dog
+    rating: Optional[int] = Field(None, description="Training rating out of 10", ge=0, le=10)
+
+    
+class ActivityDogsCreate(BaseModel):
+    id: Optional[int] = None
+    dog_id: int
     rating: Optional[int] = Field(None, description="Training rating out of 10", ge=0, le=10)

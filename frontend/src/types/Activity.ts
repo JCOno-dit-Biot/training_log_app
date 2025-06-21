@@ -5,7 +5,7 @@ import { Sport } from "./Sport";
 import { Lap } from "./Lap";
 
 export interface Activity {
-id: number;
+  id: number;
   timestamp: string;
   runner: Runner;
   dogs: Dog[];
@@ -16,10 +16,5 @@ id: number;
   workout: boolean;
   laps: Lap[];
   weather: Weather;
-  notes: string;
-}
-
-export interface Lap {
-  distance: number;
-  lap_time: string;
+  comment_count: number;
 }

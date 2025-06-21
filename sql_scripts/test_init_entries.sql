@@ -93,3 +93,11 @@ INSERT INTO weight_entries(
     (1, '2025-02-01' , 21.2),
     (1, '2025-03-05', 19.8),
     (2, '2025-01-03', 40.4);
+
+-- add example activity comments
+INSERT INTO  activity_comments (
+    activity_id, user_id, comment
+) VALUES 
+    (1, 1, 'Really solid training'),
+    (2, 2, 'Not the best today'),
+    (2, 1, 'Lots of wildlife today');

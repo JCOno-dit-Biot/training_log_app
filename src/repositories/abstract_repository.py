@@ -17,9 +17,17 @@ class abstract_repository(abc.ABC):
         raise NotImplementedError
     
     @abc.abstractmethod
+    def get_total_count(self) -> int:
+        raise NotImplementedError
+    
+    @abc.abstractmethod
     def create(self, obj):
         raise NotImplementedError
 
+    @abc.abstractmethod
+    def update(self, obj):
+        raise NotImplementedError
+    
     @abc.abstractmethod
     def delete(self, id: int):
         pass

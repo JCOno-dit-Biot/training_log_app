@@ -7,23 +7,22 @@ import LapEditor from './LapEditor';
 import { SelectedDog } from "../types/Dog";
 import { Lap } from "../types/Activity";
 import { postActivity } from "../api/activities";
+import { Weather } from "../types/Weather";
 // import { Dog } from "../types/Dog";
 // import { Runner } from "../types/Runner";
 // import { Weather } from "../types/Weather";
 // import { Sport } from "../types/Sport";
 
 export interface ActivityForm {
-  datetime: string
+  timestamp: string
   runner_id: number | null;
   sport_id: number | null;
   dogs: SelectedDog[];
   distance: number;
   speed?: number;
   pace?: string;
-  temperature?: number;
-  humidity?: number;
-  condition?: string;
-  is_workout: boolean;
+  weather: Weather
+  workout: boolean;
   laps: Lap[];
 }
 
@@ -33,20 +32,22 @@ export default function AddActivityForm({ onClose }: { onClose: () => void }) {
   const [error, setError] = useState<string | null>(null);
 
   const [formData, setFormData] = useState<ActivityForm>({
-    datetime: new Date().toISOString(),
+    timestamp: new Date().toISOString(),
     runner_id: null,
     sport_id: null,
     dogs: [],
     distance: 0,
     speed: undefined,
     pace: '',
-    temperature: undefined,
-    humidity: undefined,
-    condition: '',
-    is_workout: false,
-    laps: [{ distance: 0, lap_time: '' }]
+    weather: {
+      temperature: 0,
+      humidity: 0,
+      condition: ''
+    },
+    workout: false,
+    laps: []
   });
-  console.log(formData)
+
   const { runners, dogs, sports } = useGlobalCache();
 
   const handleInputChange = (field: keyof ActivityForm, value: any) => {
@@ -60,7 +61,6 @@ export default function AddActivityForm({ onClose }: { onClose: () => void }) {
     } else {
       setFormData(prev => ({ ...prev, [field]: value }));
     }
-    console.log(formData)
   };
 
   const handlePaceChange = (value: string) => {
@@ -69,6 +69,21 @@ export default function AddActivityForm({ onClose }: { onClose: () => void }) {
       setFormData(prev => ({ ...prev, pace: value }));
     }
   };
+
+  const handleWeatherChange = (field: keyof Weather, value: any) => {
+    const parsedValue = field === 'humidity'
+    ? parseFloat(value) / 100
+    : value;
+
+    setFormData(prev => ({
+      ...prev,
+      weather: {
+        ...prev.weather,
+        [field]: parsedValue
+      }
+    }));
+  };
+
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -99,11 +114,11 @@ export default function AddActivityForm({ onClose }: { onClose: () => void }) {
           <input
             type="date"
             className="w-full border rounded p-2"
-            value={new Date(formData.datetime).toISOString().split('T')[0]}
+            value={new Date(formData.timestamp).toISOString().split('T')[0]}
             onChange={(e) => {
-              const time = new Date(formData.datetime).toISOString().split('T')[1]; // keep current time
+              const time = new Date(formData.timestamp).toISOString().split('T')[1]; // keep current time
               const combined = new Date(`${e.target.value}T${time}`);
-              setFormData(prev => ({ ...prev, datetime: combined.toISOString() }));
+              setFormData(prev => ({ ...prev, timestamp: combined.toISOString() }));
             }}
           />
         </div>
@@ -112,13 +127,13 @@ export default function AddActivityForm({ onClose }: { onClose: () => void }) {
           <input
             type="time"
             className="w-full border rounded p-2"
-            value={new Date(formData.datetime).toLocaleTimeString('en-GB', { hour12: false }).slice(0, 5)}
+            value={new Date(formData.timestamp).toLocaleTimeString('en-GB', { hour12: false }).slice(0, 5)}
             onChange={(e) => {
               const [hours, minutes] = e.target.value.split(':').map(Number);
-              const date = new Date(formData.datetime);
+              const date = new Date(formData.timestamp);
               date.setHours(hours);
               date.setMinutes(minutes);
-              setFormData(prev => ({ ...prev, datetime: date.toISOString() }));
+              setFormData(prev => ({ ...prev, timestamp: date.toISOString() }));
             }}
           />
         </div>
@@ -193,19 +208,19 @@ export default function AddActivityForm({ onClose }: { onClose: () => void }) {
           <label className="text-gray-700 flex-1 font-medium">Workout
             <input
               type="checkbox"
-              checked={formData.is_workout}
+              checked={formData.workout}
               className="flex-1 peer appearance-none "
               onChange={(e) => setFormData(prev => ({
                 ...prev,
-                is_workout: e.target.checked,
-                laps: e.target.checked ? [{ distance: 0, lap_time: '' }] : [],
+                workout: e.target.checked,
+                laps: e.target.checked ? [{ lap_number: 0, lap_distance: 0, lap_time: '' }] : [],
               }))}
             />
             <span className="w-14 h-8 flex items-center flex-shrink-0 ml-1 mt-1 p-1 bg-gray-300 rounded-full duration-300 ease-in-out peer-checked:bg-success after:w-6 after:h-6 after:bg-white after:rounded-full after:shadow-md after:duration-300 peer-checked:after:translate-x-6"></span>
           </label>
         </div>
       </div>
-      {formData.is_workout && (
+      {formData.workout && (
         <LapEditor
           laps={formData.laps}
           setLaps={(laps) => setFormData(prev => ({ ...prev, laps }))}
@@ -229,8 +244,8 @@ export default function AddActivityForm({ onClose }: { onClose: () => void }) {
           <input
             type="text"
             className="w-full border rounded p-2"
-            value={formData.condition ?? ''}
-            onChange={e => handleInputChange('condition', e.target.value)}
+            value={formData.weather?.condition ?? ''}
+            onChange={e => handleWeatherChange('condition', e.target.value)}
           />
         </div>
         <div className="flex-1">
@@ -239,8 +254,8 @@ export default function AddActivityForm({ onClose }: { onClose: () => void }) {
             type="number"
             step="0.1"
             className="w-full border rounded p-2"
-            value={formData.temperature ?? ''}
-            onChange={e => handleInputChange('temperature', e.target.value)}
+            value={formData.weather?.temperature ?? ''}
+            onChange={e => handleWeatherChange('temperature', parseFloat(e.target.value))}
           />
         </div>
         <div className="flex-1">
@@ -249,8 +264,8 @@ export default function AddActivityForm({ onClose }: { onClose: () => void }) {
             type="number"
             step="1"
             className="w-full border rounded p-2"
-            value={formData.humidity ?? ''}
-            onChange={e => handleInputChange('humidity', e.target.value)}
+            value={formData.weather.humidity != null ? formData.weather.humidity * 100 : ''}
+            onChange={e => handleWeatherChange('humidity', parseFloat(e.target.value))}
           />
         </div>
       </div>

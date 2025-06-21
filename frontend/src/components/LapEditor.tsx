@@ -1,5 +1,5 @@
 import React from 'react';
-import { Lap } from '../types/Activity';
+import { Lap } from '../types/Lap';
 import { Trash2 } from 'lucide-react';
 
 interface LapEditorProps {
@@ -10,8 +10,8 @@ interface LapEditorProps {
 const LapEditor: React.FC<LapEditorProps> = ({ laps, setLaps }) => {
     const handleDistanceChange = (index: number, value: string) => {
         const updated = [...laps];
-        updated[index].distance = value === '' ? 0 : parseFloat(value) || 0;
-
+        updated[index].lap_distance = value === '' ? 0 : parseFloat(value) || 0;
+        console.log(laps)
         setLaps(updated);
     };
 
@@ -25,12 +25,18 @@ const LapEditor: React.FC<LapEditorProps> = ({ laps, setLaps }) => {
     };
 
     const addLap = () => {
-        setLaps([...laps, { distance: 0, lap_time: '' }]);
+        const nextLapNumber = laps.length + 1;
+        setLaps([...laps, { lap_number: nextLapNumber, lap_distance: 0, lap_time: '' }]);
+        console.log(laps)
     };
 
     const removeLap = (index: number) => {
-        const updated = laps.filter((_, i) => i !== index);
+        const updated = laps.filter((_, i) => i !== index).map((lap, i) => ({
+          ...lap,
+          lap_number: i + 1
+        }));
         setLaps(updated);
+        console.log(laps)
     };
 
     return (
@@ -53,7 +59,7 @@ const LapEditor: React.FC<LapEditorProps> = ({ laps, setLaps }) => {
               type="number"
               step="0.1"
               className="w-full border rounded p-2 text-sm"
-              value={lap.distance === 0 ? '' : lap.distance.toString()}
+              value={lap.lap_distance != null && lap.lap_distance !== 0 ? lap.lap_distance.toString() : ''}
               onChange={(e) => handleDistanceChange(index, e.target.value)}
             />
 
@@ -82,7 +88,7 @@ const LapEditor: React.FC<LapEditorProps> = ({ laps, setLaps }) => {
 
       <button
         type="button"
-        onClick={addLap}
+        onClick={() => addLap()}
         className="mt-3 text-sm bg-white text-blue-600 hover:underline"
       >
         + Add Lap

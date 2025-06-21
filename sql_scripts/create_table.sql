@@ -24,6 +24,18 @@ CREATE TABLE IF NOT EXISTS "runners" (
     UNIQUE("name","kennel_id")
 );
 
+CREATE TABLE IF NOT EXISTS "users" (
+    "id" SERIAL,
+    "username" TEXT NOT NULL,
+    "kennel_id" INT,
+    "password_hash" TEXT NOT NULL,
+    "created_at" TIMESTAMPTZ DEFAULT NOW(),
+    "is_active" BOOLEAN DEFAULT true, -- allows to disable a user if needed
+    CONSTRAINT "user_pkey" PRIMARY KEY ("id")
+);
+
+CREATE UNIQUE INDEX "unique_active_username" ON users(username) WHERE is_active=true; 
+
 CREATE TABLE IF NOT EXISTS "images" (
     "id" SERIAL,
     "image_path" TEXT NOT NULL,
@@ -86,6 +98,18 @@ CREATE TABLE IF NOT EXISTS "workout_laps" (
     CONSTRAINT "workoutlaps_fkey_activityid_id" FOREIGN KEY ("activity_id") REFERENCES "activities"("id")
 );
 
+CREATE TABLE IF NOT EXISTS "activity_comments" (
+    "id" SERIAL,
+    "activity_id" INTEGER NOT NULL,
+    "user_id" INTEGER NOT NULL,
+    "comment" TEXT NOT NULL,
+    "created_at" TIMESTAMPTZ DEFAULT now(),
+    "updated_at" TIMESTAMPTZ,
+    CONSTRAINT "comment_pkey" PRIMARY KEY ("id"),
+    CONSTRAINT "comment_fkey_activityid_id" FOREIGN KEY ("activity_id") REFERENCES "activities"("id"),
+    CONSTRAINT "comment_fkey_userid_id" FOREIGN KEY ("user_id") REFERENCES "users"("id")
+);
+
 CREATE TABLE IF NOT EXISTS "weather_entries" (
     "id" SERIAL,
     "activity_id" INTEGER,
@@ -104,18 +128,6 @@ CREATE TABLE IF NOT EXISTS "weight_entries" (
     CONSTRAINT "weight_entries_pkey" PRIMARY KEY ("id"),
     CONSTRAINT "weightentries_fkey_dogid_id" FOREIGN KEY ("dog_id") REFERENCES "dogs"("id")
 );
-
-CREATE TABLE IF NOT EXISTS "users" (
-    "id" SERIAL,
-    "username" TEXT NOT NULL,
-    "kennel_id" INT,
-    "password_hash" TEXT NOT NULL,
-    "created_at" TIMESTAMPTZ DEFAULT NOW(),
-    "is_active" BOOLEAN DEFAULT true, -- allows to disable a user if needed
-    CONSTRAINT "user_pkey" PRIMARY KEY ("id")
-);
-
-CREATE UNIQUE INDEX "unique_active_username" ON users(username) WHERE is_active=true; 
 
 CREATE TABLE IF NOT EXISTS "refresh_tokens" (
     "user_id" INT,

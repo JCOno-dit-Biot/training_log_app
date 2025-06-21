@@ -11,6 +11,7 @@ export const postActivity = async (formData: ActivityForm) : Promise<Activity> =
   const payload = {
     ...formData
   }
+  console.log(payload)
   const response = await axios.post('/activities', payload);
   return response.data; 
 }

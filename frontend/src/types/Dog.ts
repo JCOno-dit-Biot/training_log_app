@@ -10,6 +10,6 @@ export interface Dog {
   }
   
 export interface SelectedDog {
-  dogId: number;
+  dog_id: number;
   rating: number;
 }

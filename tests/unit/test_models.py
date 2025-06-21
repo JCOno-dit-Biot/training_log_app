@@ -1,8 +1,25 @@
-from src.models import Activity, Dog, Kennel, Runner, DogWeightEntry, Sport, ActivityLaps, ActivityDogs, Weather
+from src.models import (
+    Activity, 
+    Dog, 
+    Kennel, 
+    Runner, 
+    DogWeightEntry, 
+    DogWeightUpdate,
+    Sport, 
+    ActivityLaps, 
+    ActivityDogs, 
+    Weather, 
+    commentCreate,
+    commentOut,
+    PaginationParams,
+    Filter,
+    ActivityQueryFilters,
+    WeightQueryFilter
+)
 import pytest
 from pydantic import ValidationError
 from datetime import datetime, date, timedelta
-from src import calculation_helpers as ch
+from src.utils import calculation_helpers as ch
 
 
 
@@ -66,6 +83,22 @@ def test_dog_weight_recalculate_dog_age(Luna):
     # Make sure that age gets recalculated even if specified in the input
     weight_entry=DogWeightEntry(dog = Luna, date = date(2023, 3, 27), weight = 35, age = 1)
     assert int(weight_entry.age*100)/100 == 5.93
+
+def test_dog_weight_update():
+    weight_update = DogWeightUpdate(
+        weight = 19.9,
+        date = "2025-01-01"
+    )
+    assert weight_update.weight == 19.9
+    assert weight_update.date == date(2025,1,1)
+
+def test_dog_update_partial():
+    weight_update = DogWeightUpdate(
+        date = date(2025,2,2)
+    )
+    assert weight_update.weight is None
+    assert weight_update.date == date(2025,2,2)
+
 
 def test_activity_calculates_pace_automatically(activity_entry):
     assert activity_entry.pace is not None 
@@ -255,3 +288,49 @@ def test_weather_no_t_humidity_raise():
         weather = Weather (
             condition = "wet"
         )
+
+def test_comment_create_init():
+    comment = commentCreate(
+        user_id = 1,
+        activity_id= 1,
+        comment= "test_comment"
+    )
+    assert comment.comment == "test_comment"
+    assert comment.user_id== 1
+    assert comment.activity_id == 1
+    
+def test_comment_out_init():
+    now_ts = datetime.now()
+    comment = commentOut(
+        id = 1,
+        user_id = 1,
+        activity_id= 1,
+        created_at= now_ts,
+        comment= "test_comment"
+    )
+    assert comment.comment == "test_comment"
+    assert comment.user_id== 1
+    assert comment.activity_id == 1
+    assert comment.created_at ==  now_ts
+    assert comment.id == 1
+    assert comment.updated_at is None
+
+def test_pagination_model():
+    pagination_param = PaginationParams(
+        limit=10,
+        offset=1
+    )
+    assert pagination_param.limit == 10
+    assert pagination_param.offset == 1
+
+def test_pagination_raises():
+    with pytest.raises(ValidationError):
+        PaginationParams(
+            limit = 30,
+            offset=1
+        )
+
+def test_filter_is_empty():
+    filter = Filter()
+    assert filter.is_empty()
+

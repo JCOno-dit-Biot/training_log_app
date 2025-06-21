@@ -128,4 +128,8 @@ class dog_repository(abstract_repository):
                          (dog.name, dog.kennel.name))
             self._connection.commit()
 
-
+    def update(self, obj):
+        return super().update(obj)
+    
+    def get_total_count(self):
+        return super().get_total_count()

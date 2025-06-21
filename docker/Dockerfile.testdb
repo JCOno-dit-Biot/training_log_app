@@ -1,6 +1,6 @@
 FROM postgres:latest
 COPY ../sql_scripts/create_table.sql /docker-entrypoint-initdb.d/1-init.sql
-COPY ../sql_scripts/test_init_entries.sql/ /docker-entrypoint-initdb.d/2-test_init.sql
-COPY ../sql_scripts/test_auth_module_entries.sql/ /docker-entrypoint-initdb.d/3-test_auth_init.sql
+COPY ../sql_scripts/test_auth_module_entries.sql/ /docker-entrypoint-initdb.d/2-test_auth_init.sql
+COPY ../sql_scripts/test_init_entries.sql/ /docker-entrypoint-initdb.d/3-test_init.sql
 CMD ["docker-entrypoint.sh", "postgres"]
 

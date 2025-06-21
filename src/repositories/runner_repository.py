@@ -119,3 +119,8 @@ class runner_repository(abstract_repository):
             self._connection.commit()
 
 
+    def update(self, obj):
+        return super().update(obj)
+    
+    def get_total_count(self):
+        return super().get_total_count()

@@ -1,12 +1,13 @@
 from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
-from .utils import get_connection
+from .utils.db import get_connection
 from src.api.dog_controller import router as dog_router
 from src.api.runner_controller import router as runner_router
 from src.api.activity_controller import router as activity_router
 from src.api.weight_controller import router as weight_router
 from src.api.sport_controller import router as sport_router
+from src.api.comment_controller import router as comment_router
 from src.deps import verify_jwt
 
 @asynccontextmanager
@@ -40,3 +41,4 @@ app.include_router(runner_router, tags=["Runners"], dependencies=[Depends(verify
 app.include_router(activity_router, tags=["Activities"], dependencies=[Depends(verify_jwt)])
 app.include_router(sport_router, tags=["Sport"])
 app.include_router(weight_router, tags=["Weights"], dependencies=[Depends(verify_jwt)])
+app.include_router(comment_router, tags = ["Comments"], dependencies=[Depends(verify_jwt)])

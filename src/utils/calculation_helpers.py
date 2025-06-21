@@ -1,6 +1,6 @@
 import numpy as np
 from datetime import datetime, timedelta
-from . import constants as c
+from .. import constants as c
 
 def convert_str_time_to_timedelta(time_str) -> timedelta:
     if isinstance(time_str, str):

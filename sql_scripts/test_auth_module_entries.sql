@@ -1,1 +1,2 @@
 INSERT INTO users(username, password_hash, kennel_id) VALUES ('john@domain.com', 'hashpassword', 1);
+INSERT INTO users(username, password_hash, kennel_id) VALUES ('john_doe@domain.com', 'bad_hashpassword', 1);
