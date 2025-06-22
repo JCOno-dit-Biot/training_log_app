@@ -27,11 +27,12 @@ CREATE TABLE IF NOT EXISTS "runners" (
 CREATE TABLE IF NOT EXISTS "users" (
     "id" SERIAL,
     "username" TEXT NOT NULL,
-    "kennel_id" INT,
+    "kennel_id" INT NOT NULL,
     "password_hash" TEXT NOT NULL,
     "created_at" TIMESTAMPTZ DEFAULT NOW(),
     "is_active" BOOLEAN DEFAULT true, -- allows to disable a user if needed
-    CONSTRAINT "user_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "user_pkey" PRIMARY KEY ("id"),
+    CONSTRAINT "users_fkey_kennelid_id" FOREIGN KEY ("kennel_id") REFERENCES "kennels"("id")  
 );
 
 CREATE UNIQUE INDEX "unique_active_username" ON users(username) WHERE is_active=true; 
@@ -67,7 +68,6 @@ CREATE TABLE IF NOT EXISTS "activities"(
     "runner_id" INTEGER,
     "sport_id" INTEGER,
     "timestamp" TIMESTAMPTZ,
-    "notes" TEXT, -- comments on the training activity
     "location" VARCHAR(100), -- this could be a GPS coordinate in the future
     "workout" BOOLEAN, -- set to true if this was a speed workout (intervals)
     "speed" FLOAT, -- only save speed as it can always be converted to pace
@@ -107,7 +107,7 @@ CREATE TABLE IF NOT EXISTS "activity_comments" (
     "updated_at" TIMESTAMPTZ,
     CONSTRAINT "comment_pkey" PRIMARY KEY ("id"),
     CONSTRAINT "comment_fkey_activityid_id" FOREIGN KEY ("activity_id") REFERENCES "activities"("id"),
-    CONSTRAINT "comment_fkey_userid_id" FOREIGN KEY ("user_id") REFERENCES "users"("id")
+    CONSTRAINT "comment_fkey_userid_id" FOREIGN KEY ("user_id") REFERENCES "users"("id") 
 );
 
 CREATE TABLE IF NOT EXISTS "weather_entries" (
