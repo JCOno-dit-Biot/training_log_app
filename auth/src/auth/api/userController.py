@@ -179,6 +179,8 @@ class UserController:
             return SessionTokenResponse.model_validate(access_token)
         except HTTPException: 
             raise
+        except TokenDecodeError as token_error:
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail = str(token_error))
         except Exception as e:
             raise HTTPException(status_code=500, detail=str(e)) 
         
