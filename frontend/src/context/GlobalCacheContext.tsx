@@ -61,7 +61,7 @@ export const GlobalCacheProvider = ({ children }: { children: ReactNode }) => {
     setRunners(runnerMap);
     setSports(sportMap)
   
-  }, []);
+  }, [isAuthenticated]);
 
   return (
     <GlobalContext.Provider value={{ dogs, runners, sports }}>
