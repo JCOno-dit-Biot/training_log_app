@@ -59,7 +59,7 @@ class activity_repository(abstract_repository):
                         LEFT JOIN activity_comments ac ON ac.activity_id = a.id
                         WHERE r.kennel_id = %s AND {where_clause}
                         GROUP BY 
-                        a.id, a.runner_id, a.sport_id, a.timestamp, a.notes, a.location,
+                        a.id, a.runner_id, a.sport_id, a.timestamp, a.location,
                         a.workout, a.speed, a.distance,
                         r.name, r.id, s.name, s.type, k.name, k.id,
                         w.temperature, w.humidity, w.condition
@@ -122,7 +122,7 @@ class activity_repository(abstract_repository):
                         LEFT JOIN activity_comments ac ON ac.activity_id = a.id
                         WHERE a.id = %s
                         GROUP BY 
-                        a.id, a.runner_id, a.sport_id, a.timestamp, a.notes, a.location,
+                        a.id, a.runner_id, a.sport_id, a.timestamp, a.location,
                         a.workout, a.speed, a.distance,
                         r.name, r.id, s.name, s.type, k.name, k.id, w.temperature, w.humidity, w.condition
                     """
