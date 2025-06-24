@@ -5,13 +5,13 @@ import { Activity } from '../types/Activity';
 import AddActivityButton from "../components/AddActivityButton";
 import AddActivityForm from "../components/AddActivityForm";
 
+
 export default function ActivityFeed() {
   const [activities, setActivities] = useState<Activity[]>([]);
   const [showModal, setShowModal] = useState(false);
 
-
   useEffect(() => {
-    getActivities()
+    getActivities( {limit: 10, offset: 0, filters: {dog_id:1}} )
       .then((data) => {
         // const sorted = data.sort(
         //   (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
