@@ -47,7 +47,7 @@ def test_get_activities(test_app, mock_repo):
     assert response.status_code == 200
     assert len(response.json()["data"]) == 2
     mock_repo.get_all.assert_called_once()
-    mock_repo.get_all.assert_called_with(1, 10, 0, ActivityQueryFilters())
+    mock_repo.get_all.assert_called_with(1, ActivityQueryFilters(), 10, 0)
 
 def test_create_activity(test_app, mock_repo, test_activity_create):
     client = TestClient(test_app)
