@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getToken } from '../api/auth/token';
-
+import { useAuth } from '../context/AuthContext';
 
 //{ onLogin }: { onLogin: () => void }
 export default function LoginPage() {
@@ -10,6 +10,8 @@ export default function LoginPage() {
     const [password, setPassword] = useState('')
     const [error, setError] = useState('');
     const navigate = useNavigate();
+
+    const { setAuthenticated } = useAuth()
 
     useEffect(() => {
     const token = localStorage.getItem('access_token');
@@ -29,8 +31,9 @@ export default function LoginPage() {
             const response = await getToken(formData)
             localStorage.setItem("email", username)
             localStorage.setItem("access_token", response.access_token)
-                    
+            setAuthenticated(true)
             navigate('/dashboard');
+
             } catch (err) {
                 setError('Invalid credentials');
             };

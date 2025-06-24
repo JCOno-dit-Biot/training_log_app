@@ -2,7 +2,12 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import api from '../api/axios';
 
-export const AuthContext = createContext<{ isAuthenticated: boolean }>({ isAuthenticated: false });
+export const AuthContext = createContext<{
+  isAuthenticated: boolean; setAuthenticated: (auth: boolean) => void;
+}>({
+  isAuthenticated: false,
+  setAuthenticated: () => { },
+});
 
 export const useAuth = () => useContext(AuthContext);
 
@@ -19,5 +24,5 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   }, []);
 
-  return <AuthContext.Provider value={{ isAuthenticated }}>{children}</AuthContext.Provider>;
+  return <AuthContext.Provider value={{ isAuthenticated, setAuthenticated }}>{children}</AuthContext.Provider>;
 };
