@@ -1,54 +1,88 @@
 import { Activity } from '../types/Activity'
 import { useGlobalCache } from '../context/GlobalCacheContext'
+import { MessageCircle } from 'lucide-react';
 import { act } from 'react';
 
+
 export default function ActivityCard({ activity }: { activity: Activity }) {
-  console.log(activity)
   const DEFAULT_AVATAR = 'https://www.gravatar.com/avatar/?d=mp';
   const { runners, dogs, sports } = useGlobalCache();
-  console.log(runners)
   const date = new Date(activity.timestamp).toLocaleString();
-  const dogNames = activity.dogs.map((d) => d.name).join(', ');
+  //const dogNames = activity.dogs.map((d) => d.name).join(', ');
+
+  const dogElement = activity.dogs.map((dog) => {
+    const cachedDog = dogs.get(dog.dog.id);
+    const dogImageUrl = cachedDog
+    ? `/profile_picture/dogs/${cachedDog.image_url}`
+    : DEFAULT_AVATAR;
+
+    return (
+    <div key={dog.id} className="flex items-center gap-1">
+      <img
+        src={dogImageUrl}
+        alt={dog.dog.name}
+        className="w-12 h-12 rounded-full object-cover border"
+      />
+      <span className="text-xs">{dog.rating}/10</span>
+    </div>
+  );
+  })
+  
   const sport = [...sports.values()].find(s => s.name === activity.sport.name);
-  console.log(activity.sport.name)
   const speedOrPace =
     sport?.display_mode === 'pace' ? `${activity.pace}` : `${activity.speed.toFixed(1)} km/h`;
   const runnerImageUrl = runners.get(activity.runner.id)
     ? `/profile_picture/runners/${runners.get(activity.runner.id)?.image_url}`
     : DEFAULT_AVATAR; 
+
+  const dogImageUrl = dogs.get(activity.runner.id)
+    ? `/profile_picture/dogs/${dogs.get(activity.dogs.id)?.image_url}`
+    : DEFAULT_AVATAR; 
+
   return (
-    <div className="bg-white border border-stone rounded p-4 shadow-sm space-y-2">
-      <div className="flex items-center gap-3">
-        <img
-          src={runnerImageUrl}
-          alt={activity.runner.name}
-          className="w-10 h-10 rounded-full object-cover"
-        />
-        <div>
-          <div className="font-semibold text-charcoal">{activity.runner.name}</div>
-          <div className="text-xs text-stone">{date}</div>
+    <div className="bg-white border border-stone rounded-2xl shadow-md p-4 flex justify-between items-start gap-4">
+      {/* Left Column */}
+      <div className="flex-1 space-y-2">
+        <div className="flex items-center gap-3">
+          <img
+            src={runnerImageUrl}
+            alt={activity.runner.name}
+            className="w-12 h-12 rounded-full object-cover border"
+          />
+          <div>
+            <div className="font-semibold text-charcoal text-left">{activity.runner.name}</div>
+            <div className="text-xs text-stone">{date}</div>
+          </div>
         </div>
+
+        <div className="text-sm text-charcoal">
+          <div className="flex gap-2 mt-1">
+            {dogElement}
+          </div>
+        </div>
+
+        <div className="text-sm text-stone capitalize">Sport: {sport?.name}</div>
       </div>
 
-      <div className="text-charcoal text-sm">
-        Ran with <strong>{dogNames}</strong>
+      {/* Right Column */}
+      <div className="flex flex-col items-end gap-2 text-sm text-stone min-w-[120px] text-right">
+        <div>Distance: {activity.distance} km</div>
+        {sport?.display_mode === 'pace' ? (
+          <div>Pace: {speedOrPace}</div>
+        ) : activity.speed !== undefined ? (
+          <div>Speed: {speedOrPace}</div>
+        ) : null}
+        <div>
+          Weather: {activity.weather.temperature}°C,{' '}
+          {activity.weather.condition}
+        </div>
+        {activity.comment_count !== undefined && (
+          <div className="flex items-center justify-end gap-1 text-charcoal">
+            <MessageCircle className="w-4 h-4" />
+            <span>{activity.comment_count}</span>
+          </div>
+        )}
       </div>
-
-      <div className="flex flex-wrap gap-4 text-sm text-stone">
-        <span className="capitalize">Sport: {sport.name}</span>
-        <span>Distance: {activity.distance} km</span>
-        {sport.display_mode === 'pace' ? <span>Pace: {speedOrPace}</span> 
-          : activity.speed !== undefined
-          ? <span>Speed: {activity.speed.toFixed(1)} km/h</span>
-          : null}
-        <span>
-          Weather: {activity.weather.temperature}°C, {activity.weather.condition}
-        </span>
-      </div>
-
-      {/* {activity.notes && (
-        <div className="text-sm text-charcoal italic border-t pt-2">{activity.notes}</div>
-      )} */}
     </div>
   );
 }
