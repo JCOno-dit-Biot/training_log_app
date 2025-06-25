@@ -2,12 +2,14 @@ import { Activity } from '../types/Activity'
 import { useGlobalCache } from '../context/GlobalCacheContext'
 import { MessageCircle } from 'lucide-react';
 import { act } from 'react';
-
+import { formatActivityDate } from '../functions/helpers/FormatDate';
 
 export default function ActivityCard({ activity }: { activity: Activity }) {
   const DEFAULT_AVATAR = 'https://www.gravatar.com/avatar/?d=mp';
   const { runners, dogs, sports } = useGlobalCache();
-  const date = new Date(activity.timestamp).toLocaleString();
+  const date = formatActivityDate(activity.timestamp);
+  const capitalizedLocation = activity.location.charAt(0).toUpperCase() + activity.location.slice(1);
+
   //const dogNames = activity.dogs.map((d) => d.name).join(', ');
 
   const dogElement = activity.dogs.map((dog) => {
@@ -21,7 +23,7 @@ export default function ActivityCard({ activity }: { activity: Activity }) {
       <img
         src={dogImageUrl}
         alt={dog.dog.name}
-        className="w-12 h-12 rounded-full object-cover border"
+        className="w-14 h-14 rounded-full object-cover border"
       />
       <span className="text-xs">{dog.rating}/10</span>
     </div>
@@ -47,11 +49,12 @@ export default function ActivityCard({ activity }: { activity: Activity }) {
           <img
             src={runnerImageUrl}
             alt={activity.runner.name}
-            className="w-12 h-12 rounded-full object-cover border"
+            className="w-14 h-14 rounded-full object-cover border"
           />
           <div>
             <div className="font-semibold text-charcoal text-left">{activity.runner.name}</div>
             <div className="text-xs text-stone">{date}</div>
+            <div className="text-xs text-stone text-left">{capitalizedLocation}</div>
           </div>
         </div>
 

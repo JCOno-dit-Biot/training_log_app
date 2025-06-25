@@ -19,6 +19,7 @@ export interface Activity {
   distance: number;
   speed: number;
   pace: string;
+  location: string;
   workout: boolean;
   laps: Lap[];
   weather: Weather;
