@@ -41,10 +41,9 @@ api.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
     const status = error.response?.status;
-    const isRefreshRequest = originalRequest?.url?.includes('refresh-token');
 
     // If 401 and not already retrying
-    if (status === 401 && !originalRequest._retry && refreshAttemptCount < MAX_REFRESH_ATTEMPTS) {
+    if (status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
       refreshAttemptCount++;
 
