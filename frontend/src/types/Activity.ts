@@ -1,14 +1,20 @@
-import { Dog } from "./Dog"
+import { Dog, SelectedDog} from "./Dog"
 import { Runner } from "./Runner"
 import { Weather } from "./Weather";
 import { Sport } from "./Sport";
 import { Lap } from "./Lap";
 
+interface DogActivityRead {
+  dog: Dog,
+  id? : number
+  rating: number
+}
+
 export interface Activity {
   id: number;
   timestamp: string;
   runner: Runner;
-  dogs: Dog[];
+  dogs: DogActivityRead[];
   sport: Sport;
   distance: number;
   speed: number;
