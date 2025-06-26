@@ -3,6 +3,7 @@ import { useGlobalCache } from '../context/GlobalCacheContext'
 import { MessageCircle } from 'lucide-react';
 import { act } from 'react';
 import { formatActivityDate } from '../functions/helpers/FormatDate';
+import { getRatingColor } from '../functions/helpers/GetRatingColor';
 
 export default function ActivityCard({ activity }: { activity: Activity }) {
   const DEFAULT_AVATAR = 'https://www.gravatar.com/avatar/?d=mp';
@@ -19,13 +20,16 @@ export default function ActivityCard({ activity }: { activity: Activity }) {
     : DEFAULT_AVATAR;
 
     return (
-    <div key={dog.id} className="flex items-center gap-1">
+    <div key={dog.id} className="flex items-center gap-3">
       <img
         src={dogImageUrl}
         alt={dog.dog.name}
         className="w-14 h-14 rounded-full object-cover border"
       />
-      <span className="text-xs">{dog.rating}/10</span>
+      <div>
+        <div className='font-semibold text-charcoal text-base text-left'>{dog.dog.name}</div>
+        <div className={`font-semibold ${getRatingColor(dog.rating)}`}>{dog.rating}</div>
+      </div>
     </div>
   );
   })
@@ -44,7 +48,7 @@ export default function ActivityCard({ activity }: { activity: Activity }) {
   return (
     <div className="bg-white border border-stone rounded-2xl shadow-md p-4 flex justify-between items-start gap-4">
       {/* Left Column */}
-      <div className="flex-1 space-y-2">
+      <div className="flex-1 space-y-4">
         <div className="flex items-center gap-3">
           <img
             src={runnerImageUrl}
