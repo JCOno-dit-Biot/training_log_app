@@ -8,5 +8,5 @@ export function formatActivityDate(timestamp: string | number | Date): string {
   if (isYesterday(date)) {
     return `Yesterday at ${format(date, 'h:mm a')}`;
   }
-  return `${format(date, 'MMMM d')} at ${format(date, 'h:mm a')}`;
+  return `${format(date, 'MMMM d, yyyy')} at ${format(date, 'h:mm a')}`;
 }
