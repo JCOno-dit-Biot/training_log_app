@@ -13,42 +13,21 @@ export default function ActivityCard({ activity }: { activity: Activity }) {
 
   //const dogNames = activity.dogs.map((d) => d.name).join(', ');
 
-  const dogElement = activity.dogs.map((dog) => {
-    const cachedDog = dogs.get(dog.dog.id);
-    const dogImageUrl = cachedDog
-    ? `/profile_picture/dogs/${cachedDog.image_url}`
-    : DEFAULT_AVATAR;
-
-    return (
-    <div key={dog.id} className="flex items-center gap-3">
-      <img
-        src={dogImageUrl}
-        alt={dog.dog.name}
-        className="w-14 h-14 rounded-full object-cover border"
-      />
-      <div>
-        <div className='font-semibold text-charcoal text-base text-left'>{dog.dog.name}</div>
-        <div className={`font-semibold ${getRatingColor(dog.rating)}`}>{dog.rating}</div>
-      </div>
-    </div>
-  );
-  })
-  
   const sport = [...sports.values()].find(s => s.name === activity.sport.name);
   const speedOrPace =
     sport?.display_mode === 'pace' ? `${activity.pace}` : `${activity.speed.toFixed(1)} km/h`;
   const runnerImageUrl = runners.get(activity.runner.id)
     ? `/profile_picture/runners/${runners.get(activity.runner.id)?.image_url}`
-    : DEFAULT_AVATAR; 
+    : DEFAULT_AVATAR;
 
   const dogImageUrl = dogs.get(activity.runner.id)
     ? `/profile_picture/dogs/${dogs.get(activity.dogs.id)?.image_url}`
-    : DEFAULT_AVATAR; 
+    : DEFAULT_AVATAR;
 
   return (
-    <div className="bg-white border border-stone rounded-2xl shadow-md p-4 flex justify-between items-start gap-4">
-      {/* Left Column */}
-      <div className="flex-1 space-y-4">
+    <div className="relative bg-white border border-stone rounded-2xl shadow-md p-4 grid grid-cols-1 md:grid-cols-3 gap-4 items-start">
+      {/* Left Column: Runner & Dogs */}
+      <div className="space-y-4">
         <div className="flex items-center gap-3">
           <img
             src={runnerImageUrl}
@@ -62,29 +41,57 @@ export default function ActivityCard({ activity }: { activity: Activity }) {
           </div>
         </div>
 
-        <div className="text-sm text-charcoal">
-          <div className="flex gap-2 mt-1">
-            {dogElement}
-          </div>
-        </div>
+        <div className="grid grid-cols-2 gap-4 justify-items-start min-h-[72px]">
+          {activity.dogs.map((dog) => {
+            const cachedDog = dogs.get(dog.dog.id);
+            const dogImageUrl = cachedDog
+              ? `/profile_picture/dogs/${cachedDog.image_url}`
+              : DEFAULT_AVATAR;
 
-        <div className="text-sm text-stone capitalize">Sport: {sport?.name}</div>
+            return (
+              <div key={dog.id} className="flex items-center gap-2">
+                <img
+                  src={dogImageUrl}
+                  alt={dog.dog.name}
+                  className="w-14 h-14 rounded-full object-cover border"
+                />
+                <div>
+                  <div className="font-semibold text-charcoal text-base text-left">{dog.dog.name}</div>
+                  <div className={`font-semibold ${getRatingColor(dog.rating)}`}>{dog.rating}</div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
       </div>
 
-      {/* Right Column */}
-      <div className="flex flex-col items-end gap-2 text-sm text-stone min-w-[120px] text-right">
-        <div>Distance: {activity.distance} km</div>
-        {sport?.display_mode === 'pace' ? (
-          <div>Pace: {speedOrPace}</div>
-        ) : activity.speed !== undefined ? (
-          <div>Speed: {speedOrPace}</div>
-        ) : null}
-        <div>
-          Weather: {activity.weather.temperature}°C,{' '}
-          {activity.weather.condition}
+      {/* Middle Column: Distance / Speed */}
+      <div className="flex flex-col justify-center items-center text-center space-y-2 mt-6">
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <div className="text-xs text-stone uppercase tracking-wide">Distance</div>
+            <div className="text-xl font-bold text-charcoal">{activity.distance} km</div>
+          </div>
+          <div>
+            <div className="text-xs text-stone uppercase tracking-wide">
+              {sport?.display_mode === 'pace' ? 'Pace' : 'Speed'}
+            </div>
+            <div className="text-xl font-bold text-charcoal">{speedOrPace}</div>
+          </div>
         </div>
+      </div>
+
+      {/* Right Column: Weather (top) + Comment (bottom) */}
+      <div className="flex flex-col justify-between h-full items-end text-sm text-stone text-right min-w-[120px]">
+        {/* Weather top right */}
+        <div>
+          <div className="text-xs uppercase tracking-wide text-stone">Weather</div>
+          <div>{activity.weather.temperature}°C, {activity.weather.condition}</div>
+        </div>
+
+        {/* Comment bottom right */}
         {activity.comment_count !== undefined && (
-          <div className="flex items-center justify-end gap-1 text-charcoal">
+          <div className="flex items-center justify-end gap-1 text-charcoal mt-4">
             <MessageCircle className="w-4 h-4" />
             <span>{activity.comment_count}</span>
           </div>
