@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { getActivities } from '../api/activities';
+import { getActivities, deleteActivity } from '../api/activities';
 import ActivityCard from '../components/ActivityCard';
 import { Activity } from '../types/Activity';
 import AddActivityButton from "../components/AddActivityButton";
@@ -13,19 +13,30 @@ export default function ActivityFeed() {
   useEffect(() => {
     getActivities( {limit: 10, offset: 0, filters: {dog_id:1}} )
       .then((data) => {
-        // const sorted = data.sort(
-        //   (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
-        // );
         setActivities(data);
       })
       .catch(console.error);
   }, []);
 
+  const handleDelete = async(activity_id: number) => {
+
+    try{
+      const res = await deleteActivity(activity_id);
+
+      if (res.success) {
+        setActivities(prev => prev.filter(a => a.id !== activity_id));
+      }
+        } catch (err) {
+        console.error('Failed to delete activity', err);
+      }
+    }
+  
+
   return (
     <section className="space-y-4 relative">
       <h2 className="text-xl font-semibold text-charcoal">Recent Activity</h2>
       {activities.map((activity) => (
-        <ActivityCard key={activity.id} activity={activity} />
+        <ActivityCard key={activity.id} activity={activity} onDelete={handleDelete} />
       ))}
       
       <AddActivityButton onClick={() => setShowModal(true)} />
