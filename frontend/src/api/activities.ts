@@ -33,3 +33,8 @@ export const postActivity = async (formData: ActivityForm) : Promise<Activity> =
   const response = await axios.post('/activities', payload);
   return response.data; 
 }
+
+export const deleteActivity = async (activity_id: number): Promise<{ success: boolean }> => {
+  const response = await axios.delete(`/activities/${activity_id}`);
+  return response.data;
+}
