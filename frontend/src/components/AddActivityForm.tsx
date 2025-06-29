@@ -5,7 +5,7 @@ import DogSelector from "./DogSelector";
 import LapEditor from './LapEditor';
 
 import { SelectedDog } from "../types/Dog";
-import { Lap } from "../types/Activity";
+import { Lap } from "../types/Lap";
 import { postActivity } from "../api/activities";
 import { Weather } from "../types/Weather";
 // import { Dog } from "../types/Dog";
@@ -26,7 +26,7 @@ export interface ActivityForm {
   laps: Lap[];
 }
 
-export default function AddActivityForm({ onClose }: { onClose: () => void }) {
+export default function AddActivityForm({ onClose }: { onClose: () => void }, onSuccess?: () => void) {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -92,6 +92,7 @@ export default function AddActivityForm({ onClose }: { onClose: () => void }) {
     // TODO: Call backend API with formData
     try {
       const response = postActivity(formData)
+      onSuccess?.();
       console.log('Activity created:', response);
       onClose(); // close the modal or reset form as needed
     } catch (err: any) {

@@ -11,12 +11,17 @@ export default function ActivityFeed() {
   const [showModal, setShowModal] = useState(false);
 
   useEffect(() => {
-    getActivities( {limit: 10, offset: 0, filters: {dog_id:1}} )
+    getActivities( {limit: 10, offset: 0, filters: {}} )
       .then((data) => {
         setActivities(data);
       })
       .catch(console.error);
   }, []);
+
+  const reloadActivities = async () => {
+    const data = await getActivities({limit: 10, offset: 0, filters: {}});
+    setActivities(data);
+  };
 
   const handleDelete = async(activity_id: number) => {
 
@@ -36,7 +41,7 @@ export default function ActivityFeed() {
     <section className="space-y-4 relative">
       <h2 className="text-xl font-semibold text-charcoal">Recent Activity</h2>
       {activities.map((activity) => (
-        <ActivityCard key={activity.id} activity={activity} onDelete={handleDelete} />
+        <ActivityCard key={activity.id} activity={activity} onDelete={handleDelete} onSuccess={reloadActivities}/>
       ))}
       
       <AddActivityButton onClick={() => setShowModal(true)} />

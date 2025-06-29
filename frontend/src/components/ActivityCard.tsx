@@ -5,7 +5,18 @@ import { MessageCircle, MoreHorizontal } from 'lucide-react';
 import { formatActivityDate } from '../functions/helpers/FormatDate';
 import { getRatingColor } from '../functions/helpers/GetRatingColor';
 
-export default function ActivityCard({ activity, onDelete }: { activity: Activity, onDelete: (activity_id: number) => void}) {
+export default function ActivityCard({ 
+  activity, 
+  onDelete, 
+  onSuccess
+}: { 
+  activity: Activity;
+  onDelete: (activity_id: number) => void; 
+  onSuccess?: () => void | Promise<void>;
+}) {
+
+  //activity.dogs.dog.forEach(dog => console.log('Dog:', dog));
+
   const DEFAULT_AVATAR = 'https://www.gravatar.com/avatar/?d=mp';
   const { runners, dogs, sports } = useGlobalCache();
   const date = formatActivityDate(activity.timestamp);
@@ -21,25 +32,24 @@ export default function ActivityCard({ activity, onDelete }: { activity: Activit
     : DEFAULT_AVATAR;
 
   const dogElements = activity.dogs.map((dog) => {
-  const cachedDog = dogs.get(dog.dog.id);
-  const dogImageUrl = cachedDog
-    ? `/profile_picture/dogs/${cachedDog.image_url}`
-    : DEFAULT_AVATAR;
-
-  return (
-    <div key={dog.id} className="flex items-center gap-2">
-      <img
-        src={dogImageUrl}
-        alt={dog.dog.name}
-        className="w-14 h-14 rounded-full object-cover border"
-      />
-      <div>
-        <div className="font-semibold text-charcoal text-base text-left">{dog.dog.name}</div>
-        <div className={`font-semibold ${getRatingColor(dog.rating)}`}>{dog.rating}</div>
+    const cachedDog = dogs.get(dog.dog.id);
+    const dogImageUrl = cachedDog
+      ? `/profile_picture/dogs/${cachedDog.image_url}`
+      : DEFAULT_AVATAR;
+    return (
+      <div key={dog.dog.id} className="flex items-center gap-2">
+        <img
+          src={dogImageUrl}
+          alt={dog.dog.name}
+          className="w-14 h-14 rounded-full object-cover border"
+        />
+        <div>
+          <div className="font-semibold text-charcoal text-base text-left">{dog.dog.name}</div>
+          <div className={`font-semibold ${getRatingColor(dog.rating)}`}>{dog.rating}</div>
+        </div>
       </div>
-    </div>
-  );
-});
+    );
+  });
 
 return (
   <div className="flex flex-col bg-white border border-stone rounded-2xl shadow-md p-4 gap-1">
