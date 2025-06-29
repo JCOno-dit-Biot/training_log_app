@@ -8,11 +8,13 @@ import { getRatingColor } from '../functions/helpers/GetRatingColor';
 export default function ActivityCard({ 
   activity, 
   onDelete, 
-  onSuccess
+  onSuccess,
+  onEdit
 }: { 
   activity: Activity;
   onDelete: (activity_id: number) => void; 
   onSuccess?: () => void | Promise<void>;
+  onEdit: (activity: Activity) => void;
 }) {
 
   //activity.dogs.dog.forEach(dog => console.log('Dog:', dog));

@@ -6,8 +6,12 @@ import LapEditor from './LapEditor';
 
 import { SelectedDog } from "../types/Dog";
 import { Lap } from "../types/Lap";
-import { postActivity } from "../api/activities";
+import { postActivity, updateActivity } from "../api/activities";
 import { Weather } from "../types/Weather";
+import { Activity } from "../types/Activity"
+import { getActivityChanges } from "../functions/helpers/getActivityChanges";
+import { convertToFormData } from "../functions/helpers/convertToFormData";
+
 // import { Dog } from "../types/Dog";
 // import { Runner } from "../types/Runner";
 // import { Weather } from "../types/Weather";
@@ -26,10 +30,18 @@ export interface ActivityForm {
   laps: Lap[];
 }
 
-export default function AddActivityForm({ onClose }: { onClose: () => void }, onSuccess?: () => void) {
+type AddActivityFormProps ={
+  onClose: () => void;
+  onSuccess?: () => void;
+  initialData?: Activity;
+}
+
+export default function AddActivityForm( { onClose, onSuccess, initialData }: AddActivityFormProps) {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const isEdit = !!initialData;
 
   const [formData, setFormData] = useState<ActivityForm>({
     timestamp: new Date().toISOString(),
@@ -85,15 +97,21 @@ export default function AddActivityForm({ onClose }: { onClose: () => void }, on
   };
 
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
     // TODO: Call backend API with formData
     try {
-      const response = postActivity(formData)
+      if (isEdit && initialData) {
+        const original = convertToFormData(initialData);
+        const changes = getActivityChanges(original, formData);
+        await updateActivity(initialData.id, changes);
+      } else {
+        const response = await postActivity(formData);
+        console.log('Activity created:', response);
+      }
       onSuccess?.();
-      console.log('Activity created:', response);
       onClose(); // close the modal or reset form as needed
     } catch (err: any) {
       console.error('Submission error:', err);

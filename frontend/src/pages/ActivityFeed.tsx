@@ -9,7 +9,12 @@ import AddActivityForm from "../components/AddActivityForm";
 export default function ActivityFeed() {
   const [activities, setActivities] = useState<Activity[]>([]);
   const [showModal, setShowModal] = useState(false);
+  const [editActivity, setEditActivity] = useState<Activity | null>(null);
 
+  const openEditModal = (activity: Activity) => {
+    setEditActivity(activity);
+    setShowModal(true);
+  };
   useEffect(() => {
     getActivities( {limit: 10, offset: 0, filters: {}} )
       .then((data) => {
@@ -41,7 +46,12 @@ export default function ActivityFeed() {
     <section className="space-y-4 relative">
       <h2 className="text-xl font-semibold text-charcoal">Recent Activity</h2>
       {activities.map((activity) => (
-        <ActivityCard key={activity.id} activity={activity} onDelete={handleDelete} onSuccess={reloadActivities}/>
+        <ActivityCard
+          key={activity.id}
+          activity={activity} 
+          onDelete={handleDelete} 
+          onSuccess={reloadActivities}
+          onEdit={openEditModal}/>
       ))}
       
       <AddActivityButton onClick={() => setShowModal(true)} />
@@ -55,7 +65,12 @@ export default function ActivityFeed() {
             >
               ✖
             </button>
-            <AddActivityForm onClose={() => setShowModal(false)} />
+            <AddActivityForm 
+              initialData={editActivity}
+              onClose={() => {
+              setEditActivity(null);
+              setShowModal(false);
+              }} />
           </div>
         </div>
       )}
