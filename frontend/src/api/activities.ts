@@ -25,7 +25,7 @@ export const getActivities = async ({ limit = 10, offset = 0, filters = {} }: Fe
   return res.data.data;
 };
 
-export const postActivity = async (formData: ActivityForm) : Promise<Activity> => {
+export const postActivity = async (formData: ActivityForm) : Promise<{id: number}> => {
   const payload = {
     ...formData
   }
@@ -36,5 +36,10 @@ export const postActivity = async (formData: ActivityForm) : Promise<Activity> =
 
 export const deleteActivity = async (activity_id: number): Promise<{ success: boolean }> => {
   const response = await axios.delete(`/activities/${activity_id}`);
+  return response.data;
+}
+
+export const updateActivity = async (id: number, changes: Partial<ActivityForm>) => {
+  const response = await axios.put(`/activities/${id}`, changes);
   return response.data;
 }
