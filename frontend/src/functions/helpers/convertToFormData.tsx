@@ -9,7 +9,7 @@ export function convertToFormData(activity: Activity): ActivityForm {
     runner_id: activity.runner.id,
     sport_id: activity.sport.id,
     dogs: activity.dogs.map(d => ({
-        dog_id: d.id,
+        dog_id: d.dog.id,
         rating: d.rating,
     })),
     distance: activity.distance,
@@ -20,6 +20,7 @@ export function convertToFormData(activity: Activity): ActivityForm {
       humidity: activity.weather.humidity,
       condition: activity.weather.condition,
     },
+    location: activity.location,
     workout: activity.workout,
     laps: activity.laps || [],
   };

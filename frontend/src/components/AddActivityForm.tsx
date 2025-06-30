@@ -1,5 +1,5 @@
 // components/AddActivityForm.tsx
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useGlobalCache } from "../context/GlobalCacheContext";
 import DogSelector from "./DogSelector";
 import LapEditor from './LapEditor';
@@ -28,6 +28,7 @@ export interface ActivityForm {
   weather: Weather
   workout: boolean;
   laps: Lap[];
+  location: string;
 }
 
 type AddActivityFormProps ={
@@ -43,24 +44,51 @@ export default function AddActivityForm( { onClose, onSuccess, initialData }: Ad
 
   const isEdit = !!initialData;
 
-  const [formData, setFormData] = useState<ActivityForm>({
-    timestamp: new Date().toISOString(),
-    runner_id: null,
-    sport_id: null,
-    dogs: [],
-    distance: 0,
-    speed: undefined,
-    pace: '',
-    weather: {
-      temperature: 0,
-      humidity: 0,
-      condition: ''
-    },
-    workout: false,
-    laps: []
-  });
+  const [formData, setFormData] = useState<ActivityForm>(() =>
+    initialData ? convertToFormData(initialData) : {
+      timestamp: new Date().toISOString(),
+      runner_id: null,
+      sport_id: null,
+      dogs: [],
+      location:'',
+      distance: 0,
+      speed: undefined,
+      pace: '',
+      weather: {
+        temperature: 0,
+        humidity: 0,
+        condition: ''
+      },
+      workout: false,
+      laps: []
+    }
+  );
 
   const { runners, dogs, sports } = useGlobalCache();
+
+  useEffect(() => {
+    if (initialData) {
+      setFormData(convertToFormData(initialData));
+    } else {
+      setFormData({
+        timestamp: new Date().toISOString(),
+        runner_id: null,
+        sport_id: null,
+        dogs: [],
+        location:'',
+        distance: 0,
+        speed: undefined,
+        pace: '',
+        weather: {
+          temperature: 0,
+          humidity: 0,
+          condition: ''
+        },
+        workout: false,
+        laps: []
+      });
+    }
+  }, [initialData]);
 
   const handleInputChange = (field: keyof ActivityForm, value: any) => {
     if ((field === 'distance' || field === 'speed') && value !== '') {
@@ -84,7 +112,7 @@ export default function AddActivityForm( { onClose, onSuccess, initialData }: Ad
 
   const handleWeatherChange = (field: keyof Weather, value: any) => {
     const parsedValue = field === 'humidity'
-    ? parseFloat(value) / 100
+    ? (parseFloat(value) / 100)
     : value;
 
     setFormData(prev => ({
@@ -109,7 +137,6 @@ export default function AddActivityForm( { onClose, onSuccess, initialData }: Ad
         await updateActivity(initialData.id, changes);
       } else {
         const response = await postActivity(formData);
-        console.log('Activity created:', response);
       }
       onSuccess?.();
       onClose(); // close the modal or reset form as needed
@@ -125,7 +152,7 @@ export default function AddActivityForm( { onClose, onSuccess, initialData }: Ad
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <h2 className="text-xl font-bold text-charcoal">Add New Activity</h2>
+      <h2 className="text-xl font-bold text-charcoal">{initialData ? 'Edit Activity' : 'Add New Activity'}</h2>
 
       <div className="mb-2 flex gap-4">
         <div className="flex-1">
@@ -283,7 +310,7 @@ export default function AddActivityForm( { onClose, onSuccess, initialData }: Ad
             type="number"
             step="1"
             className="w-full border rounded p-2"
-            value={formData.weather.humidity != null ? formData.weather.humidity * 100 : ''}
+            value={formData.weather.humidity != null ? (formData.weather.humidity * 100).toFixed(0) : ''}
             onChange={e => handleWeatherChange('humidity', parseFloat(e.target.value))}
           />
         </div>

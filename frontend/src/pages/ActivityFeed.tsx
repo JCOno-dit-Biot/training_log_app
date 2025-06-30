@@ -4,7 +4,7 @@ import ActivityCard from '../components/ActivityCard';
 import { Activity } from '../types/Activity';
 import AddActivityButton from "../components/AddActivityButton";
 import AddActivityForm from "../components/AddActivityForm";
-
+import { useGlobalCache } from '../context/GlobalCacheContext';
 
 export default function ActivityFeed() {
   const [activities, setActivities] = useState<Activity[]>([]);
@@ -15,8 +15,11 @@ export default function ActivityFeed() {
     setEditActivity(activity);
     setShowModal(true);
   };
+  
+  const { sports } = useGlobalCache();
+
   useEffect(() => {
-    getActivities( {limit: 10, offset: 0, filters: {}} )
+    getActivities( {sports, limit: 10, offset: 0, filters: {}} )
       .then((data) => {
         setActivities(data);
       })
@@ -24,7 +27,7 @@ export default function ActivityFeed() {
   }, []);
 
   const reloadActivities = async () => {
-    const data = await getActivities({limit: 10, offset: 0, filters: {}});
+    const data = await getActivities({sports, limit: 10, offset: 0, filters: {}});
     setActivities(data);
   };
 
@@ -60,13 +63,14 @@ export default function ActivityFeed() {
         <div className="fixed inset-0 bg-primary/80 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-md max-w-xl max-h-[95vh] w-full overflow-y-auto p-6 relative">
             <button
-              onClick={() => setShowModal(false)}
+              onClick={() => {setShowModal(false); setEditActivity(null);}}
               className="absolute top-2 right-2 text-gray-600 hover:text-black"
             >
               ✖
             </button>
             <AddActivityForm 
               initialData={editActivity}
+              onSuccess={reloadActivities}
               onClose={() => {
               setEditActivity(null);
               setShowModal(false);
