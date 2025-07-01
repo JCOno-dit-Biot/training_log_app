@@ -28,7 +28,7 @@ def test_get_all(weight_repo, test_dog):
     assert all(x.dog.name in ('Milou', "Fido") for x in weight_entries)
 
 def test_get_count(weight_repo, test_dog):
-    count = weight_repo.get_total_count(test_dog.kennel.id, filters=WeightQueryFilter(dog_id = [1]))
+    count = weight_repo.get_total_count(test_dog.kennel.id, filters=WeightQueryFilter(dog_id = 1))
     print(count)
     assert count == 3
 

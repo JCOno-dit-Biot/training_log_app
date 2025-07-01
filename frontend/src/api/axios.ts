@@ -17,6 +17,9 @@ api.interceptors.request.use(config => {
 
 let isRefreshing = false;
 let failedQueue: any[] = [];
+// Add a retry limiter
+let refreshAttemptCount = 0;
+const MAX_REFRESH_ATTEMPTS = 1;
 
 const processQueue = (error: any, token: string | null = null) => {
   failedQueue.forEach((prom) => {
@@ -31,13 +34,19 @@ const processQueue = (error: any, token: string | null = null) => {
 };
 
 api.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    refreshAttemptCount = 0;
+    return response
+  },
   async (error) => {
     const originalRequest = error.config;
+    const status = error.response?.status;
 
     // If 401 and not already retrying
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    if (status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
+      refreshAttemptCount++;
+
       const expiredToken = localStorage.getItem('access_token');
 
       if (isRefreshing) {
@@ -75,10 +84,17 @@ api.interceptors.response.use(
         localStorage.removeItem('access_token');
         window.location.href = '/'; // Redirect to login
         return Promise.reject(refreshErr);
-      } finally {
+      }
+       finally {
         isRefreshing = false;
       }
     }
+
+    // Optional: Handle server errors globally
+    if (status === 500) {
+      console.error('Server error:', error);
+    }
+
 
     return Promise.reject(error);
   }

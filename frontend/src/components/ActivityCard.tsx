@@ -1,51 +1,150 @@
 import { Activity } from '../types/Activity'
+import { Menu } from '@headlessui/react'
 import { useGlobalCache } from '../context/GlobalCacheContext'
+import { MessageCircle, MoreHorizontal } from 'lucide-react';
+import { formatActivityDate } from '../functions/helpers/FormatDate';
+import { getRatingColor } from '../functions/helpers/GetRatingColor';
 
-export default function ActivityCard({ activity }: { activity: Activity }) {
+export default function ActivityCard({ 
+  activity, 
+  onDelete, 
+  onSuccess,
+  onEdit
+}: { 
+  activity: Activity;
+  onDelete: (activity_id: number) => void; 
+  onSuccess?: () => void | Promise<void>;
+  onEdit: (activity: Activity) => void;
+}) {
+
+  //activity.dogs.dog.forEach(dog => console.log('Dog:', dog));
 
   const DEFAULT_AVATAR = 'https://www.gravatar.com/avatar/?d=mp';
   const { runners, dogs, sports } = useGlobalCache();
-  const date = new Date(activity.timestamp).toLocaleString();
-  const dogNames = activity.dogs.map((d) => d.dog.name).join(', ');
+  const date = formatActivityDate(activity.timestamp);
+  const capitalizedLocation = activity.location.charAt(0).toUpperCase() + activity.location.slice(1);
+
+  //const dogNames = activity.dogs.map((d) => d.name).join(', ');
+
   const sport = [...sports.values()].find(s => s.name === activity.sport.name);
   const speedOrPace =
-    sport?.display_mode === 'pace' ? `${activity.pace}` : `${activity.speed.toFixed(1)} km/h`;
+    sport?.display_mode === 'pace' ? `${activity.pace} min/km` : `${activity.speed.toFixed(1)} km/h`;
   const runnerImageUrl = runners.get(activity.runner.id)
     ? `/profile_picture/runners/${runners.get(activity.runner.id)?.image_url}`
-    : DEFAULT_AVATAR; 
-  return (
-    <div className="bg-white border border-stone rounded p-4 shadow-sm space-y-2">
+    : DEFAULT_AVATAR;
+
+  const dogElements = activity.dogs.map((dog) => {
+    const cachedDog = dogs.get(dog.dog.id);
+    const dogImageUrl = cachedDog
+      ? `/profile_picture/dogs/${cachedDog.image_url}`
+      : DEFAULT_AVATAR;
+    return (
+      <div key={dog.dog.id} className="flex items-center gap-2">
+        <img
+          src={dogImageUrl}
+          alt={dog.dog.name}
+          className="w-14 h-14 rounded-full object-cover border"
+        />
+        <div>
+          <div className="font-semibold text-charcoal text-base text-left">{dog.dog.name}</div>
+          <div className={`font-semibold ${getRatingColor(dog.rating)}`}>{dog.rating}</div>
+        </div>
+      </div>
+    );
+  });
+
+return (
+  <div className="flex flex-col bg-white border border-stone rounded-2xl shadow-md p-4 gap-1">
+
+    {/* Top-right: Edit Icon */}
+    <Menu as="div" className="flex justify-end bg-white">
+    
+      <Menu.Button>
+        <MoreHorizontal className="w-6 h-6 text-stone cursor-pointer bg-white" />
+      </Menu.Button>
+      
+      <Menu.Items className="absolute right-0 mt-2 w-32 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black/5 focus:outline-none z-10">
+        <div className="py-1">
+          <Menu.Item>
+            {({ active }) => (
+              <button
+                onClick={() => onEdit(activity)}
+                className={`${active ? 'bg-gray-100' : 'bg-white'
+                  } w-full text-left px-4 py-2 text-sm text-charcoal`}
+              >
+                Edit
+              </button>
+            )}
+          </Menu.Item>
+
+          <Menu.Item>
+            {({ active }) => (
+              <button
+                onClick={() => onDelete(activity.id)}
+                className={`${active ? 'bg-gray-100' : 'bg-white'
+                  } w-full text-left px-4 py-2 text-sm text-red-600`}
+              >
+                Delete
+              </button>
+            )}
+          </Menu.Item>
+        </div>
+      </Menu.Items>
+    </Menu>
+    {/* Runner + Dogs + Weather */}
+    <div className="flex justify-between gap-4 items-center flex-wrap">
+      {/* Runner */}
       <div className="flex items-center gap-3">
         <img
           src={runnerImageUrl}
           alt={activity.runner.name}
-          className="w-10 h-10 rounded-full object-cover"
+          className="w-14 h-14 rounded-full object-cover border"
         />
         <div>
-          <div className="font-semibold text-charcoal">{activity.runner.name}</div>
-          <div className="text-xs text-stone">{date}</div>
+          <div className="font-semibold text-charcoal text-left">{activity.runner.name}</div>
+          <div className="text-xs text-stone whitespace-nowrap">{date}</div>
+          <div className="text-xs text-stone text-left whitespace-nowrap">{capitalizedLocation}</div>
         </div>
       </div>
 
-      <div className="text-charcoal text-sm">
-        Ran with <strong>{dogNames}</strong>
+      {/* Dogs */}
+      <div className={`flex gap-8 ${activity.dogs.length === 1 ? 'mx-auto' : ''}`}>
+        {dogElements}
       </div>
 
-      <div className="flex flex-wrap gap-4 text-sm text-stone">
-        <span className="capitalize">Sport: {sport.name}</span>
-        <span>Distance: {activity.distance} km</span>
-        {sport.display_mode === 'pace' ? <span>Pace: {speedOrPace}</span> 
-          : activity.speed !== undefined
-          ? <span>Speed: {activity.speed.toFixed(1)} km/h</span>
-          : null}
-        <span>
-          Weather: {activity.weather.temperature}°C, {activity.weather.condition}
-        </span>
-      </div>
 
-      {activity.notes && (
-        <div className="text-sm text-charcoal italic border-t pt-2">{activity.notes}</div>
-      )}
+      {/* Weather */}
+      <div className="text-right min-w-[140px]">
+        <div className="text-xs uppercase tracking-wide text-stone">Weather</div>
+        <div>{activity.weather.temperature}°C, {activity.weather.humidity * 100}%, {activity.weather.condition}</div>
+      </div>
     </div>
-  );
+
+    {/* Sport / Distance / Pace */}
+    <div className="flex justify-around w-full mt-6 text-center gap-4">
+      <div>
+        <div className="text-xs text-stone uppercase tracking-wide">Sport</div>
+        <div className="text-xl font-bold text-charcoal">{activity.sport.name}</div>
+      </div>
+      <div>
+        <div className="text-xs text-stone uppercase tracking-wide">Distance</div>
+        <div className="text-xl font-bold text-charcoal">{activity.distance} km</div>
+      </div>
+      <div>
+        <div className="text-xs text-stone uppercase tracking-wide">
+          {sport?.display_mode === 'pace' ? 'Pace' : 'Speed'}
+        </div>
+        <div className="text-xl font-bold text-charcoal">{speedOrPace}</div>
+      </div>
+
+    </div>
+    {/* Comment bottom right */}
+    {activity.comment_count !== undefined && (
+      <div className="flex items-center justify-end text-charcoal">
+        <MessageCircle className="w-4 h-4" />
+        <span>{activity.comment_count}</span>
+      </div>
+    )}
+  </div>
+);
 }

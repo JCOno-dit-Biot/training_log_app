@@ -5,6 +5,8 @@ import { Dog } from '../types/Dog';
 import { Runner } from '../types/Runner';
 import { Sport } from '../types/Sport';
 import { getSports } from '../api/sports';
+import { useAuth } from './AuthContext';
+
 
 type GlobalCache = {
   dogs: Map<number, Dog>;
@@ -21,11 +23,16 @@ export const useGlobalCache = () => {
 };
 
 export const GlobalCacheProvider = ({ children }: { children: ReactNode }) => {
+  const { isAuthenticated } = useAuth();
+
   const [dogs, setDogs] = useState(new Map());
   const [runners, setRunners] = useState(new Map());
   const [sports, setSports] = useState(new Map());
 
   useEffect(() => {
+    console.log(isAuthenticated)
+    if (!isAuthenticated) return;
+
     const dogMap = new Map();
     const runnerMap = new Map();
     const sportMap = new Map();
@@ -54,7 +61,7 @@ export const GlobalCacheProvider = ({ children }: { children: ReactNode }) => {
     setRunners(runnerMap);
     setSports(sportMap)
   
-  }, []);
+  }, [isAuthenticated]);
 
   return (
     <GlobalContext.Provider value={{ dogs, runners, sports }}>

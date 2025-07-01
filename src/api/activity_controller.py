@@ -17,7 +17,7 @@ class ActivityController:
     @router.get("/activities", response_model=dict, status_code=200)
     def list_activities(self, request: Request, pagination: PaginationParams = Depends(), filters: ActivityQueryFilters = Depends()):
         kennel_id = request.state.kennel_id
-        activities = self.repo.get_all(kennel_id, pagination.limit, pagination.offset, filters)
+        activities = self.repo.get_all(kennel_id, filters, pagination.limit, pagination.offset)
         entry_count = self.repo.get_total_count(kennel_id, filters)
 
         return paginate_results(activities, entry_count, request, pagination.limit, pagination.offset)
