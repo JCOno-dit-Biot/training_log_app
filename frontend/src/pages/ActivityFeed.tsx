@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { getActivities, deleteActivity } from '../api/activities';
 import ActivityCard from '../components/ActivityCard';
 import { Activity } from '../types/Activity';
@@ -7,6 +7,8 @@ import AddActivityButton from "../components/AddActivityButton";
 import AddActivityForm from "../components/AddActivityForm";
 import { useGlobalCache } from '../context/GlobalCacheContext';
 import { FunnelIcon } from 'lucide-react';
+import { Transition } from '@headlessui/react';
+import { useClickAway } from 'react-use'; // optional for clean click-out
 import ActivityFilterPanel from '../components/ActivityFilterPanel';
 
 export default function ActivityFeed() {
@@ -15,6 +17,9 @@ export default function ActivityFeed() {
   const [showFilters, setShowFilters] = useState(false);
   const [filters, setFilters] = useState<ActivityFilter>({})
   const [editActivity, setEditActivity] = useState<Activity | null>(null);
+  const panelRef = useRef(null);
+
+  useClickAway(panelRef, () => setShowFilters(false));
 
   const openEditModal = (activity: Activity) => {
     setEditActivity(activity);
@@ -59,25 +64,42 @@ export default function ActivityFeed() {
     <section className="space-y-4 relative">
       <div className='relative flex justify-center items-center py-2'>
         <h2 className="flex text-xl text-center font-semibold text-charcoal">Recent Activity</h2>
-      <button
-        onClick={() => setShowFilters(prev => !prev)}
-        className="absolute right-0 flex items-center gap-2 px-4 py-2 border rounded hover:bg-gray-100 sm:px-8"
-      >
-        <FunnelIcon className="w-4 h-4" />
-        Filter
-      </button>
+        <div className="absolute right-0 top-0">
+          <button
+            onClick={() => setShowFilters(prev => !prev)}
+            className={`flex items-center gap-2 px-4 py-2 border rounded hover:bg-gray-100 z-30 relative ${showFilters ? 'bg-gray-100' : ''
+              }`}
+          >
+            <FunnelIcon className="w-4 h-4" />
+            Filter
+          </button>
+        </div>
+        <Transition
+          show={showFilters}
+          enter="transition ease-out duration-150"
+          enterFrom="opacity-0 scale-95"
+          enterTo="opacity-100 scale-100"
+          leave="transition ease-in duration-100"
+          leaveFrom="opacity-100 scale-100"
+          leaveTo="opacity-0 scale-95"
+        >
+          <div
+            ref={panelRef}
+            className="absolute right-0 top-full mt-2 w-72 p-4 bg-white border rounded-lg shadow-lg z-10"
+          >
+            <ActivityFilterPanel
+              filters={filters}
+              setFilters={setFilters}
+              runners={runners}
+              dogs={dogs}
+              sports={sports}
+              onApply={applyFilters}
+              onClear={() => setFilters({})}
+            />
+          </div>
+        </Transition>
       </div>
 
-    {showFilters && <ActivityFilterPanel
-      filters={filters}
-      setFilters={setFilters}
-      runners={runners}
-      dogs={dogs}
-      sports={sports}
-      onApply={applyFilters}
-      onClear={() => setFilters({})}
-    />
-    }
       {activities.map((activity) => (
         <ActivityCard
           key={activity.id}

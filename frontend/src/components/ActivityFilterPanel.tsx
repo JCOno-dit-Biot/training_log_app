@@ -24,11 +24,13 @@ export default function ActivityFilterPanel({
   onApply,
   onClear,
 }: Props) {
+
+  const DEFAULT_AVATAR = 'https://www.gravatar.com/avatar/?d=mp';
+  
   return (
-    <div className="mt-4 p-4 border rounded-lg shadow bg-white space-y-4">
+    <div className="space-y-3 text-sm">
       {/* Runner Selector */}
       <div>
-        <label className="block text-sm text-gray-600 mb-1">Runner</label>
         <div className="flex gap-2">
           {[...runners.entries()].map(([id, runner]) => (
             <button
@@ -39,7 +41,7 @@ export default function ActivityFilterPanel({
               }`}
             >
               <img
-                src={`/profile_picture/runners/${runner.image_url}`}
+                src={runner?.image_url ? `/profile_picture/runners/${runner.image_url}` : DEFAULT_AVATAR}
                 alt={runner.name}
                 className="w-10 h-10 rounded-full object-cover"
               />
@@ -50,8 +52,7 @@ export default function ActivityFilterPanel({
 
       {/* Dog Selector */}
       <div>
-        <label className="block text-sm text-gray-600 mb-1">Dog</label>
-        <div className="flex gap-2">
+        <div className="flex gap-2 mt-2">
           {[...dogs.entries()].map(([id, dog]) => (
             <button
               key={id}
@@ -72,9 +73,8 @@ export default function ActivityFilterPanel({
 
       {/* Sport Dropdown */}
       <div>
-        <label className="block text-sm text-gray-600 mb-1">Sport</label>
         <select
-          className="w-full border rounded p-2"
+          className="w-full mt-2 border rounded p-2"
           value={filters.sport_id ?? ''}
           onChange={(e) =>
             setFilters(f => ({
@@ -93,8 +93,6 @@ export default function ActivityFilterPanel({
       </div>
 
       {/* Date Pickers */}
-      <div className="flex gap-4">
-        <div className="flex-1">
           <label className="block text-sm text-gray-600 mb-1">Start Date</label>
           <input
             type="date"
@@ -107,8 +105,8 @@ export default function ActivityFilterPanel({
               }))
             }
           />
-        </div>
-        <div className="flex-1">
+
+ 
           <label className="block text-sm text-gray-600 mb-1">End Date</label>
           <input
             type="date"
@@ -121,11 +119,11 @@ export default function ActivityFilterPanel({
               }))
             }
           />
-        </div>
-      </div>
+        {/* </div> */}
+
 
       {/* Action buttons */}
-      <div className="flex justify-end gap-2 mt-4">
+      <div className="flex justify-end gap-2">
         <button
           onClick={onClear}
           className="text-sm px-4 py-2 border rounded hover:bg-gray-100"
