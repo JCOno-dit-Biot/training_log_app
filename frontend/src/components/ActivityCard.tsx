@@ -6,7 +6,7 @@ import { useGlobalCache } from '../context/GlobalCacheContext'
 import { MessageCircle, MoreHorizontal } from 'lucide-react';
 import { formatActivityDate } from '../functions/helpers/FormatDate';
 import { getRatingColor } from '../functions/helpers/GetRatingColor';
-import { getComments } from '../api/comment';
+import { getComments, postComment } from '../api/comment';
 
 export default function ActivityCard({
   activity,
@@ -22,6 +22,8 @@ export default function ActivityCard({
   const [showComments, setShowComments] = useState(false);
   const [comments, setComments] = useState<Comment[]>([]);
   const [loadingComments, setLoadingComments] = useState(false);
+  const [newComment, setNewComment] = useState('');
+
 
   const handleToggleComments = async () => {
     if (!showComments && comments.length === 0) {
@@ -38,6 +40,23 @@ export default function ActivityCard({
     }
     setShowComments(prev => !prev);
   };
+
+  const handleAddComment = async () => {
+  if (!newComment.trim()) return;
+  try {
+    const comment = {
+      activity_id: activity.id,
+      comment: newComment
+    }
+    const res = await postComment(
+      comment
+    );
+    setComments(prev => [...prev, comment]); // or refetch if needed
+    setNewComment('');
+  } catch (err) {
+    console.error('Error adding comment:', err);
+  }
+};
 
 
   //activity.dogs.dog.forEach(dog => console.log('Dog:', dog));
@@ -162,10 +181,10 @@ export default function ActivityCard({
 
       </div>
       {/* Comment bottom right */}
-      {activity.comment_count !== undefined && activity.comment_count > 0 && (
+      {activity.comment_count !== undefined && (
         <div onClick={handleToggleComments}
-          className="flex items-center justify-end text-charcoal">
-          <MessageCircle className="w-4 h-4" />
+          className="flex items-center justify-end text-charcoal gap-1 cursor-pointer">
+          <MessageCircle className="w-4 h-4 hover:text-primary hover:scale-110 transition-transform duration-150" />
           <span>{activity.comment_count}</span>
         </div>
       )}
@@ -176,13 +195,28 @@ export default function ActivityCard({
           ) : comments.length > 0 ? (
             comments.map(comment => (
               <div key={comment.id} className="flex gap-2">
-                <span className="font-semibold">{comment.user_id}:</span>
                 <span>{comment.comment}</span>
               </div>
             ))
           ) : (
             <div className="italic text-stone">No comments yet.</div>
           )}
+          <div className="flex items-center gap-2 mt-2">
+            <input
+              type="text"
+              placeholder="Add a comment..."
+              value={newComment}
+              onChange={e => setNewComment(e.target.value)}
+              className="flex-1 bg-gray-200 rounded px-2 py-1 text-sm"
+            />
+            <button
+              onClick={handleAddComment}
+              className="px-3 py-1 bg-primary text-white cursor-pointer rounded hover:bg-opacity-90 text-sm"
+              disabled={!newComment.trim()}
+            >
+              Post
+            </button>
+          </div>
         </div>
       )}
 
