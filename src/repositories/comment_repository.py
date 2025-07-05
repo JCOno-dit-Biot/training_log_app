@@ -86,10 +86,20 @@ class comment_repository(abstract_repository):
                 self._connection.commit()
 
 
-    def delete(self, id: int):
+    def delete(self, id: int, user_id: int):
         with self._connection.cursor(cursor_factory= RealDictCursor) as cur:
-            cur.execute("""DELETE FROM activity_comments WHERE id = %s; """,
-                         (id,))
+            #check if comment exists
+            cur.execute("SELECT user_id FROM activity_comments WHERE id = %s", (id,))
+            result = cur.fetchone()
+
+            if result is None:
+                raise ValueError("Comment not found")  
+
+            if result['user_id'] != user_id:
+                raise PermissionError("Not allowed to delete this comment")  
+
+            # Now it's safe to delete
+            cur.execute("DELETE FROM activity_comments WHERE id = %s", (id,))
             self._connection.commit()
 
     def get_total_count(self):
