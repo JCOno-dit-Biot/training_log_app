@@ -3,7 +3,7 @@ import { Comment } from '../types/Comment';
 import { Menu } from '@headlessui/react'
 import { useState, useEffect } from 'react';
 import { useGlobalCache } from '../context/GlobalCacheContext'
-import { MessageCircle, MoreHorizontal } from 'lucide-react';
+import { MessageCircle, MoreHorizontal, Trash2 } from 'lucide-react';
 import { formatActivityDate } from '../functions/helpers/FormatDate';
 import { getRatingColor } from '../functions/helpers/GetRatingColor';
 import { getComments, postComment } from '../api/comment';
@@ -24,6 +24,8 @@ export default function ActivityCard({
   const [loadingComments, setLoadingComments] = useState(false);
   const [newComment, setNewComment] = useState('');
 
+
+  const username = localStorage.getItem("email");
 
   const handleToggleComments = async () => {
     if (!showComments && comments.length === 0) {
@@ -194,8 +196,9 @@ export default function ActivityCard({
             <div className="italic text-stone">Loading comments...</div>
           ) : comments.length > 0 ? (
             comments.map(comment => (
-              <div key={comment.id} className="flex gap-2">
+              <div key={comment.id} className="flex justify-between item-center gap-2">
                 <span>{comment.comment}</span>
+                <Trash2 className="w-4 h-4 text-red-500 text-xs" onClick={() => handleDeleteComment(comment.id)}/>
               </div>
             ))
           ) : (
