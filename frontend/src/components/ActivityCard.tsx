@@ -25,7 +25,7 @@ export default function ActivityCard({
   const [newComment, setNewComment] = useState('');
 
 
-  const username = localStorage.getItem("email");
+  const currrentUsername = localStorage.getItem("email");
 
   const handleToggleComments = async () => {
     if (!showComments && comments.length === 0) {
@@ -46,14 +46,16 @@ export default function ActivityCard({
   const handleAddComment = async () => {
   if (!newComment.trim()) return;
   try {
-    const comment = {
+    const comment: Comment = {
+      username: currrentUsername,
       activity_id: activity.id,
       comment: newComment
     }
     const res = await postComment(
       comment
     );
-    setComments(prev => [...prev, comment]); // or refetch if needed
+    comment.id = res.id
+    setComments(prev => [...prev, comment]); 
     setNewComment('');
   } catch (err) {
     console.error('Error adding comment:', err);
