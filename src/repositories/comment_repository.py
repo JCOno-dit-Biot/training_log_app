@@ -16,12 +16,12 @@ class comment_repository(abstract_repository):
     def get_by_id(self, id):
         with self._connection.cursor(cursor_factory= RealDictCursor) as cur:
             query = """ SELECT 
-                            id, 
-                            uusername, 
-                            activity_id, 
-                            comment, 
-                            created_at, 
-                            updated_at
+                            ac.id, 
+                            u.username, 
+                            ac.activity_id, 
+                            ac.comment, 
+                            ac.created_at, 
+                            ac.updated_at
                         FROM
                             activity_comments ac
                         JOIN 
@@ -39,12 +39,12 @@ class comment_repository(abstract_repository):
     def get_all(self, activity_id: int):
         with self._connection.cursor(cursor_factory= RealDictCursor) as cur:
             query = """ SELECT 
-                            id, 
+                            ac.id, 
                             u.username, 
-                            activity_id, 
-                            comment, 
-                            created_at, 
-                            updated_at
+                            ac.activity_id, 
+                            ac.comment, 
+                            ac.created_at, 
+                            ac.updated_at
                         FROM
                             activity_comments ac
                         JOIN 
