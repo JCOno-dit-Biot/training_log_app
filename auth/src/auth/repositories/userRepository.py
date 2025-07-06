@@ -131,7 +131,7 @@ class UserRepository(IUserRepository):
             if username is None or kennel_id is None:
                 return None
             else:
-                return {'sub': payload['sub'], 'kennel_id': payload['kennel_id']}
+                return {'sub': payload['sub'], 'user_id': payload['user_id'], 'kennel_id': payload['kennel_id']}
         except PyJWTError as decoding_error:
              raise TokenDecodeError("Invalid or expired access token") from decoding_error 
 
