@@ -25,7 +25,7 @@ const LapEditor: React.FC<LapEditorProps> = ({ laps, setLaps }) => {
     };
 
     const addLap = () => {
-        const nextLapNumber = laps.length + 1;
+        const nextLapNumber = laps.length;
         setLaps([...laps, { lap_number: nextLapNumber, lap_distance: 0, lap_time: '' }]);
         console.log(laps)
     };
