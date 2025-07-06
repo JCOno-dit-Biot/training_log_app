@@ -2,8 +2,9 @@ import { Activity } from '../types/Activity'
 import { Comment } from '../types/Comment';
 import { Menu } from '@headlessui/react'
 import { useState, useEffect } from 'react';
+import React from 'react';
 import { useGlobalCache } from '../context/GlobalCacheContext'
-import { MessageCircle, MoreHorizontal, Trash2 } from 'lucide-react';
+import { MessageCircle, MoreHorizontal, Trash2, Rocket } from 'lucide-react';
 import { formatActivityDate } from '../functions/helpers/FormatDate';
 import { getRatingColor } from '../functions/helpers/GetRatingColor';
 import { getComments, postComment, deleteComment } from '../api/comment';
@@ -23,7 +24,7 @@ export default function ActivityCard({
   const [comments, setComments] = useState<Comment[]>([]);
   const [loadingComments, setLoadingComments] = useState(false);
   const [newComment, setNewComment] = useState('');
-
+  const [showLaps, setShowLaps] = useState(false);
 
   const currentUsername = localStorage.getItem("email");
 
@@ -44,35 +45,35 @@ export default function ActivityCard({
   };
 
   const handleAddComment = async () => {
-  if (!newComment.trim()) return;
-  try {
-    const comment: Comment = {
-      username: currentUsername,
-      activity_id: activity.id,
-      comment: newComment
-    }
-    const saved = await postComment(
-      comment
-    );
-    
-    const savedComment = {...comment, id: saved.id };
-    
-    console.log(savedComment)
-    setComments(prev => [...prev, savedComment]); 
-    setNewComment('');
-  } catch (err) {
-    console.error('Error adding comment:', err);
-  }
-};
+    if (!newComment.trim()) return;
+    try {
+      const comment: Comment = {
+        username: currentUsername,
+        activity_id: activity.id,
+        comment: newComment
+      }
+      const saved = await postComment(
+        comment
+      );
 
-const handleDeleteComment = async (commentId: number) => {
-  try {
-    await deleteComment(activity.id, commentId);
-    setComments(prev => prev.filter(c => c.id !== commentId));
-  } catch (err) {
-    console.error('Failed to delete comment:', err);
-  }
-};
+      const savedComment = { ...comment, id: saved.id };
+
+      console.log(savedComment)
+      setComments(prev => [...prev, savedComment]);
+      setNewComment('');
+    } catch (err) {
+      console.error('Error adding comment:', err);
+    }
+  };
+
+  const handleDeleteComment = async (commentId: number) => {
+    try {
+      await deleteComment(activity.id, commentId);
+      setComments(prev => prev.filter(c => c.id !== commentId));
+    } catch (err) {
+      console.error('Failed to delete comment:', err);
+    }
+  };
 
   //activity.dogs.dog.forEach(dog => console.log('Dog:', dog));
 
@@ -181,7 +182,20 @@ const handleDeleteComment = async (commentId: number) => {
       <div className="flex justify-around w-full mt-6 text-center gap-4">
         <div>
           <div className="text-xs text-stone uppercase tracking-wide">Sport</div>
-          <div className="text-xl font-bold text-charcoal">{activity.sport.name}</div>
+          <div className="flex items-center gap-2 text-xl font-bold text-charcoal">{activity.sport.name}
+            {activity.workout && (
+              <button
+                onClick={() => setShowLaps(prev => !prev)}
+                className="group"
+                title="Toggle Laps"
+              >
+                <Rocket
+                  className={`w-5 h-5 transition-transform duration-150 text-primary group-hover:scale-110 group-hover:text-accent cursor-pointer ${showLaps ? 'rotate-12' : ''
+                    }`}
+                />
+              </button>
+            )}
+          </div>
         </div>
         <div>
           <div className="text-xs text-stone uppercase tracking-wide">Distance</div>
@@ -195,6 +209,24 @@ const handleDeleteComment = async (commentId: number) => {
         </div>
 
       </div>
+      {showLaps && activity.laps.length > 0 && (
+      <div className="mt-3 px-4 py-2 rounded-md bg-secondary border border-primary">
+        <div className="grid grid-cols-3 gap-2 text-center text-sm text-charcoal">
+          <div className="font-bold text-primary">Lap</div>
+          <div className="font-bold text-primary">Distance</div>
+          <div className="font-bold text-primary">Time</div>
+
+          {activity.laps.map((lap) => (
+            <React.Fragment key={lap.lap_number}>
+              <div>Lap {lap.lap_number + 1}</div>
+              <div>{lap.lap_distance} km</div>
+              <div>{lap.lap_time}</div>
+            </React.Fragment>
+          ))}
+        </div>
+        </div>
+      )}
+
       {/* Comment bottom right */}
       {activity.comment_count !== undefined && (
         <div onClick={handleToggleComments}
@@ -212,7 +244,7 @@ const handleDeleteComment = async (commentId: number) => {
               <div key={comment.id} className="flex justify-between item-center gap-2">
                 <span>{comment.comment}</span>
                 {currentUsername === comment.username && (
-                <Trash2 className="w-4 h-4 text-red-500 text-xs" onClick={() => handleDeleteComment(comment.id)}/>
+                  <Trash2 className="w-4 h-4 text-red-500 text-xs" onClick={() => handleDeleteComment(comment.id)} />
                 )}
               </div>
             ))
