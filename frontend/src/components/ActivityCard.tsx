@@ -25,7 +25,7 @@ export default function ActivityCard({
   const [newComment, setNewComment] = useState('');
 
 
-  const currrentUsername = localStorage.getItem("email");
+  const currentUsername = localStorage.getItem("email");
 
   const handleToggleComments = async () => {
     if (!showComments && comments.length === 0) {
@@ -47,7 +47,7 @@ export default function ActivityCard({
   if (!newComment.trim()) return;
   try {
     const comment: Comment = {
-      username: currrentUsername,
+      username: currentUsername,
       activity_id: activity.id,
       comment: newComment
     }
@@ -211,7 +211,9 @@ const handleDeleteComment = async (commentId: number) => {
             comments.map(comment => (
               <div key={comment.id} className="flex justify-between item-center gap-2">
                 <span>{comment.comment}</span>
+                {currentUsername === comment.username && (
                 <Trash2 className="w-4 h-4 text-red-500 text-xs" onClick={() => handleDeleteComment(comment.id)}/>
+                )}
               </div>
             ))
           ) : (
