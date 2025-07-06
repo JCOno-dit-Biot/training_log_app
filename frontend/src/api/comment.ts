@@ -11,5 +11,10 @@ export const postComment = async(content: Comment): Promise<{id: number}> => {
     ...content
   }
   const res = await axios.post(`/activities/${content.activity_id}/comments`, payload);
-  return res.data;
+  return {id: res.data};
 } 
+
+export const deleteComment = async(activity_id: number, comment_id: number): Promise<{success: boolean}> => {
+  const res = await axios.delete(`/activities/${activity_id}/comments/${comment_id}`);
+  return {success: res.data}
+}

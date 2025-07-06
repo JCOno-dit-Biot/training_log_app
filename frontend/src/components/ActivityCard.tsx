@@ -6,7 +6,7 @@ import { useGlobalCache } from '../context/GlobalCacheContext'
 import { MessageCircle, MoreHorizontal, Trash2 } from 'lucide-react';
 import { formatActivityDate } from '../functions/helpers/FormatDate';
 import { getRatingColor } from '../functions/helpers/GetRatingColor';
-import { getComments, postComment } from '../api/comment';
+import { getComments, postComment, deleteComment } from '../api/comment';
 
 export default function ActivityCard({
   activity,
@@ -51,17 +51,28 @@ export default function ActivityCard({
       activity_id: activity.id,
       comment: newComment
     }
-    const res = await postComment(
+    const saved = await postComment(
       comment
     );
-    comment.id = res.id
-    setComments(prev => [...prev, comment]); 
+    
+    const savedComment = {...comment, id: saved.id };
+    
+    console.log(savedComment)
+    setComments(prev => [...prev, savedComment]); 
     setNewComment('');
   } catch (err) {
     console.error('Error adding comment:', err);
   }
 };
 
+const handleDeleteComment = async (commentId: number) => {
+  try {
+    await deleteComment(activity.id, commentId);
+    setComments(prev => prev.filter(c => c.id !== commentId));
+  } catch (err) {
+    console.error('Failed to delete comment:', err);
+  }
+};
 
   //activity.dogs.dog.forEach(dog => console.log('Dog:', dog));
 
