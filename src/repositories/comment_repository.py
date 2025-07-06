@@ -17,13 +17,17 @@ class comment_repository(abstract_repository):
         with self._connection.cursor(cursor_factory= RealDictCursor) as cur:
             query = """ SELECT 
                             id, 
-                            user_id, 
+                            uusername, 
                             activity_id, 
                             comment, 
                             created_at, 
                             updated_at
                         FROM
-                            activity_comments
+                            activity_comments ac
+                        JOIN 
+                            users u 
+                        ON
+                            u.id = ac.user_id
                         WHERE 
                             id = %s;
                     """
@@ -36,13 +40,17 @@ class comment_repository(abstract_repository):
         with self._connection.cursor(cursor_factory= RealDictCursor) as cur:
             query = """ SELECT 
                             id, 
-                            user_id, 
+                            u.username, 
                             activity_id, 
                             comment, 
                             created_at, 
                             updated_at
                         FROM
-                            activity_comments
+                            activity_comments ac
+                        JOIN 
+                            users u 
+                        ON
+                            u.id = ac.user_id
                         WHERE 
                             activity_id = %s;
                     """

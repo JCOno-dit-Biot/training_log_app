@@ -25,6 +25,7 @@ class CommentController:
     @router.put("/comments/{comment_id}")
     def update_comment(self, comment: commentCreate, comment_id: int):
         self.repo.update(comment, comment_id)
+        return {"success": True}
 
     @router.delete("/comments/{comment_id}")
     def delete_comment(self, request: Request, comment_id: int):
@@ -35,3 +36,4 @@ class CommentController:
             raise HTTPException(status_code=404, detail="Comment not found")
         except PermissionError:
             raise HTTPException(status_code=403, detail="You cannot delete this comment")
+        return {"success": True}

@@ -10,7 +10,7 @@ class commentCreate(BaseModel):
 class commentOut(BaseModel):
     id: int
     activity_id: int
-    user_id: int
+    username: str
     comment: str
     created_at: datetime
     updated_at: Optional[datetime] = None
