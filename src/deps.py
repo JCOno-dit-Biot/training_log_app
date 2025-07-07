@@ -45,6 +45,7 @@ async def verify_jwt(request: Request, token: str = Depends(oauth2_scheme)):
             res.raise_for_status()
             payload = res.json()
             request.state.kennel_id = payload["kennel_id"]
+            request.state.user_id = payload["user_id"]
             return res.json()
     except httpx.HTTPStatusError:
         raise HTTPException(status_code=401, detail="Invalid token")

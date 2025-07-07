@@ -16,16 +16,20 @@ class comment_repository(abstract_repository):
     def get_by_id(self, id):
         with self._connection.cursor(cursor_factory= RealDictCursor) as cur:
             query = """ SELECT 
-                            id, 
-                            user_id, 
-                            activity_id, 
-                            comment, 
-                            created_at, 
-                            updated_at
+                            ac.id, 
+                            u.username, 
+                            ac.activity_id, 
+                            ac.comment, 
+                            ac.created_at, 
+                            ac.updated_at
                         FROM
-                            activity_comments
+                            activity_comments ac
+                        JOIN 
+                            users u 
+                        ON
+                            u.id = ac.user_id
                         WHERE 
-                            id = %s;
+                            ac.id = %s;
                     """
             cur.execute(query, (id,))
             result = cur.fetchone()
@@ -35,14 +39,18 @@ class comment_repository(abstract_repository):
     def get_all(self, activity_id: int):
         with self._connection.cursor(cursor_factory= RealDictCursor) as cur:
             query = """ SELECT 
-                            id, 
-                            user_id, 
-                            activity_id, 
-                            comment, 
-                            created_at, 
-                            updated_at
+                            ac.id, 
+                            u.username, 
+                            ac.activity_id, 
+                            ac.comment, 
+                            ac.created_at, 
+                            ac.updated_at
                         FROM
-                            activity_comments
+                            activity_comments ac
+                        JOIN 
+                            users u 
+                        ON
+                            u.id = ac.user_id
                         WHERE 
                             activity_id = %s;
                     """
@@ -86,10 +94,20 @@ class comment_repository(abstract_repository):
                 self._connection.commit()
 
 
-    def delete(self, id: int):
+    def delete(self, id: int, user_id: int):
         with self._connection.cursor(cursor_factory= RealDictCursor) as cur:
-            cur.execute("""DELETE FROM activity_comments WHERE id = %s; """,
-                         (id,))
+            #check if comment exists
+            cur.execute("SELECT user_id FROM activity_comments WHERE id = %s", (id,))
+            result = cur.fetchone()
+
+            if result is None:
+                raise ValueError("Comment not found")  
+
+            if result['user_id'] != user_id:
+                raise PermissionError("Not allowed to delete this comment")  
+
+            # Now it's safe to delete
+            cur.execute("DELETE FROM activity_comments WHERE id = %s", (id,))
             self._connection.commit()
 
     def get_total_count(self):

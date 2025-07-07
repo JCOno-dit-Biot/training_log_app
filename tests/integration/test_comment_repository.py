@@ -58,9 +58,16 @@ def test_update_comment(comment_repo):
     assert result[3] == 'updated_comment'
 
 def test_delete_comment(comment_repo):
-    comment_repo.delete(1)
+    comment_repo.delete(1, 1)
     with comment_repo._connection.cursor() as cur:
         cur.execute(""" SELECT * FROM activity_comments WHERE id = 1""")
         result = cur.fetchone()
     assert result is None
 
+@pytest.mark.parametrize('user_id,comment_id,error',[
+    (1, 6, ValueError),
+    (2, 4, PermissionError)
+])
+def test_delete_raises(comment_repo, user_id, comment_id, error):
+    with pytest.raises(error):
+        comment_repo.delete(comment_id, user_id)

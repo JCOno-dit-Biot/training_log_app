@@ -227,6 +227,7 @@ class activity_repository(abstract_repository):
         laps = fields.pop("laps", None)
         weather_dict = fields.pop("weather", None)
         dogs = fields.pop("dogs", None)
+        pace = fields.pop("pace", None) # pace is not directly saved in the db
 
         keys = list(fields.keys())
         values = list(fields.values())

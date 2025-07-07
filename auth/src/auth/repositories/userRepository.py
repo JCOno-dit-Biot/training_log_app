@@ -62,16 +62,18 @@ class UserRepository(IUserRepository):
         access_token_expires = timedelta(minutes= int(os.getenv('ACCESS_TOKEN_EXPIRE_MINUTES', 60)))
         with self.connection.cursor(cursor_factory = RealDictCursor) as cur:
             cur.execute("""
-                        SELECT kennel_id FROM users WHERE username = %s
+                        SELECT id, kennel_id FROM users WHERE username = %s
                         """, (form_data.username,))
             result = cur.fetchone()
             if result is None:
                 return SessionTokenResponse(access_token=None)
             else:
                 kennel_id = result["kennel_id"]
+                user_id = result["id"]
             access_token = self.create_access_token(
                 data = {
                     "sub": form_data.username,
+                    "user_id": user_id,
                     "kennel_id": kennel_id
                 },
                 expires_delta=access_token_expires
@@ -129,7 +131,7 @@ class UserRepository(IUserRepository):
             if username is None or kennel_id is None:
                 return None
             else:
-                return {'sub': payload['sub'], 'kennel_id': payload['kennel_id']}
+                return {'sub': payload['sub'], 'user_id': payload['user_id'], 'kennel_id': payload['kennel_id']}
         except PyJWTError as decoding_error:
              raise TokenDecodeError("Invalid or expired access token") from decoding_error 
 
@@ -184,7 +186,7 @@ class UserRepository(IUserRepository):
         try:
             # get user info from previous token, disable expiry check to get the user info
             payload = jwt.decode(token, os.getenv("SECRET_KEY"), algorithms = os.getenv("ALGORITHM"), options={"verify_exp": False})
-            username, kennel_id = payload.get('sub'), payload.get('kennel_id')
+            username, user_id, kennel_id = payload.get('sub'), payload.get('user_id'), payload.get('kennel_id')
 
             # validate refresh_token
             if not self.validate_refresh_token(username, refresh_token):
@@ -194,7 +196,7 @@ class UserRepository(IUserRepository):
             access_token_expires =  timedelta(minutes= int(os.getenv('ACCESS_TOKEN_EXPIRE_MINUTES', 60)))
 
             new_access_token = self.create_access_token(
-                data = {'sub': username, 'kennel_id': kennel_id}, expires_delta= access_token_expires
+                data = {'sub': username, 'user_id': user_id, 'kennel_id': kennel_id}, expires_delta= access_token_expires
             )
             return new_access_token
         except PyJWTError as decoding_error:

@@ -22,6 +22,10 @@ export function convertToFormData(activity: Activity): ActivityForm {
     },
     location: activity.location,
     workout: activity.workout,
-    laps: activity.laps || [],
+    laps: activity.laps.map(lap => ({
+      lap_number: lap.lap_number,
+      lap_distance: lap.lap_distance,
+      lap_time: lap.lap_time,
+    })),
   };
 }
