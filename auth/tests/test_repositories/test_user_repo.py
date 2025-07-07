@@ -104,7 +104,7 @@ def test_get_access_token_undefined_user(user_repo):
     assert token.access_token is None
 
 def test_create_access_token(user_repo):
-    data = {'sub': 'john.doe@domain.com', 'kennel_id': 1}
+    data = {'sub': 'john.doe@domain.com', 'kennel_id': 1, 'user_id': 3}
     expires = timedelta(minutes = 60)
     token = user_repo.create_access_token(data, expires)
     decoded_jwt = jwt.decode(token.access_token, os.getenv("SECRET_KEY"), algorithms = os.getenv("ALGORITHM"))
@@ -113,6 +113,7 @@ def test_create_access_token(user_repo):
     assert token.expires_in == 3600
     assert decoded_jwt['sub'] == 'john.doe@domain.com'
     assert decoded_jwt['kennel_id'] == 1
+    assert decoded_jwt['user_id'] == 3
     
 def test_get_user(user_repo):
     user = user_repo.get_user('john@domain.com')
@@ -170,7 +171,7 @@ def test_hash_token(user_repo):
     assert user_repo.hash_token(token) == expected
 
 def test_authenticate_user(user_repo):
-    data = {'sub': 'john.doe@domain.com', 'kennel_id': 1}
+    data = {'sub': 'john.doe@domain.com', 'kennel_id': 1, 'user_id':2}
     expires_delta = timedelta(minutes = 60)
     expire = datetime.now(timezone.utc) + expires_delta
     data.update({'exp': expire})
@@ -178,6 +179,7 @@ def test_authenticate_user(user_repo):
     user_dict = user_repo.authenticate_user(encoded_jwt)
     assert user_dict['sub'] == 'john.doe@domain.com'
     assert user_dict['kennel_id'] == 1
+    assert user_dict['user_id'] == 2
 
 def test_authenticate_user_no_user(user_repo):
     data = {'kennel_id': 1}
@@ -189,7 +191,7 @@ def test_authenticate_user_no_user(user_repo):
     assert user_dict == None
 
 def test_authenticate_user_expired_token(user_repo):
-    data = {'sub': 'john.doe@domain.com', 'kennel_id': 1}
+    data = {'sub': 'john.doe@domain.com', 'kennel_id': 1, 'user_id':2}
     expires_delta = timedelta(minutes = 10)
     expire = datetime.now(timezone.utc) - expires_delta
     data.update({'exp': expire})
@@ -203,7 +205,7 @@ def test_authenticate_user_expired_token(user_repo):
 def test_register_token_in_session(user_repo):
     user = 'john@domain.com'
     token = user_repo.create_access_token(
-        data={'sub': 'john@domain.com', 'kennel_id': 1},
+        data={'sub': 'john@domain.com', 'kennel_id': 1, 'user_id':2},
         expires_delta=timedelta(minutes=60)
     )
     refresh_token = user_repo.generate_refresh_token()
@@ -276,7 +278,7 @@ def test_refresh_token_invalid(user_repo, insert_valid_refresh_token):
     assert new_access_token is None
 
 def test_refresh_token_with_expired_jwt(user_repo, insert_valid_refresh_token):
-    data = {'sub': 'john@domain.com', 'kennel_id': 1}
+    data = {'sub': 'john@domain.com', 'kennel_id': 1, 'user_id':2}
     expires_delta = timedelta(minutes = 10)
     expire = datetime.now(timezone.utc) - expires_delta
     data.update({'exp': expire})
@@ -286,6 +288,7 @@ def test_refresh_token_with_expired_jwt(user_repo, insert_valid_refresh_token):
     payload = jwt.decode(new_access_token.access_token, os.getenv("SECRET_KEY"), algorithms = os.getenv("ALGORITHM"))
     assert payload.get('sub') == 'john@domain.com'
     assert payload.get('kennel_id') == 1
+    assert payload.get('user_id') == 2
 
 
 def test_decode_token_raises_token_decode_error_in_refresh_access_token(user_repo):
