@@ -12,10 +12,10 @@ from datetime import datetime
 def mock_repo():
     mock = Mock(spec=comment_repository)
     mock.get_all.return_value = [commentOut(
-        id = 0, user_id = 1, activity_id = 1, comment = "Mock comment 1", created_at= datetime.now()
+        id = 0, username= 'john@domain.com', activity_id = 1, comment = "Mock comment 1", created_at= datetime.now()
     ),
     commentOut(
-        id = 1, user_id = 2, activity_id = 1, comment = "Mock comment 2", created_at= datetime.now()
+        id = 1, username= 'john.doe@domain.com', activity_id = 1, comment = "Mock comment 2", created_at= datetime.now()
     )
     ]
     mock.create.return_value = 3
@@ -33,6 +33,7 @@ def test_app(mock_repo):
     #even though kennel id is not needed, the route is behind jwt so this is tested here
     async def fake_jwt_verify(request: Request):
         request.state.kennel_id = 1
+        request.state.user_id = 2
 
     from src.deps import get_comment_repo, verify_jwt
     app.dependency_overrides[get_comment_repo] = override_repo
@@ -57,7 +58,6 @@ def test_create_comment(test_app, mock_repo):
 
     payload = {
             "activity_id": 2,
-            "user_id": 1,
             "comment": "insert comment"
         }
     
@@ -65,7 +65,7 @@ def test_create_comment(test_app, mock_repo):
     assert response.status_code == 200
     assert response.json()==3
     mock_repo.create.assert_called_once()
-    mock_repo.create.assert_called_with(commentCreate(activity_id=2, user_id=1, comment='insert comment'))
+    mock_repo.create.assert_called_with(commentCreate(activity_id=2, user_id=2, comment='insert comment'))
 
 
 def test_delete_comment(test_app, mock_repo):
@@ -73,14 +73,14 @@ def test_delete_comment(test_app, mock_repo):
 
     client.delete("/activities/2/comments/3")
     mock_repo.delete.assert_called_once()
-    mock_repo.delete.assert_called_with(3)
+    mock_repo.delete.assert_called_with(3, 2)
 
 def test_update_comment(test_app, mock_repo):
     client = TestClient(test_app)
 
     payload = {
         "activity_id": 2,
-        "user_id": 1,
+        "username": "john@domain.com",
         "comment": "Updated comment text"
     }
 
@@ -88,3 +88,15 @@ def test_update_comment(test_app, mock_repo):
     client.put("/activities/2/comments/10", json = payload)
     mock_repo.update.assert_called_once()
     mock_repo.update.assert_called_with(commentCreate(**payload), 10)
+
+@pytest.mark.parametrize('error,code,detail',[
+    (ValueError("Comment not found"), 404, "Comment not found"),
+    (PermissionError("Not allowed to delete this comment"), 403, "You cannot delete this comment")
+])
+def test_delete_comment_repo_raises(test_app, mock_repo,error, code, detail):
+    client = TestClient(test_app)
+
+    mock_repo.delete.side_effect=error
+    response = client.delete("/activities/20/comments/1")
+    assert response.status_code == code
+    assert detail in response.json()["detail"]
