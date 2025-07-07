@@ -29,7 +29,7 @@ class comment_repository(abstract_repository):
                         ON
                             u.id = ac.user_id
                         WHERE 
-                            id = %s;
+                            ac.id = %s;
                     """
             cur.execute(query, (id,))
             result = cur.fetchone()
