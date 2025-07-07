@@ -303,13 +303,13 @@ def test_comment_out_init():
     now_ts = datetime.now()
     comment = commentOut(
         id = 1,
-        user_id = 1,
+        username = "username@domain.com",
         activity_id= 1,
         created_at= now_ts,
         comment= "test_comment"
     )
     assert comment.comment == "test_comment"
-    assert comment.user_id== 1
+    assert comment.username == "username@domain.com"
     assert comment.activity_id == 1
     assert comment.created_at ==  now_ts
     assert comment.id == 1
