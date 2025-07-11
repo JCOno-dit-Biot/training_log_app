@@ -2,9 +2,10 @@ from src.parsers.dog_parser import parse_dog_from_row
 from src.parsers.runner_parser import parse_runner_from_row
 from src.parsers.activity_parser import parse_activity_from_row
 from src.parsers.weight_parser import parse_weight_from_row
-from src.parsers.analytic_parser import parse_weekly_stats
+from src.parsers.analytic_parser import parse_weekly_stats, parse_dog_calendar
 from src.models import Dog, DogWeightEntry
 from src.models.analytics.weekly_stats import WeeklyStats, Trend
+from src.models.analytics.dog_calendar_day import DogCalendarDay
 from datetime import date, timedelta
 from pydantic import ValidationError
 import pytest
@@ -254,3 +255,49 @@ def test_parse_invalid_types():
     }
     with pytest.raises(ValidationError):
         parse_weekly_stats(row)
+
+
+
+def test_parse_dog_calendar_basic():
+    rows = [
+        {"date": date(2025, 7, 1), "dog_id": "dog1"},
+        {"date": date(2025, 7, 1), "dog_id": "dog2"},
+        {"date": date(2025, 7, 3), "dog_id": "dog1"},
+    ]
+
+    result = parse_dog_calendar(rows)
+
+    assert len(result) == 2
+
+    assert result[0] == DogCalendarDay(date=date(2025, 7, 1), dog_ids=["dog1", "dog2"])
+    assert result[1] == DogCalendarDay(date=date(2025, 7, 3), dog_ids=["dog1"])
+
+
+def test_parse_dog_calendar_unordered_input():
+    rows = [
+        {"date": date(2025, 7, 3), "dog_id": "dog1"},
+        {"date": date(2025, 7, 1), "dog_id": "dog2"},
+        {"date": date(2025, 7, 1), "dog_id": "dog1"},
+    ]
+
+    result = parse_dog_calendar(rows)
+
+    # Should still return dates in sorted order
+    assert result[0].date == date(2025, 7, 1)
+    assert set(result[0].dog_ids) == {"dog1", "dog2"}
+    assert result[1].date == date(2025, 7, 3)
+    assert result[1].dog_ids == ["dog1"]
+
+
+def test_parse_dog_calendar_empty_input():
+    result = parse_dog_calendar([])
+    assert result == []
+
+def test_parse_dog_calendar_deduplicates():
+    rows = [
+        {"date": date(2025, 7, 1), "dog_id": "dog1"},
+        {"date": date(2025, 7, 1), "dog_id": "dog1"},
+    ]
+
+    result = parse_dog_calendar(rows)
+    assert result == [DogCalendarDay(date=date(2025, 7, 1), dog_ids=["dog1"])]
