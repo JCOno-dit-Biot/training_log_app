@@ -60,7 +60,7 @@ class analytics_repository():
             cur.execute(query, params)
             rows = cur.fetchall()
 
-        return [parse_weekly_stats(row) for row in rows]
+        return parse_weekly_stats(rows)
     
     def get_dog_running_per_day(self, start_date, end_date) -> list[DogCalendarDay]:
         with self._connection.cursor(cursor_factory= RealDictCursor) as cur:
