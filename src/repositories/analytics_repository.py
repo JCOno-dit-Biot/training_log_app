@@ -1,7 +1,9 @@
 from typing import List, Optional
 from psycopg2.extras import RealDictCursor
 from src.models.analytics.weekly_stats import WeeklyStats
-from src.parsers.analytic_parser import parse_weekly_stats
+from src.models.analytics.dog_calendar_day import DogCalendarDay
+from src.parsers.analytic_parser import parse_weekly_stats, parse_dog_calendar
+
 
 class analytics_repository():
 
@@ -55,6 +57,29 @@ class analytics_repository():
                 "start_date": start_date,
                 "end_date": end_date,
             }
-            rows = cur.execute(query, params)
+            cur.execute(query, params)
+            rows = cur.fetchall()
 
         return [parse_weekly_stats(row) for row in rows]
+    
+    def get_dog_running_per_day(self, start_date, end_date) -> list[DogCalendarDay]:
+        with self._connection.cursor(cursor_factory= RealDictCursor) as cur:
+            query = """
+                    SELECT
+                        a.timestamp::date AS date,
+                        ad.dog_id
+                    FROM activities a
+                    JOIN activity_dogs ad ON ad.activity_id = a.id
+                    WHERE a.timestamp >= %(start)s
+                    AND a.timestamp < %(end)s
+                    """
+        
+            params = {
+                    "start_date": start_date,
+                    "end_date": end_date,
+                }
+            cur.execute(query, params)
+
+            rows = cur.fetchall()
+
+        return parse_dog_calendar(rows)
