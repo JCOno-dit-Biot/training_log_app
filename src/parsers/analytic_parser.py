@@ -22,6 +22,6 @@ def parse_dog_calendar(rows: list[dict]) -> list[DogCalendarDay]:
         grouped[row["date"]].add(row["dog_id"])
 
     return [
-        DogCalendarDay(date=dt, dog_ids=dog_ids)
+        DogCalendarDay(date=dt, dog_ids=sorted(dog_ids))
         for dt, dog_ids in sorted(grouped.items())
     ]

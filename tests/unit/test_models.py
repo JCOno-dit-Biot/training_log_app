@@ -362,7 +362,7 @@ def test_distance_trend(distance, prev_distance, expected_trend):
     [
         (6.7, 6.0, Trend.up),
         (6.5, 6.5, Trend.same),
-        (6.6, 6.5, Trend.same),   # within 0.2 rating buffer
+        (6.65, 6.5, Trend.same),   # within 0.2 rating buffer
         (6.4, 6.5, Trend.same),   # also within buffer
         (6.2, 6.5, Trend.down),
     ]

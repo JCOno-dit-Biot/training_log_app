@@ -202,59 +202,74 @@ def test_weight_parser():
     assert weight_entry.weight == 40.3
     assert weight_entry.date == date(2025,1,1)
 
-def test_parse_valid_row():
-    row = {
-        "dog_id": 1,
-        "week_start": date(2025, 7, 7),
-        "total_distance_km": 10.0,
-        "previous_week_distance_km": 9.0,
-        "average_rating": 6.3,
-        "previous_week_average_rating": 6.2
-    }
 
-    result = parse_weekly_stats(row)
-    assert isinstance(result, WeeklyStats)
-    assert result.trend_distance == Trend.up
-    assert result.trend_rating == Trend.same
-
-@pytest.mark.parametrize(
-    "row, expected_distance_trend, expected_rating_trend",
-    [
-        ({"total_distance_km": 5, "previous_week_distance_km": 5.4, "average_rating": 6.5, "previous_week_average_rating": 6.5}, Trend.same, Trend.same),
-        ({"total_distance_km": 4.3, "previous_week_distance_km": 5.0, "average_rating": 6.2, "previous_week_average_rating": 6.5}, Trend.down, Trend.down),
-        ({"total_distance_km": 6.0, "previous_week_distance_km": 5.0, "average_rating": 6.8, "previous_week_average_rating": 6.5}, Trend.up, Trend.up),
+def test_returns_latest_week_per_dog():
+    rows = [
+        {
+            "dog_id": 1,
+            "week_start": date(2025, 7, 1),
+            "total_distance_km": 12.0,
+            "previous_week_distance_km": 10.0,
+            "average_rating": 6.7,
+            "previous_week_average_rating": 6.51
+        },
+        {
+            "dog_id": 1,
+            "week_start": date(2025, 6, 24),
+            "total_distance_km": 10.0,
+            "previous_week_distance_km": 8.0,
+            "average_rating": 6.5,
+            "previous_week_average_rating": 6.0
+        },
+        {
+            "dog_id": 2,
+            "week_start": date(2025, 7, 1),
+            "total_distance_km": 0.0,
+            "previous_week_distance_km": 5.0,
+            "average_rating": 5.5,
+            "previous_week_average_rating": 6.0
+        },
     ]
-)
-def test_parse_trends(row, expected_distance_trend, expected_rating_trend):
-    row.update({
-        "dog_id": 5,
-        "week_start": date(2025, 7, 7),
-    })
-    result = parse_weekly_stats(row)
-    assert result.trend_distance == expected_distance_trend
-    assert result.trend_rating == expected_rating_trend
+
+    result = parse_weekly_stats(rows)
+
+    assert len(result) == 2
+
+    # dog1
+    dog1 = next(r for r in result if r.dog_id == 1)
+    print(dog1)
+    assert dog1.week_start == date(2025, 7, 1)
+    assert dog1.trend_distance == Trend.up
+    assert dog1.trend_rating == Trend.same
+
+    # dog2
+    dog2 = next(r for r in result if r.dog_id == 2)
+    assert dog2.week_start == date(2025, 7, 1)
+    assert dog2.trend_distance == Trend.down
+    assert dog2.trend_rating == Trend.down
 
 
-def test_parse_invalid_row_missing_fields():
-    row = {
-        "dog_id": 10,
-        "week_start": date(2025, 7, 7),
-        # missing total_distance_km and others
-    }
-    with pytest.raises(ValidationError):
-        parse_weekly_stats(row)
+def test_ignores_older_weeks():
+    rows = [
+        {
+            "dog_id": 3,
+            "week_start": date(2025, 6, 24),
+            "total_distance_km": 6.0,
+            "previous_week_distance_km": 6.0,
+            "average_rating": 6.0,
+            "previous_week_average_rating": 6.0
+        },
+    ]
 
-def test_parse_invalid_types():
-    row = {
-        "dog_id": 10,
-        "week_start": "not-a-date",
-        "total_distance_km": "far",
-        "previous_week_distance_km": None,
-        "average_rating": "high",
-        "previous_week_average_rating": "low"
-    }
-    with pytest.raises(ValidationError):
-        parse_weekly_stats(row)
+    result = parse_weekly_stats(rows)
+    assert len(result) == 1
+    assert result[0].dog_id == 3
+    assert result[0].week_start == date(2025, 6, 24)
+
+
+def test_empty_input_returns_empty_list():
+    result = parse_weekly_stats([])
+    assert result == []
 
 
 
