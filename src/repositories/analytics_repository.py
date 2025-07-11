@@ -12,7 +12,7 @@ class analytics_repository():
 
     def get_weekly_stats(self, kennel_id: int) -> list[WeeklyStats]:
         #calculate the time range automatically, needs 14 days to get prior week data
-        end_date = datetime(timezone.utc).date
+        end_date = datetime.now(timezone.utc).date()
         start_date = end_date - timedelta(days=14)
 
         with self._connection.cursor(cursor_factory= RealDictCursor) as cur:
@@ -27,15 +27,15 @@ class analytics_repository():
                     dogs_weeks AS (
                         SELECT d.id AS dog_id, w.week_start
                         FROM dogs d
-                        WHERE kennel_id = %(kennel_id)s
                         CROSS JOIN weeks w
+                        WHERE d.kennel_id = %(kennel_id)s
                     ),
                     weekly_mileage AS (
                     SELECT
                         ad.dog_id,
                         DATE_TRUNC('week', a.timestamp) AS week_start,
                         SUM(a.distance) AS total_distance_km,
-                        AG(ad.rating) AS average_rating 
+                        AVG(ad.rating) AS average_rating 
                     FROM activity_dogs ad
                     JOIN activities a ON ad.activity_id = a.id
                     WHERE a.timestamp BETWEEN %(start_date)s AND %(end_date)s
@@ -61,6 +61,7 @@ class analytics_repository():
             params = {
                 "start_date": start_date,
                 "end_date": end_date,
+                "kennel_id": kennel_id
             }
             cur.execute(query, params)
             rows = cur.fetchall()
@@ -75,8 +76,8 @@ class analytics_repository():
                         ad.dog_id
                     FROM activities a
                     JOIN activity_dogs ad ON ad.activity_id = a.id
-                    WHERE a.timestamp >= %(start)s
-                    AND a.timestamp < %(end)s
+                    WHERE a.timestamp >= %(start_date)s
+                    AND a.timestamp < %(end_date)s
                     """
         
             params = {

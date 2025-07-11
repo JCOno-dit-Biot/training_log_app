@@ -275,33 +275,33 @@ def test_empty_input_returns_empty_list():
 
 def test_parse_dog_calendar_basic():
     rows = [
-        {"date": date(2025, 7, 1), "dog_id": "dog1"},
-        {"date": date(2025, 7, 1), "dog_id": "dog2"},
-        {"date": date(2025, 7, 3), "dog_id": "dog1"},
+        {"date": date(2025, 7, 1), "dog_id": 1},
+        {"date": date(2025, 7, 1), "dog_id": 2},
+        {"date": date(2025, 7, 3), "dog_id": 1},
     ]
 
     result = parse_dog_calendar(rows)
 
     assert len(result) == 2
 
-    assert result[0] == DogCalendarDay(date=date(2025, 7, 1), dog_ids=["dog1", "dog2"])
-    assert result[1] == DogCalendarDay(date=date(2025, 7, 3), dog_ids=["dog1"])
+    assert result[0] == DogCalendarDay(date=date(2025, 7, 1), dog_ids=[1, 2])
+    assert result[1] == DogCalendarDay(date=date(2025, 7, 3), dog_ids=[1])
 
 
 def test_parse_dog_calendar_unordered_input():
     rows = [
-        {"date": date(2025, 7, 3), "dog_id": "dog1"},
-        {"date": date(2025, 7, 1), "dog_id": "dog2"},
-        {"date": date(2025, 7, 1), "dog_id": "dog1"},
+        {"date": date(2025, 7, 3), "dog_id": 1},
+        {"date": date(2025, 7, 1), "dog_id": 2},
+        {"date": date(2025, 7, 1), "dog_id": 1},
     ]
 
     result = parse_dog_calendar(rows)
 
     # Should still return dates in sorted order
     assert result[0].date == date(2025, 7, 1)
-    assert set(result[0].dog_ids) == {"dog1", "dog2"}
+    assert set(result[0].dog_ids) == {1, 2}
     assert result[1].date == date(2025, 7, 3)
-    assert result[1].dog_ids == ["dog1"]
+    assert result[1].dog_ids == [1]
 
 
 def test_parse_dog_calendar_empty_input():
@@ -310,9 +310,9 @@ def test_parse_dog_calendar_empty_input():
 
 def test_parse_dog_calendar_deduplicates():
     rows = [
-        {"date": date(2025, 7, 1), "dog_id": "dog1"},
-        {"date": date(2025, 7, 1), "dog_id": "dog1"},
+        {"date": date(2025, 7, 1), "dog_id": 1},
+        {"date": date(2025, 7, 1), "dog_id": 1},
     ]
 
     result = parse_dog_calendar(rows)
-    assert result == [DogCalendarDay(date=date(2025, 7, 1), dog_ids=["dog1"])]
+    assert result == [DogCalendarDay(date=date(2025, 7, 1), dog_ids=[1])]
