@@ -1,16 +1,20 @@
 from typing import List, Optional
+from datetime import datetime, timedelta, timezone
 from psycopg2.extras import RealDictCursor
 from src.models.analytics.weekly_stats import WeeklyStats
 from src.models.analytics.dog_calendar_day import DogCalendarDay
 from src.parsers.analytic_parser import parse_weekly_stats, parse_dog_calendar
-
 
 class analytics_repository():
 
     def __init__(self, connection):
         self._connection = connection
 
-    def get_weekly_stats(self, start_date, end_date) -> list[WeeklyStats]:
+    def get_weekly_stats(self, kennel_id: int) -> list[WeeklyStats]:
+        #calculate the time range automatically, needs 14 days to get prior week data
+        end_date = datetime(timezone.utc).date
+        start_date = end_date - timedelta(days=14)
+
         with self._connection.cursor(cursor_factory= RealDictCursor) as cur:
             query = """
                     WITH weeks AS (
@@ -23,6 +27,7 @@ class analytics_repository():
                     dogs_weeks AS (
                         SELECT d.id AS dog_id, w.week_start
                         FROM dogs d
+                        WHERE kennel_id = %(kennel_id)s
                         CROSS JOIN weeks w
                     ),
                     weekly_mileage AS (

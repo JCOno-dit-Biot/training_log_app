@@ -1,5 +1,5 @@
 import numpy as np
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 from .. import constants as c
 
 def convert_str_time_to_timedelta(time_str) -> timedelta:
@@ -75,3 +75,13 @@ def calculate_speed_from_time_distance(distance: float, time: str):
     total_seconds = convert_str_time_to_timedelta(time).total_seconds()
 
     return distance / total_seconds * c.SEC_IN_HOUR
+
+
+def get_month_range(year: int, month: int) -> tuple[date, date]:
+    start = date(year, month, 1)
+    # compute first of next month
+    if month == 12:
+        end = date(year + 1, 1, 1)
+    else:
+        end = date(year, month + 1, 1)
+    return start, end
