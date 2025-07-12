@@ -8,3 +8,9 @@ export interface WeeklyStats {
     trend_distance: string
     trend_rating: string
 }
+
+export enum Trend {
+  Up = "up",
+  Down = "down",
+  Same = "same"
+}
