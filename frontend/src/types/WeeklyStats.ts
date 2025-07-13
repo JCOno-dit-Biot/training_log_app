@@ -5,8 +5,8 @@ export interface WeeklyStats {
     previous_week_distance_km: number
     average_rating: number
     previous_week_average_rating: number
-    trend_distance: string
-    trend_rating: string
+    trend_distance: Trend
+    trend_rating: Trend
 }
 
 export enum Trend {
