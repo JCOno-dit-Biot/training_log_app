@@ -18,10 +18,12 @@ export function DogStatsCard({ data, dog }: {data: WeeklyStats, dog: Dog}) {
         <h4 className="text-sm font-semibold text-gray-800">{dog.name}</h4>
       </div>
 
-      <div className="text-xs text-gray-600">
+      <div className="text-sm text-gray-600">
         <div className="flex justify-between">
           <span>Weekly Distance:</span>
-          <span>{data.total_distance_km.toFixed(1)} km {renderTrend(data.trend_distance)}</span>
+          <span>{data.total_distance_km.toFixed(1)} km {renderTrend(data.trend_distance)} 
+            <span className="text-xs text-gray-500"> (prev. {data.previous_week_distance_km.toFixed(1)})</span>
+          </span>
         </div>
         <div className="flex justify-between">
           <span>Avg Rating:</span>
@@ -38,7 +40,7 @@ function renderTrend(trend?: string) {
     case "up":
       return <TrendingUp className="text-green-600 inline-block" size={size} />
     case "down":
-      return <TrendingDown className="text-red-600 inline-block" size={size} />
+      return <TrendingDown className="text-red-500 inline-block" size={size} />
     default:
       return <Minus className="text-gray-500 inline-block" size={size} />
   }
