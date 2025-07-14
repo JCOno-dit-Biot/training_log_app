@@ -12,7 +12,7 @@ class analytics_repository():
 
     def get_weekly_stats(self, kennel_id: int) -> list[WeeklyStats]:
         #calculate the time range automatically, needs 14 days to get prior week data
-        end_date = datetime.now(timezone.utc).date()
+        end_date = datetime.now(timezone.utc).date() + timedelta(days=1) #include current day
         start_date = end_date - timedelta(days=14)
 
         with self._connection.cursor(cursor_factory= RealDictCursor) as cur:
