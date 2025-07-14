@@ -154,7 +154,7 @@ export default function ActivityFeed() {
         </div>
       )}
       </main>
-      <RightSidebar calendarData={calendar} weeklyStats={weeklyStats} />
+      <RightSidebar calendarData={calendar} weeklyStats={weeklyStats} dogs={dogs} />
     </section>
     
   );
