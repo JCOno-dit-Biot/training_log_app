@@ -48,10 +48,10 @@ class analytics_repository():
                         COALESCE(LAG(total_distance_km) OVER (
                             PARTITION BY dw.dog_id ORDER BY dw.week_start
                         ), 0) AS previous_week_distance_km,
-                        COALESCE(wm.average_rating, 0) AS average_rating,
-                        COALESCE(LAG(average_rating) OVER (
+                        wm.average_rating AS average_rating,
+                        LAG(average_rating) OVER (
                             PARTITION BY dw.dog_id ORDER BY dw.week_start
-                        ), 0) AS previous_week_average_rating
+                        ) AS previous_week_average_rating
                     FROM dogs_weeks dw
                     LEFT JOIN weekly_mileage wm ON
                     dw.dog_id = wm.dog_id AND

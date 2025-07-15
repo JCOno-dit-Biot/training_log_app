@@ -13,7 +13,7 @@ class WeeklyStats(BaseModel):
     week_start: date
     total_distance_km: float
     previous_week_distance_km: Optional[float] = None
-    average_rating: float
+    average_rating: Optional[float] = None
     previous_week_average_rating: Optional[float] = None
     trend_distance: Optional[Trend] = None  
     trend_rating: Optional[Trend] = None 
@@ -30,12 +30,16 @@ class WeeklyStats(BaseModel):
             self.trend_distance = Trend.down
 
         # Rating trend with 0.2 rating units threshold
-        diff_rating = self.average_rating - (self.previous_week_average_rating or 0)
-        if abs(diff_rating) <= 0.2:
-            self.trend_rating = Trend.same
-        elif diff_rating > 0.2:
-            self.trend_rating = Trend.up
+        if self.average_rating is None or self.previous_week_average_rating is None:
+            self.trend_rating = None
         else:
-            self.trend_rating = Trend.down
+            diff = self.average_rating - self.previous_week_average_rating
+            if abs(diff) <= 0.2:
+                self.trend_rating = Trend.same
+            elif diff > 0.2:
+                self.trend_rating = Trend.up
+            else:
+                self.trend_rating = Trend.down
+
 
         return self
