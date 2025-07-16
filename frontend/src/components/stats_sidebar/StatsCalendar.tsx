@@ -1,41 +1,57 @@
-import { DogCalendarDay } from "../../types/DogCalendarDay"
-import { useMemo } from "react"
-import { format, startOfMonth, endOfMonth, startOfWeek, addDays, isSameMonth } from "date-fns"
+import Calendar from 'react-calendar'
+import { format } from 'date-fns'
+import { DogCalendarDay } from '../../types/DogCalendarDay'
+import 'react-calendar/dist/Calendar.css'
 
 
-export function StatsCalendar({ data }: {data: DogCalendarDay[]}) {
-  const today = new Date()
-  const currentMonth = today.getMonth()
-  const currentYear = today.getFullYear()
+type Props = {
+  data: DogCalendarDay[]
+  onDayClick?: (date: Date) => void
+  dogColors: Map<number, string>
+}
 
-  const firstDayOfMonth = startOfMonth(today)
-  const startDate = startOfWeek(firstDayOfMonth, { weekStartsOn: 1 }) // Monday start
+export function StatsCalendar({ data, onDayClick, dogColors }: Props) {
+  //const activeDates = new Set(data.map(d => d.date)) // 'YYYY-MM-DD'
 
-  const activeDates = useMemo(() => new Set(data.map(d => d.date)), [data])
-
-  const days = Array.from({ length: 42 }, (_, i) => {
-    const day = addDays(startDate, i)
-    const iso = format(day, "yyyy-MM-dd")
-    const isActive = activeDates.has(iso)
-
-    return (
-      <div
-        key={i}
-        className={`flex items-center justify-center w-8 h-8 text-sm rounded-full ${
-          isActive ? "border-2 border-gray-500 text-black font-semibold" : "text-gray-900"
-        } ${!isSameMonth(day, today) ? "opacity-30" : ""}`}
-      >
-        {day.getDate()}
-      </div>
-    )
+  const activeMap = new Map<string, number[]>()
+  data.forEach(({ date, dog_ids }) => {
+    activeMap.set(date, dog_ids)
   })
 
+
   return (
-    <div className="text-cream mb-4">
-      <h3 className="text-sm font-semibold mb-2">Training Calendar</h3>
-      <div className="grid grid-cols-7 gap-1 bg-cream border rounded-lg">
-        {days}
-      </div>
+    <div className="rounded-lg p-2 bg-white shadow-sm">
+      <Calendar
+        onClickDay={onDayClick}
+        tileClassName={({ date, view }) => {
+          if (view !== 'month') return ''
+          const iso = format(date, 'yyyy-MM-dd')
+          return activeMap.has(iso) ? 'bg-gray-100 rounded-full border border-gray-400' : ''
+        }}
+        tileContent={({ date, view }) => {
+          if (view !== "month") return null
+          const iso = format(date, "yyyy-MM-dd")
+          const dogs = activeMap.get(iso)
+          if (!dogs) return null
+
+          const visibleDots = dogs.slice(0, 2)
+          const extra = dogs.length > 2
+
+          return (
+            <div className="flex justify-center gap-[2px]">
+              {visibleDots.map((id) => (
+                <div
+                  key={id}
+                  className={`w-1.5 h-1.5 rounded-full ${dogColors.get(id) ?? "bg-gray-400"}`}
+                />
+              ))}
+              {extra && <span className="text-[10px] text-gray-500 font-bold ml-1">+</span>}
+            </div>
+          )
+        }}
+
+        className="w-full border-none"
+      />
     </div>
   )
 }
