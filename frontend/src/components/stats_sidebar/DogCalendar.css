@@ -1,0 +1,62 @@
+/* Replace default abbr look */
+.react-calendar__tile.circled_day abbr {
+  display: none;
+}
+
+.custom-day-content {
+  position: relative;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 14px;
+  margin: 0 auto;
+  background-color: rgba(128, 128, 128, 0.5);
+}
+
+/* The number in the center */
+.day-number {
+  position: relative;
+  z-index: 0;
+}
+
+/* Single dog centered behind number */
+.dog-dot.centered {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  top: 80%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  opacity: 1;
+  z-index: 1;
+}
+
+/* Grouped dog dots */
+.dog-dot-group {
+  position: absolute;
+  bottom: 2px;
+  right: 50%;
+  display: flex;
+  gap: 2px;
+  z-index: 1;
+  pointer-events: none;
+  transform: translate(+50%)
+}
+
+.dog-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+}
+
+.dog-count {
+  font-size: 9px;
+  color: gray;
+  font-weight: bold;
+  line-height: 1;
+}

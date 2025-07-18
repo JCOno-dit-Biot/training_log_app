@@ -1,8 +1,8 @@
 import Calendar from 'react-calendar'
-import { format } from 'date-fns'
+import { parseISO, format } from 'date-fns'
 import { DogCalendarDay } from '../../types/DogCalendarDay'
 import 'react-calendar/dist/Calendar.css'
-
+import './DogCalendar.css';
 
 type Props = {
   data: DogCalendarDay[]
@@ -15,42 +15,63 @@ export function StatsCalendar({ data, onDayClick, dogColors }: Props) {
 
   const activeMap = new Map<string, number[]>()
   data.forEach(({ date, dog_ids }) => {
-    activeMap.set(date, dog_ids)
+    const iso = format(parseISO(date), 'yyyy-MM-dd')  // normalize
+    activeMap.set(iso, dog_ids)
   })
+
+  console.log("Active map keys:", [...activeMap.keys()])
+
+  const tileClassName = ({ date, view }: { date: Date, view: string }) => {
+    if (view !== 'month') return ''
+    const iso = format(date, 'yyyy-MM-dd')
+    return activeMap.has(iso)
+      ? 'circled_day'
+      : ''
+  }
 
 
   return (
-    <div className="rounded-lg p-2 bg-white shadow-sm">
+    <div className="rounded-lg p-2 bg-white shadow-sm mb-4">
       <Calendar
+        calendarType="iso8601"
+        tileClassName={tileClassName}
         onClickDay={onDayClick}
-        tileClassName={({ date, view }) => {
-          if (view !== 'month') return ''
-          const iso = format(date, 'yyyy-MM-dd')
-          return activeMap.has(iso) ? 'bg-gray-100 rounded-full border border-gray-400' : ''
-        }}
+        className="w-full border-none text-sm"
         tileContent={({ date, view }) => {
-          if (view !== "month") return null
-          const iso = format(date, "yyyy-MM-dd")
-          const dogs = activeMap.get(iso)
-          if (!dogs) return null
+          if (view !== 'month') return null;
 
-          const visibleDots = dogs.slice(0, 2)
-          const extra = dogs.length > 2
+          const iso = format(date, 'yyyy-MM-dd');
+          const dogs = activeMap.get(iso);
+          if (dogs) {
+            console.log(dogColors.get(dogs[0]))
+          }
+          if (!dogs) return null;
+
+          const visibleDots = dogs.slice(0, 2);
+          const extra = dogs.length > 2;
 
           return (
-            <div className="flex justify-center gap-[2px]">
-              {visibleDots.map((id) => (
-                <div
-                  key={id}
-                  className={`w-1.5 h-1.5 rounded-full ${dogColors.get(id) ?? "bg-gray-400"}`}
-                />
-              ))}
-              {extra && <span className="text-[10px] text-gray-500 font-bold ml-1">+</span>}
-            </div>
-          )
+    <div className="custom-day-content">
+      <span className="day-number">{date.getDate()}</span>
+      {dogs.length === 1 && (
+        <span
+          className={`dog-dot centered ${dogColors.get(dogs[0]) ?? 'bg-gray-400'}`}
+        />
+      )}  
+      {dogs.length > 1 && (
+        <div className="dog-dot-group">
+          {visibleDots.map((id) => (
+            <span
+              key={id}
+              className={`dog-dot ${dogColors.get(id) ?? 'bg-gray-400'}`}
+            />
+          ))}
+          {extra && <span className="dog-count">+</span>}
+        </div>
+      )}
+    </div>
+  );
         }}
-
-        className="w-full border-none"
       />
     </div>
   )
