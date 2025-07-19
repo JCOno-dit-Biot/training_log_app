@@ -36,6 +36,10 @@ export function StatsCalendar({ data, onDayClick, dogColors }: Props) {
         calendarType="iso8601"
         tileClassName={tileClassName}
         onClickDay={onDayClick}
+        formatShortWeekday={(locale, date) => {
+          const weekday = date.toLocaleDateString(locale, { weekday: 'short' });
+          return weekday.charAt(0); // Returns M, T, W, etc.
+        }}
         className="w-full border-none text-sm"
         tileContent={({ date, view }) => {
           if (view !== 'month') return null;
@@ -51,26 +55,26 @@ export function StatsCalendar({ data, onDayClick, dogColors }: Props) {
           const extra = dogs.length > 2;
 
           return (
-    <div className="custom-day-content">
-      <span className="day-number">{date.getDate()}</span>
-      {dogs.length === 1 && (
-        <span
-          className={`dog-dot centered ${dogColors.get(dogs[0]) ?? 'bg-gray-400'}`}
-        />
-      )}  
-      {dogs.length > 1 && (
-        <div className="dog-dot-group">
-          {visibleDots.map((id) => (
-            <span
-              key={id}
-              className={`dog-dot ${dogColors.get(id) ?? 'bg-gray-400'}`}
-            />
-          ))}
-          {extra && <span className="dog-count">+</span>}
-        </div>
-      )}
-    </div>
-  );
+            <div className="custom-day-content">
+              <span className="day-number">{date.getDate()}</span>
+              {dogs.length === 1 && (
+                <span
+                  className={`dog-dot centered ${dogColors.get(dogs[0]) ?? 'bg-gray-400'}`}
+                />
+              )}
+              {dogs.length > 1 && (
+                <div className="dog-dot-group">
+                  {visibleDots.map((id) => (
+                    <span
+                      key={id}
+                      className={`dog-dot ${dogColors.get(id) ?? 'bg-gray-400'}`}
+                    />
+                  ))}
+                  {extra && <span className="dog-count">+</span>}
+                </div>
+              )}
+            </div>
+          );
         }}
       />
     </div>
