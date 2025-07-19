@@ -4,15 +4,16 @@ from psycopg2.extras import RealDictCursor
 from src.models.analytics.weekly_stats import WeeklyStats
 from src.models.analytics.dog_calendar_day import DogCalendarDay
 from src.parsers.analytic_parser import parse_weekly_stats, parse_dog_calendar
+from datetime import datetime
 
 class analytics_repository():
 
     def __init__(self, connection):
         self._connection = connection
 
-    def get_weekly_stats(self, kennel_id: int) -> list[WeeklyStats]:
+    def get_weekly_stats(self, kennel_id: int, ts: datetime) -> list[WeeklyStats]:
         #calculate the time range automatically, needs 14 days to get prior week data
-        end_date = datetime.now(timezone.utc).date() + timedelta(days=1) #include current day
+        end_date = ts.astimezone(timezone.utc).date() + timedelta(days=1) #include current day
         start_date = end_date - timedelta(days=14)
 
         with self._connection.cursor(cursor_factory= RealDictCursor) as cur:
