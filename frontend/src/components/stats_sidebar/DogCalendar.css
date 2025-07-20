@@ -132,12 +132,14 @@
 /* Grouped dog dots */
 .dog-dot-group {
   position: absolute;
+  align-items: center;
   bottom: 2px;
   right: 50%;
   display: flex;
   gap: 2px;
   z-index: 1;
   pointer-events: none;
+  
   transform: translate(+50%)
 }
 
@@ -148,8 +150,9 @@
 }
 
 .dog-count {
-  font-size: 9px;
-  color: gray;
+  font-size: 8px;
+  color: black;
   font-weight: bold;
   line-height: 1;
+  display: inline-block;
 }

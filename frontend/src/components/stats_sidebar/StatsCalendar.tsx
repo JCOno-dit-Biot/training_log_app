@@ -9,21 +9,29 @@ type Props = {
   data: DogCalendarDay[]
   onDayClick?: (date: Date) => void
   dogColors: Map<number, string>
+  selectedDate: Date
+  onDateChange: (date: Date) => void
+  visibleMonth: Date
+  onMonthChange: (month: Date) => void
 }
 
-export function StatsCalendar({ data, onDayClick, dogColors }: Props) {
+export function StatsCalendar({
+  data,
+  onDayClick,
+  dogColors,
+  selectedDate,
+  onDateChange,
+  visibleMonth,
+  onMonthChange,
+}: Props) {
   //const activeDates = new Set(data.map(d => d.date)) // 'YYYY-MM-DD'
 
-  const [selectedDate, setSelectedDate] = useState(new Date());
-  const [visibleMonth, setVisibleMonth] = useState(new Date()); // updated when month changes
 
   const activeMap = new Map<string, number[]>()
   data?.forEach(({ date, dog_ids }) => {
     const iso = format(parseISO(date), 'yyyy-MM-dd')  // normalize
     activeMap.set(iso, dog_ids)
   })
-
-  console.log("Active map keys:", [...activeMap.keys()])
 
   const tileClassName = ({ date, view }: { date: Date, view: string }) => {
     if (view !== 'month') return ''
@@ -33,13 +41,22 @@ export function StatsCalendar({ data, onDayClick, dogColors }: Props) {
       : ''
   }
 
-
   return (
     <div className="rounded-lg p-2 bg-white shadow-sm mb-4">
       <Calendar
         calendarType="iso8601"
+        value={selectedDate}
+        onChange={(date) => {
+          onDateChange(date as Date); // Cast if needed
+          onDayClick?.(date as Date);
+        }}
+        activeStartDate={visibleMonth}
+        onActiveStartDateChange={({ activeStartDate, view }) => {
+          if (view === 'month' && activeStartDate) {
+            onMonthChange(activeStartDate);
+          }
+        }}
         tileClassName={tileClassName}
-        onClickDay={onDayClick}
         formatShortWeekday={(locale, date) => {
           const weekday = date.toLocaleDateString(locale, { weekday: 'short' });
           return weekday.charAt(0); // Returns M, T, W, etc.
@@ -50,9 +67,7 @@ export function StatsCalendar({ data, onDayClick, dogColors }: Props) {
 
           const iso = format(date, 'yyyy-MM-dd');
           const dogs = activeMap.get(iso);
-          if (dogs) {
-            console.log(dogColors.get(dogs[0]))
-          }
+          
           if (!dogs) return null;
 
           const visibleDots = dogs.slice(0, 2);
@@ -73,8 +88,8 @@ export function StatsCalendar({ data, onDayClick, dogColors }: Props) {
                       key={id}
                       className={`dog-dot ${dogColors.get(id) ?? 'bg-gray-400'}`}
                     />
-                  ))}
-                  {extra && <span className="dog-count">+</span>}
+                  ))}{extra && <span className="dog-count">+</span>}
+                  
                 </div>
               )}
             </div>

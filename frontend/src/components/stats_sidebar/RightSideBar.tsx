@@ -19,7 +19,6 @@ export function RightSidebar({ dogs }: SidebarProps) {
     monthlyDogDay
   } = useActivityStats();
     
-  console.log(`dogs: ${dogs}`)
   // temporary map for development
   const dogColors = new Map<number, string>([
     [1, "bg-red-500"],
