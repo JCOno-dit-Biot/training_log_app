@@ -1,4 +1,5 @@
 import Calendar from 'react-calendar'
+import { useState } from 'react'
 import { parseISO, format } from 'date-fns'
 import { DogCalendarDay } from '../../types/DogCalendarDay'
 import 'react-calendar/dist/Calendar.css'
@@ -13,8 +14,11 @@ type Props = {
 export function StatsCalendar({ data, onDayClick, dogColors }: Props) {
   //const activeDates = new Set(data.map(d => d.date)) // 'YYYY-MM-DD'
 
+  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [visibleMonth, setVisibleMonth] = useState(new Date()); // updated when month changes
+
   const activeMap = new Map<string, number[]>()
-  data.forEach(({ date, dog_ids }) => {
+  data?.forEach(({ date, dog_ids }) => {
     const iso = format(parseISO(date), 'yyyy-MM-dd')  // normalize
     activeMap.set(iso, dog_ids)
   })

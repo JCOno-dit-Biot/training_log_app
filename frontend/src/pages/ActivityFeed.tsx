@@ -27,15 +27,15 @@ export default function ActivityFeed() {
   const [calendar, setCalendar] = useState<DogCalendarDay[]>([])
   const [weeklyStats, setWeeklyStats] = useState<WeeklyStats[]>([])
 
-  useEffect(() => {
-    async function loadStats() {
-      const calendarData = await getCalendarDay()
-      const statsData = await getWeeklyStats()
-      setCalendar(calendarData)
-      setWeeklyStats(statsData)
-    }
-    loadStats()
-  }, [])
+  // useEffect(() => {
+  //   async function loadStats() {
+  //     const calendarData = await getCalendarDay()
+  //     const statsData = await getWeeklyStats()
+  //     setCalendar(calendarData)
+  //     setWeeklyStats(statsData)
+  //   }
+  //   loadStats()
+  // }, [])
 
   useClickAway(panelRef, () => setShowFilters(false));
 
@@ -154,7 +154,7 @@ export default function ActivityFeed() {
         </div>
       )}
       </main>
-      <RightSidebar calendarData={calendar} weeklyStats={weeklyStats} dogs={dogs} />
+      <RightSidebar dogs={dogs} /> 
     </section>
     
   );
