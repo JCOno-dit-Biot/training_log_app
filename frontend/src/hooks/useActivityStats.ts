@@ -4,23 +4,27 @@ import { getCalendarDay } from '../api/stats/dogCalendarDay';
 import { WeeklyStats } from '../types/WeeklyStats';
 import { DogCalendarDay } from '../types/DogCalendarDay';
 
-export function useActivityStats() {
-  const [selectedDate, setSelectedDate] = useState(new Date());
-  const [visibleMonth, setVisibleMonth] = useState(new Date());
+import { getFirstDayOfMonth } from '../functions/helpers/getFirstDayOfMonth';
 
+export function useActivityStats(initialDate = new Date()) {
+
+  const [selectedDate, setSelectedDate] = useState(initialDate);
+  const [visibleMonth, setVisibleMonth] = useState(getFirstDayOfMonth(initialDate));
   const [weeklyStats, setWeeklyStats] = useState<WeeklyStats[] | null>(null);
   const [monthlyDogDay, setMonthlyDogDay] = useState<DogCalendarDay[] | null>(null);
 
   useEffect(() => {
-    getWeeklyStats(selectedDate).then(setWeeklyStats);
-  }, [selectedDate]);
+    getWeeklyStats(selectedDate).then((data) => {
+      setWeeklyStats(data);
+    }).catch((err) => console.error('[ActivityStats] Weekly stats error:', err));
+    }, [selectedDate]);
 
   useEffect(() => {
     getCalendarDay({
         month: visibleMonth.getMonth() +1,
         year: visibleMonth.getFullYear()
-  }).then(setMonthlyDogDay);
-  }, [visibleMonth]);
+    }).then(setMonthlyDogDay);
+    }, [visibleMonth]);
 
   return {
     selectedDate,
@@ -28,6 +32,6 @@ export function useActivityStats() {
     visibleMonth,
     setVisibleMonth,
     weeklyStats,
-    monthlyDogDay,
-  };
+    monthlyDogDay
+  }
 }
