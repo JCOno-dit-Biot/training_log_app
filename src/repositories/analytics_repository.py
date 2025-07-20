@@ -12,9 +12,20 @@ class analytics_repository():
         self._connection = connection
 
     def get_weekly_stats(self, kennel_id: int, ts: datetime) -> list[WeeklyStats]:
+
+        
+
+
+# Need two weeks, so:
+ # for exclusive upper bound
+
         #calculate the time range automatically, needs 14 days to get prior week data
-        end_date = ts.astimezone(timezone.utc).date() + timedelta(days=1) #include current day
-        start_date = end_date - timedelta(days=14)
+        selected_date = ts.astimezone(timezone.utc).date()
+        start_of_week = selected_date - timedelta(days=selected_date.weekday())  # Monday
+        end_of_week = start_of_week + timedelta(days=6)  # Sunday
+        
+        start_date = start_of_week - timedelta(days=7)
+        end_date = end_of_week# + timedelta(days=1) 
 
         with self._connection.cursor(cursor_factory= RealDictCursor) as cur:
             query = """
@@ -66,6 +77,7 @@ class analytics_repository():
             }
             cur.execute(query, params)
             rows = cur.fetchall()
+            print(rows)
 
         return parse_weekly_stats(rows)
     
