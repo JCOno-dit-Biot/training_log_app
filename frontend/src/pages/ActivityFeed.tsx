@@ -27,16 +27,6 @@ export default function ActivityFeed() {
   const [calendar, setCalendar] = useState<DogCalendarDay[]>([])
   const [weeklyStats, setWeeklyStats] = useState<WeeklyStats[]>([])
 
-  // useEffect(() => {
-  //   async function loadStats() {
-  //     const calendarData = await getCalendarDay()
-  //     const statsData = await getWeeklyStats()
-  //     setCalendar(calendarData)
-  //     setWeeklyStats(statsData)
-  //   }
-  //   loadStats()
-  // }, [])
-
   useClickAway(panelRef, () => setShowFilters(false));
 
   const openEditModal = (activity: Activity) => {
@@ -154,7 +144,10 @@ export default function ActivityFeed() {
         </div>
       )}
       </main>
-      <RightSidebar dogs={dogs} /> 
+      <RightSidebar 
+        dogs={dogs}
+        filters={filters}
+        setFilters={setFilters} /> 
     </section>
     
   );
