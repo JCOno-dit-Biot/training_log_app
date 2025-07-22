@@ -36,17 +36,20 @@ export function RightSidebar({ dogs, filters, setFilters }: SidebarProps) {
       <StatsCalendar
         data={monthlyDogDay}
         dogColors={dogColors}
-        selectedDate={filters.start_date ?? selectedDate}
+        selectedDate={
+          filters.start_date
+            ? new Date(filters.start_date + 'T00:00:00') // convert back to Date in local time
+            : selectedDate
+        }
         onDateChange={(date) => {
-          const start = format(date, 'yyyy-MM-dd');
-
-          const nextDay = new Date(date);
-          nextDay.setDate(nextDay.getDate() + 1);
-          const end = format(nextDay, 'yyyy-MM-dd');
+          const start = format(new Date(date.getFullYear(), date.getMonth(), date.getDate()), 'yyyy-MM-dd');
+          const end = format(new Date(date.getFullYear(), date.getMonth(), date.getDate() + 1), 'yyyy-MM-dd');
+          console.log(start)
           setFilters(f => ({
             ...f,
             start_date: start,
-            end_date: end
+            end_date: end,
+            __trigger: 'calendar', // set meta data
           }));
           setSelectedDate(date);
         }}
