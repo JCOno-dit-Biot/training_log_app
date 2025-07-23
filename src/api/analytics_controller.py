@@ -7,7 +7,7 @@ from src.models.analytics.dog_calendar_day import DogCalendarDay
 from src.models.analytics.weekly_stats import WeeklyStats
 from src.deps import get_analytics_repo
 from src.utils.calculation_helpers import get_month_range
-
+from datetime import datetime
 router = APIRouter()
 
 @cbv(router)
@@ -17,14 +17,15 @@ class AnalyticsController:
 
     @router.get("/weekly-stats", response_model=List[WeeklyStats])
     def weekly_stats_route(
-        self, request: Request
+        self, request: Request,
+        ts: datetime
     ):
         
         """
         Return the latest weekly stats per dog, including distance, average rating, and trends.
         """
         kennel_id = request.state.kennel_id
-        return self.repo.get_weekly_stats(kennel_id)
+        return self.repo.get_weekly_stats(kennel_id, ts)
 
 
     @router.get("/dog-calendar", response_model=List[DogCalendarDay])

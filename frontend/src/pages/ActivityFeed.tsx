@@ -1,8 +1,13 @@
 import { useEffect, useState, useRef } from 'react';
 import { getActivities, deleteActivity } from '../api/activities';
+import { getWeeklyStats } from '../api/stats/weeklyStats';
+import { getCalendarDay } from '../api/stats/dogCalendarDay';
 import ActivityCard from '../components/ActivityCard';
+import { RightSidebar } from '../components/stats_sidebar/RightSideBar';
 import { Activity } from '../types/Activity';
 import { ActivityFilter } from '../types/ActivityFilter';
+import { DogCalendarDay } from '../types/DogCalendarDay';
+import { WeeklyStats } from '../types/WeeklyStats';
 import AddActivityButton from "../components/AddActivityButton";
 import AddActivityForm from "../components/AddActivityForm";
 import { useGlobalCache } from '../context/GlobalCacheContext';
@@ -11,6 +16,7 @@ import { Transition } from '@headlessui/react';
 import { useClickAway } from 'react-use'; // optional for clean click-out
 import ActivityFilterPanel from '../components/ActivityFilterPanel';
 
+
 export default function ActivityFeed() {
   const [activities, setActivities] = useState<Activity[]>([]);
   const [showModal, setShowModal] = useState(false);
@@ -18,6 +24,9 @@ export default function ActivityFeed() {
   const [filters, setFilters] = useState<ActivityFilter>({})
   const [editActivity, setEditActivity] = useState<Activity | null>(null);
   const panelRef = useRef(null);
+  //stats usestates
+  const [calendar, setCalendar] = useState<DogCalendarDay[]>([])
+  const [weeklyStats, setWeeklyStats] = useState<WeeklyStats[]>([])
 
   useClickAway(panelRef, () => setShowFilters(false));
 
@@ -36,6 +45,30 @@ export default function ActivityFeed() {
       .catch(console.error);
   }, []);
 
+  useEffect(() => {
+    const { __trigger, ...filtersToSend } = filters;
+    if (filters.__trigger === 'calendar') {
+      const fetch = async () => {
+        try {
+          const data = await getActivities({ sports, filters: filtersToSend, limit: 10, offset: 0 });
+          setActivities(data);
+
+          // Strip the trigger tag after applying
+          setFilters(prev => {
+            const { __trigger, ...cleaned } = prev;
+            return cleaned;
+          });
+        } catch (err) {
+          console.error('Failed to fetch activities:', err);
+        }
+      };
+
+      fetch(); // call it
+    }
+  }, [filters]);
+
+
+
   const reloadActivities = async () => {
     const data = await getActivities({ sports, limit: 10, offset: 0, filters: {} });
     setActivities(data);
@@ -45,6 +78,7 @@ export default function ActivityFeed() {
     const data = await getActivities({ sports, filters, limit: 10, offset: 0 });
     setActivities(data);
   };
+
 
   const handleDelete = async (activity_id: number) => {
 
@@ -61,75 +95,86 @@ export default function ActivityFeed() {
 
 
   return (
-    <section className="space-y-4 relative">
-      <div className='relative flex justify-center items-center py-2'>
-        <h2 className="flex text-xl text-center font-semibold text-charcoal">Recent Activity</h2>
-        <div className="absolute right-0 top-0">
-          <button
-            onClick={() => setShowFilters(prev => !prev)}
-            className={`flex items-center gap-2 px-4 py-2 border rounded hover:bg-gray-100 z-30 relative ${showFilters ? 'bg-gray-100' : ''
-              }`}
-          >
-            <FunnelIcon className="w-4 h-4" />
-            Filter
-          </button>
-        </div>
-        <Transition
-          show={showFilters}
-          enter="transition ease-out duration-150"
-          enterFrom="opacity-0 scale-95"
-          enterTo="opacity-100 scale-100"
-          leave="transition ease-in duration-100"
-          leaveFrom="opacity-100 scale-100"
-          leaveTo="opacity-0 scale-95"
-        >
-          <div
-            ref={panelRef}
-            className="absolute right-0 top-full mt-2 w-72 p-4 bg-white border rounded-lg shadow-lg z-10"
-          >
-            <ActivityFilterPanel
-              filters={filters}
-              setFilters={setFilters}
-              runners={runners}
-              dogs={dogs}
-              sports={sports}
-              onApply={applyFilters}
-              onClear={() => setFilters({})}
-            />
-          </div>
-        </Transition>
-      </div>
-
-      {activities.map((activity) => (
-        <ActivityCard
-          key={activity.id}
-          activity={activity}
-          onDelete={handleDelete}
-          onSuccess={reloadActivities}
-          onEdit={openEditModal} />
-      ))}
-
-      <AddActivityButton onClick={() => setShowModal(true)} />
-
-      {showModal && (
-        <div className="fixed inset-0 bg-primary/80 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-md max-w-xl max-h-[95vh] w-full overflow-y-auto p-6 relative">
+    <section className="flex relative">
+      <main className="flex-1 pr-[345px] space-y-4 relative">
+        <div className='relative flex justify-center items-center py-2'>
+          <h2 className="flex text-xl text-center font-semibold text-charcoal">Recent Activity</h2>
+          <div className="absolute right-0 top-0">
             <button
-              onClick={() => { setShowModal(false); setEditActivity(null); }}
-              className="absolute top-2 right-2 text-gray-600 hover:text-black"
+              onClick={() => setShowFilters(prev => !prev)}
+              className={`flex items-center gap-2 px-4 py-2 border rounded hover:bg-gray-100 z-30 relative ${showFilters ? 'bg-gray-100' : ''
+                }`}
             >
-              ✖
+              <FunnelIcon className="w-4 h-4" />
+              Filter
             </button>
-            <AddActivityForm
-              initialData={editActivity}
-              onSuccess={reloadActivities}
-              onClose={() => {
-                setEditActivity(null);
-                setShowModal(false);
-              }} />
           </div>
+          <Transition
+            show={showFilters}
+            enter="transition ease-out duration-150"
+            enterFrom="opacity-0 scale-95"
+            enterTo="opacity-100 scale-100"
+            leave="transition ease-in duration-100"
+            leaveFrom="opacity-100 scale-100"
+            leaveTo="opacity-0 scale-95"
+          >
+            <div
+              ref={panelRef}
+              className="absolute right-0 top-full mt-2 w-72 p-4 bg-white border rounded-lg shadow-lg z-10"
+            >
+              <ActivityFilterPanel
+                filters={filters}
+                setFilters={setFilters}
+                runners={runners}
+                dogs={dogs}
+                sports={sports}
+                onApply={applyFilters}
+                onClear={() => setFilters({})}
+              />
+            </div>
+          </Transition>
         </div>
-      )}
+
+        {activities.map((activity) => (
+          <ActivityCard
+            key={activity.id}
+            activity={activity}
+            onDelete={handleDelete}
+            onSuccess={reloadActivities}
+            onEdit={openEditModal} />
+        ))}
+
+
+        <AddActivityButton
+          onClick={() => setShowModal(true)}
+        />
+
+
+        {showModal && (
+          <div className="fixed inset-0 bg-primary/80 flex items-center justify-center z-50">
+            <div className="bg-white p-6 rounded-md max-w-xl max-h-[95vh] w-full overflow-y-auto p-6 relative">
+              <button
+                onClick={() => { setShowModal(false); setEditActivity(null); }}
+                className="absolute top-2 right-2 text-gray-600 hover:text-black"
+              >
+                ✖
+              </button>
+              <AddActivityForm
+                initialData={editActivity}
+                onSuccess={reloadActivities}
+                onClose={() => {
+                  setEditActivity(null);
+                  setShowModal(false);
+                }} />
+            </div>
+          </div>
+        )}
+      </main>
+      <RightSidebar
+        dogs={dogs}
+        filters={filters}
+        setFilters={setFilters} />
     </section>
+
   );
 }

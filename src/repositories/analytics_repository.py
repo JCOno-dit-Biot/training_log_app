@@ -4,16 +4,28 @@ from psycopg2.extras import RealDictCursor
 from src.models.analytics.weekly_stats import WeeklyStats
 from src.models.analytics.dog_calendar_day import DogCalendarDay
 from src.parsers.analytic_parser import parse_weekly_stats, parse_dog_calendar
+from datetime import datetime
 
 class analytics_repository():
 
     def __init__(self, connection):
         self._connection = connection
 
-    def get_weekly_stats(self, kennel_id: int) -> list[WeeklyStats]:
+    def get_weekly_stats(self, kennel_id: int, ts: datetime) -> list[WeeklyStats]:
+
+        
+
+
+# Need two weeks, so:
+ # for exclusive upper bound
+
         #calculate the time range automatically, needs 14 days to get prior week data
-        end_date = datetime.now(timezone.utc).date()
-        start_date = end_date - timedelta(days=14)
+        selected_date = ts.astimezone(timezone.utc).date()
+        start_of_week = selected_date - timedelta(days=selected_date.weekday())  # Monday
+        end_of_week = start_of_week + timedelta(days=6)  # Sunday
+        
+        start_date = start_of_week - timedelta(days=7)
+        end_date = end_of_week# + timedelta(days=1) 
 
         with self._connection.cursor(cursor_factory= RealDictCursor) as cur:
             query = """
@@ -48,10 +60,10 @@ class analytics_repository():
                         COALESCE(LAG(total_distance_km) OVER (
                             PARTITION BY dw.dog_id ORDER BY dw.week_start
                         ), 0) AS previous_week_distance_km,
-                        COALESCE(wm.average_rating, 0) AS average_rating,
-                        COALESCE(LAG(average_rating) OVER (
+                        wm.average_rating AS average_rating,
+                        LAG(average_rating) OVER (
                             PARTITION BY dw.dog_id ORDER BY dw.week_start
-                        ), 0) AS previous_week_average_rating
+                        ) AS previous_week_average_rating
                     FROM dogs_weeks dw
                     LEFT JOIN weekly_mileage wm ON
                     dw.dog_id = wm.dog_id AND
@@ -65,6 +77,7 @@ class analytics_repository():
             }
             cur.execute(query, params)
             rows = cur.fetchall()
+            print(rows)
 
         return parse_weekly_stats(rows)
     
