@@ -16,6 +16,7 @@ from src.models import (
     ActivityQueryFilters,
     WeightQueryFilter
 )
+from src.models.analytics.weekly_stats import WeeklyStats, Trend
 import pytest
 from pydantic import ValidationError
 from datetime import datetime, date, timedelta
@@ -334,3 +335,58 @@ def test_filter_is_empty():
     filter = Filter()
     assert filter.is_empty()
 
+@pytest.mark.parametrize(
+    "distance, prev_distance, expected_trend",
+    [
+        (10.0, 8.0, Trend.up),
+        (10.0, 10.0, Trend.same),
+        (10.0, 10.4, Trend.same),   # within 0.5 km buffer
+        (10.0, 10.6, Trend.down),
+        (10.0, 11.0, Trend.down),
+    ]
+)
+def test_distance_trend(distance, prev_distance, expected_trend):
+    model = WeeklyStats.model_validate({
+        "dog_id": 1,
+        "week_start": date(2025, 7, 7),
+        "total_distance_km": distance,
+        "previous_week_distance_km": prev_distance,
+        "average_rating": 6.0,
+        "previous_week_average_rating": 6.0,
+    })
+    assert model.trend_distance == expected_trend
+
+
+@pytest.mark.parametrize(
+    "rating, prev_rating, expected_trend",
+    [
+        (6.7, 6.0, Trend.up),
+        (6.5, 6.5, Trend.same),
+        (6.65, 6.5, Trend.same),   # within 0.2 rating buffer
+        (6.4, 6.5, Trend.same),   # also within buffer
+        (6.2, 6.5, Trend.down),
+    ]
+)
+def test_rating_trend(rating, prev_rating, expected_trend):
+    model = WeeklyStats.model_validate({
+        "dog_id": 2,
+        "week_start": date(2025, 7, 7),
+        "total_distance_km": 10.0,
+        "previous_week_distance_km": 10.0,
+        "average_rating": rating,
+        "previous_week_average_rating": prev_rating,
+    })
+    assert model.trend_rating == expected_trend
+
+def test_zero_previous_values():
+    """Test behavior when previous week values are missing (None or 0)."""
+    model = WeeklyStats.model_validate({
+        "dog_id": 3,
+        "week_start": date(2025, 7, 7),
+        "total_distance_km": 5.0,
+        "previous_week_distance_km": None,
+        "average_rating": 6.5,
+        "previous_week_average_rating": None,
+    })
+    assert model.trend_distance == Trend.up
+    assert model.trend_rating is None
