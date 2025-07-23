@@ -389,4 +389,4 @@ def test_zero_previous_values():
         "previous_week_average_rating": None,
     })
     assert model.trend_distance == Trend.up
-    assert model.trend_rating == Trend.up
+    assert model.trend_rating is None
