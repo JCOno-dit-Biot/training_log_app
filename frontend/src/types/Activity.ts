@@ -25,3 +25,12 @@ export interface Activity {
   weather: Weather;
   comment_count: number;
 }
+
+export interface PaginatedActivities {
+  data: Activity[];
+  total_count: number;
+  limit: number;
+  offset: number;
+  next: string | null;
+  previous: string | null;
+}
