@@ -68,13 +68,14 @@ CREATE TABLE IF NOT EXISTS "activities"(
     "runner_id" INTEGER,
     "sport_id" INTEGER,
     "timestamp" TIMESTAMPTZ,
-    "location" VARCHAR(100), -- this could be a GPS coordinate in the future
+    "location_id" INT, -- this could be a GPS coordinate in the future
     "workout" BOOLEAN, -- set to true if this was a speed workout (intervals)
     "speed" FLOAT, -- only save speed as it can always be converted to pace
     "distance" FLOAT, -- training distance in km
     CONSTRAINT "activities_pkey" PRIMARY KEY ("id"),
     CONSTRAINT "activities_fkey_runnerid_id" FOREIGN KEY ("runner_id") REFERENCES "runners"("id"),
-    CONSTRAINT "activities_fkey_sportid_id" FOREIGN KEY ("sport_id") REFERENCES "sports"("id")
+    CONSTRAINT "activities_fkey_sportid_id" FOREIGN KEY ("sport_id") REFERENCES "sports"("id"),
+    CONSTRAINT "activities_fkey_locationid_id" FOREIGN KEY ("lcoation_id") REFERENCES "activity_location"("id")
 );
 
 CREATE TABLE IF NOT EXISTS "activity_dogs"(
@@ -120,6 +121,13 @@ CREATE TABLE IF NOT EXISTS "weather_entries" (
     CONSTRAINT "weather_fkey_activityid_id" FOREIGN KEY ("activity_id") REFERENCES "activities"("id")
 );
 
+CREATe TABLE IF NOT EXISTS "activity_location" (
+    "id" SERIAL,
+    "name" TEXT NOT NULL,
+    -- latitude FLOAT
+    -- longitude FLOAT
+    CONSTRAINT "location_pkey" PRIMARY KEY ("id"),
+)
 CREATE TABLE IF NOT EXISTS "weight_entries" (
     "id" SERIAL,
     "dog_id" INTEGER,
