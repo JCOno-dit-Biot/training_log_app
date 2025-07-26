@@ -4,6 +4,7 @@ from src.models.activity import Activity, ActivityLaps, ActivityDogs
 from src.models.kennel import Kennel
 from src.models.sport import Sport, SportType
 from src.models.weather import Weather
+from src.models.location import Location
 from .dog_parser import parse_dog_from_row
 
 from pydantic import ValidationError
@@ -42,7 +43,7 @@ def parse_activity_from_row(row: dict) -> Dog:
         sport=Sport(name = row['sport_name'], type=SportType(row['sport_type'])),
         runner=Runner(name=row['runner_name'], id = row["runner_id"]),
         weather = weather,
-        location = row['location'],
+        location = Location(id = row['location_id'], name = row['location']),
         distance=row['distance'],
         speed = row['speed'],
         workout=row['workout'],

@@ -5,6 +5,7 @@ from .runner import Runner
 from .sport import Sport
 from .dog import Dog
 from .weather import Weather
+from location import Location
 import src.utils.calculation_helpers as ch
 
 # SPORT_PACE_DISPLAY = {'canicross', 'canihike', 'canirando', 'skijoring'}
@@ -14,7 +15,7 @@ class Activity(BaseModel):
     timestamp: datetime
     runner: Runner
     sport: Sport
-    location: str #could modify and use GPS coordinates instead
+    location: Location #could modify and use GPS coordinates instead
     distance: float
     workout: bool = False
     dogs: List["ActivityDogs"]
