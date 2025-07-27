@@ -43,12 +43,17 @@ VALUES
 INSERT INTO users(username, password_hash, kennel_id) VALUES ('john@domain.com', 'hashpassword', 1);
 INSERT INTO users(username, password_hash, kennel_id) VALUES ('john_doe@domain.com', 'bad_hashpassword', 1);
 
+-- Insert locations
+INSERT INTO activity_locations VALUES
+    (1, 'Forest Loop'), 
+    (2, 'City park'),
+    (3, 'Mountain Trail');
 
 -- Insert into activities
 INSERT INTO activities (
-    runner_id, sport_id, timestamp, location, workout, speed, distance
+    runner_id, sport_id, timestamp, location_id, workout, speed, distance
 ) VALUES (
-    2, 1, '2025-04-01T09:30:00Z', 'Forest Loop', true, 20.3, 8.0
+    2, 1, '2025-04-01T09:30:00Z', 1, true, 20.3, 8.0
 ) RETURNING id;
 -- Assume returned id is 1
 
@@ -65,9 +70,9 @@ INSERT INTO workout_laps (activity_id, lap_number, lap_time, lap_distance, speed
 
 -- Activity 2 (same runner)
 INSERT INTO activities (
-    runner_id, sport_id, timestamp, location, workout, speed, distance
+    runner_id, sport_id, timestamp, location_id, workout, speed, distance
 ) VALUES (
-    2, 1, '2025-04-02T16:00:00Z', 'City Park', false, 12.5, 3.2
+    2, 1, '2025-04-02T16:00:00Z', 2, false, 12.5, 3.2
 ) RETURNING id;
 -- Assume activity_id = 2
 
@@ -76,9 +81,9 @@ INSERT INTO activity_dogs (activity_id, dog_id, rating) VALUES
 
 -- Activity 3 (different runner)
 INSERT INTO activities (
-    runner_id, sport_id, timestamp, location, workout, speed, distance
+    runner_id, sport_id, timestamp, location_id, workout, speed, distance
 ) VALUES (
-    1, 2, '2025-04-03T08:15:00Z', 'Mountain Trail', false, 19.2, 5.5
+    1, 2, '2025-04-03T08:15:00Z', 3, false, 19.2, 5.5
 ) RETURNING id;
 -- Assume activity_id = 3
 
