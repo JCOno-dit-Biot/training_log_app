@@ -63,6 +63,16 @@ CREATE TABLE IF NOT EXISTS "sports"(
     CONSTRAINT "sports_pkey" PRIMARY KEY ("id")
 );
 
+CREATe TABLE IF NOT EXISTS "activity_locations" (
+    "id" SERIAL,
+    "kennel_id" INT, -- needs kennel id so that each kennel can manage its own location
+    "name" TEXT NOT NULL,
+    -- latitude FLOAT,
+    -- longitude FLOAT,
+    CONSTRAINT "location_pkey" PRIMARY KEY ("id"),
+    CONSTRAINT "location_fkey_kennelid_id" FOREIGN KEY ("kennel_id") REFERENCES "kennels"("id")
+);
+
 CREATE TABLE IF NOT EXISTS "activities"(
     "id" SERIAL,
     "runner_id" INTEGER,
@@ -75,7 +85,7 @@ CREATE TABLE IF NOT EXISTS "activities"(
     CONSTRAINT "activities_pkey" PRIMARY KEY ("id"),
     CONSTRAINT "activities_fkey_runnerid_id" FOREIGN KEY ("runner_id") REFERENCES "runners"("id"),
     CONSTRAINT "activities_fkey_sportid_id" FOREIGN KEY ("sport_id") REFERENCES "sports"("id"),
-    CONSTRAINT "activities_fkey_locationid_id" FOREIGN KEY ("lcoation_id") REFERENCES "activity_locations"("id")
+    CONSTRAINT "activities_fkey_locationid_id" FOREIGN KEY ("location_id") REFERENCES "activity_locations"("id")
 );
 
 CREATE TABLE IF NOT EXISTS "activity_dogs"(
@@ -121,15 +131,6 @@ CREATE TABLE IF NOT EXISTS "weather_entries" (
     CONSTRAINT "weather_fkey_activityid_id" FOREIGN KEY ("activity_id") REFERENCES "activities"("id")
 );
 
-CREATe TABLE IF NOT EXISTS "activity_locations" (
-    "id" SERIAL,
-    "kennel_id" INT -- needs kennel id so that each kennel can manage its own location
-    "name" TEXT NOT NULL,
-    -- latitude FLOAT
-    -- longitude FLOAT
-    CONSTRAINT "location_pkey" PRIMARY KEY ("id"),
-    CONSTRAINT "location_fkey_kennelid_id" FOREIGN KEY ("kennel_id") REFERENCES "kennel"("id")
-)
 CREATE TABLE IF NOT EXISTS "weight_entries" (
     "id" SERIAL,
     "dog_id" INTEGER,
