@@ -9,7 +9,7 @@ class location_repository(abstract_repository):
     def __init__(self, connection):
         self._connection = connection
 
-    def get_by_name(self, location_name: str) -> Optional[Location]:
+    def get_by_name(self, location_name: str, kennel_id: int) -> Optional[Location]:
         with self._connection.cursor(cursor_factory= RealDictCursor) as cur:
             query = """ SELECT 
                             id,
@@ -17,16 +17,16 @@ class location_repository(abstract_repository):
                         FROM 
                             activity_locations 
                         WHERE 
-                            LOWER(name) = %s
+                            LOWER(name) = %s and kennel_id = %s;
                         """
-            cur.execute(query, (location_name.lower(),))
+            cur.execute(query, (location_name.lower(),kennel_id,))
             row = cur.fetchone()
         if row:
             sport = Location(**row)
             return sport
         return None
 
-    def get_all(self) -> List[Location]:
+    def get_all(self, kennel_id: int) -> List[Location]:
         with self._connection.cursor(cursor_factory= RealDictCursor) as cur:
             query = """ 
                        SELECT 
@@ -34,10 +34,12 @@ class location_repository(abstract_repository):
                             name
                         FROM 
                             activity_locations
+                        WHERE
+                            kennel_id = %s
                         ORDER BY 
                             name ASC;
                     """
-            cur.execute(query)
+            cur.execute(query, (kennel_id,))
             sports = []
             for row in cur.fetchall():
                 sport = Location(**row)
@@ -53,18 +55,18 @@ class location_repository(abstract_repository):
                         FROM 
                             activity_locations
                         WHERE 
-                            id = %s
+                            id = %s and kennel_id = %s
                         """
             cur.execute(query, (id,))
             row = cur.fetchone()
 
         return Location(**row)
     
-    def create(self, location_name: str):
+    def create(self, location_name: str, kennel_id: int):
          with self._connection.cursor(cursor_factory= RealDictCursor) as cur:
             try:
-                query = """ INSERT INTO activity_locations(name) VALUES (%s) RETURNING id;"""
-                cur.execute(query, (location_name.lower()))
+                query = """ INSERT INTO activity_locations(name, kennel_id) VALUES (%s, %s) RETURNING id;"""
+                cur.execute(query, (location_name.lower(), kennel_id))
                 location_id = cur.fetchone()['id']
                 self._connection.commit()
                 return location_id
@@ -86,6 +88,7 @@ class location_repository(abstract_repository):
     def update(self, update_name: str, id: int):
         with self._connection.cursor(cursor_factory= RealDictCursor) as cur:
             try:
+                # can only update own id so kennel_id is not needed here
                 query = """ UPDATE activity_location
                             SET name = %s
                             WHERE id = %s;
