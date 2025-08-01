@@ -31,6 +31,7 @@ class activity_repository(abstract_repository):
                             s.type AS sport_type,
                             k.id as kennel_id,
                             w.temperature, w.humidity, w.condition,
+                            l.name AS location,
                             COUNT(ac.id) as comment_count,
                             -- Aggregate dogs
                             json_agg(DISTINCT jsonb_build_object(
@@ -57,12 +58,14 @@ class activity_repository(abstract_repository):
                         LEFT JOIN workout_laps wl ON wl.activity_id = a.id
                         LEFT JOIN weather_entries w ON w.activity_id = a.id
                         LEFT JOIN activity_comments ac ON ac.activity_id = a.id
+                        LEFT JOIN locations l ON a.location = l.id
                         WHERE r.kennel_id = %s AND {where_clause}
                         GROUP BY 
                         a.id, a.runner_id, a.sport_id, a.timestamp, a.location,
                         a.workout, a.speed, a.distance,
                         r.name, r.id, s.name, s.type, k.name, k.id,
-                        w.temperature, w.humidity, w.condition
+                        w.temperature, w.humidity, w.condition,
+                        l.name
                         ORDER BY a.timestamp DESC
                         LIMIT %s OFFSET %s;
                     """
@@ -94,6 +97,7 @@ class activity_repository(abstract_repository):
                             k.name AS kennel_name,
                             k.id as kennel_id,
                             w.temperature, w.humidity, w.condition,
+                            l.name AS location,
                             COUNT(DISTINCT ac.id) as comment_count,
                             -- Aggregate dogs
                             json_agg(DISTINCT jsonb_build_object(
@@ -120,11 +124,12 @@ class activity_repository(abstract_repository):
                         LEFT JOIN workout_laps wl ON wl.activity_id = a.id
                         LEFT JOIN weather_entries w ON w.activity_id = a.id
                         LEFT JOIN activity_comments ac ON ac.activity_id = a.id
+                        LEFT JOIN locations l ON a.location = l.id
                         WHERE a.id = %s
                         GROUP BY 
                         a.id, a.runner_id, a.sport_id, a.timestamp, a.location,
                         a.workout, a.speed, a.distance,
-                        r.name, r.id, s.name, s.type, k.name, k.id, w.temperature, w.humidity, w.condition
+                        r.name, r.id, s.name, s.type, k.name, k.id, w.temperature, w.humidity, w.condition, l.name
                     """
             cur.execute(query, (activity_id,))
             row = cur.fetchone()
@@ -156,7 +161,7 @@ class activity_repository(abstract_repository):
             try:
                 query = """
                     INSERT INTO activities (
-                        runner_id, sport_id, timestamp, location, workout, speed, distance
+                        runner_id, sport_id, timestamp, location_id, workout, speed, distance
                     ) VALUES (%s, %s, %s, %s, %s, %s, %s)
                     RETURNING id
                     """
@@ -164,7 +169,7 @@ class activity_repository(abstract_repository):
                     activity.runner_id,
                     activity.sport_id,
                     activity.timestamp,
-                    activity.location,
+                    activity.location_id,
                     activity.workout,
                     activity.speed,
                     activity.distance,
