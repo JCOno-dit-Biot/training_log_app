@@ -34,10 +34,8 @@ class LocationController:
     @router.delete("/locations/{location_id}")
     def delete_location(self, request: Request, location_id: int):
         kennel_id = request.state.kennel_id
-        try:
-            self.repo.delete(location_id, kennel_id)
-        except ValueError:
-            raise HTTPException(status_code=404, detail="Comment not found")
-        except PermissionError:
-            raise HTTPException(status_code=403, detail="You cannot delete this comment")
-        return {"success": True}
+        res = self.repo.delete(location_id, kennel_id)
+        if not res:
+            raise HTTPException(status_code=404, detail="Location could not be deleted")
+        else:
+            return {"success": True}
