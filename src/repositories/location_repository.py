@@ -74,11 +74,11 @@ class location_repository(abstract_repository):
                 print(e)
                 self._connection.rollback()
     
-    def delete(self, id: int):
+    def delete(self, id: int, kennel_id: int):
         with self._connection.cursor(cursor_factory= RealDictCursor) as cur:
             try:
-                query = """DELETE FROM activity_location WHERE id = %s;"""
-                cur.execute(query, (id,))
+                query = """DELETE FROM activity_location WHERE id = %s and kennel_id = %s;"""
+                cur.execute(query, (id,kennel_id,))
                 self._connection.commit()
                 return cur.rowcount > 0
             except Exception as e:
