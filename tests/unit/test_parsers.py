@@ -20,6 +20,7 @@ def default_activity_row():
         "timestamp": "2025-04-01T09:30:00Z",
         "notes": "Morning speed workout",
         "location": "Forest Loop",
+        "location_id": 1,
         "workout": True,
         "speed": 20.3,
         "distance": 8.0,

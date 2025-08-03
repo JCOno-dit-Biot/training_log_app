@@ -112,15 +112,15 @@ def test_delete_activity(activity_repo, test_activity):
 # Update method related test
 def test_update_base_fields(activity_repo):
     fields = {
-        "location": "New Trail",
+        "location_id": 2,
         "speed": 12.0
     }
     activity_repo.update(1, fields)
 
     with activity_repo._connection.cursor(cursor_factory=RealDictCursor) as cur:
-        cur.execute("SELECT location, speed FROM activities WHERE id = 1")
+        cur.execute("SELECT location_id, speed FROM activities WHERE id = 1")
         result = cur.fetchone()
-        assert result["location"] == "New Trail"
+        assert result["location_id"] == 2
         assert result["speed"] == 12.0
 
 
@@ -180,7 +180,7 @@ def test_update_dogs(activity_repo):
 
 def test_update_all_components(activity_repo):
     fields = {
-        "location": "Beach",
+        "location_id": 2,
         "weather": {"temperature": 25.0, "humidity": 35.0/100, "condition": "Clear"},
         "dogs": [{"dog_id": 1, "rating": 4}],
         "laps": [{"lap_number": 2, "lap_time": '04:00', "lap_distance": 1.0, "speed": 13.5}]
@@ -188,8 +188,8 @@ def test_update_all_components(activity_repo):
     activity_repo.update(1, fields)
 
     with activity_repo._connection.cursor(cursor_factory=RealDictCursor) as cur:
-        cur.execute("SELECT location FROM activities WHERE id = 1")
-        assert cur.fetchone()["location"] == "Beach"
+        cur.execute("SELECT location_id FROM activities WHERE id = 1")
+        assert cur.fetchone()["location_id"] == 2
         cur.execute("SELECT lap_time, lap_distance, speed FROM workout_laps WHERE activity_id = 1 AND lap_number = 2")
         lap = cur.fetchone()
         assert lap["speed"] == 13.5
@@ -197,7 +197,7 @@ def test_update_all_components(activity_repo):
 
 
 def test_update_invalid_id(activity_repo):
-    fields = {"location": "Nowhere"}
+    fields = {"location_id": 3}
     activity_repo.update(99999, fields)  # Should not fail, but shouldn't affect data
 
     with activity_repo._connection.cursor(cursor_factory=RealDictCursor) as cur:

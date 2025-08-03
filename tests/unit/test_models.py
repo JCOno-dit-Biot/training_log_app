@@ -14,7 +14,8 @@ from src.models import (
     PaginationParams,
     Filter,
     ActivityQueryFilters,
-    WeightQueryFilter
+    WeightQueryFilter,
+    Location
 )
 from src.models.analytics.weekly_stats import WeeklyStats, Trend
 import pytest
@@ -31,7 +32,7 @@ def activity_entry(JC):
         timestamp = datetime.now(),
         runner = JC,
         sport = Sport(name= 'Canicross', type= 'dryland', display_mode = 'pace'),
-        location = 'Christie',
+        location = Location(id= 4, name = 'Christie'),
         distance = 2.4,
         workout = False,
         speed = 18,
@@ -112,7 +113,7 @@ def test_activity_calculate_pace_for_all_sports(JC, Luna):
         runner = JC,
         sport = Sport(name= 'Bikejoring', type= 'dryland', display_mode= 'speed'),
         speed = 21.9,
-        location = 'Christie',
+        location = Location(id= 4, name = 'Christie'),
         distance = 2.4,
         workout = False,
         dogs = [ActivityDogs(
@@ -133,7 +134,7 @@ def test_no_speed_pace_raises_ValError(JC,Luna):
             rating = 8
         )],
         sport = Sport(name= 'Canicross', type= 'dryland', display_mode = 'pace'),
-        location = 'Christie',
+        location = Location(id= 4, name = 'Christie'),
         distance = 2.4,
         workout = False
     )
@@ -150,7 +151,7 @@ def test_activity_workout_without_lap_raise(Luna, JC):
         )],
         speed = 20.1,
         sport = Sport(name= 'Canicross', type= 'dryland', display_mode = 'pace'),
-        location = 'Christie',
+        location = Location(id= 4, name = 'Christie'),
         distance = 2.4,
         workout = True,
         laps=[]
@@ -162,7 +163,7 @@ def test_activity_with_pace_no_speed(JC, Luna):
         runner = JC,
         sport = Sport(name= 'Bikejoring', type= 'dryland', display_mode= 'speed'),
         pace = "02:44",
-        location = 'Christie',
+        location = Location(id= 4, name = 'Christie'),
         distance = 2.4,
         workout = False,
         dogs = [ActivityDogs(
@@ -196,7 +197,7 @@ def test_activity_workout_with_lap(JC, Luna):
         timestamp = datetime.now(),
         runner = JC,
         sport = Sport(name= 'Canicross', type= 'dryland', display_mode='pace'),
-        location = 'Christie',
+        location = Location(id= 4, name = 'Christie'),
         distance = 2.4,
         workout = True,
         speed = 18.0,

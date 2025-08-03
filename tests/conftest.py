@@ -3,6 +3,7 @@ from dotenv import load_dotenv
 import os
 from datetime import date, timezone, datetime, timedelta
 from src.models.activity import Activity, ActivityLaps, ActivityDogs, ActivityCreate, ActivityDogsCreate
+from src.models.location import Location
 from src.models.dog import Dog
 from src.models.runner import Runner
 from src.models.sport import Sport, SportType
@@ -47,7 +48,7 @@ def test_activity():
         timestamp=datetime(2025, 4, 1, 9, 30, tzinfo=timezone.utc),
         runner=Runner(id=2, name="Obelix", kennel=Kennel(id=1, name="Les Gaulois")),
         sport=Sport(id=1, name="Canicross", type = SportType.DRYLAND),
-        location="Forest Loop",
+        location=Location(id = 1, name= "Forest Loop"),
         distance=8.0,
         workout=True,
         notes="Morning speed workout",
@@ -97,7 +98,7 @@ def test_activity_create():
         timestamp=datetime(2025, 4, 1, 9, 30, tzinfo=timezone.utc),
         runner_id=2,
         sport_id=1,
-        location="Forest Loop",
+        location_id = 1,
         distance=8.0,
         workout=True,
         speed=20.3,

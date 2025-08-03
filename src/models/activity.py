@@ -95,7 +95,7 @@ class ActivityCreate(BaseModel):
     timestamp: datetime
     runner_id: int
     sport_id: int
-    location: str #could modify and use GPS coordinates instead
+    location_id: int #could modify and use GPS coordinates instead
     distance: float
     workout: bool = False
     dogs: List["ActivityDogsCreate"]
@@ -125,7 +125,7 @@ class ActivityUpdate(BaseModel):
     timestamp: Optional[datetime] = None
     runner_id: Optional[int] = None
     sport_id: Optional[int] = None
-    location: Optional[str] = None
+    location_id: Optional[int] = None
     distance: Optional[float] = None
     workout: Optional[bool] = None
     dogs: Optional[List["ActivityDogsCreate"]] = None
