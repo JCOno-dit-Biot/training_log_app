@@ -47,7 +47,7 @@ class location_repository(abstract_repository):
 
             return sports
             
-    def get_by_id(self, id: int) -> Optional[Location]:
+    def get_by_id(self, id: int, kennel_id: int) -> Optional[Location]:
         with self._connection.cursor(cursor_factory= RealDictCursor) as cur:
             query = """ SELECT 
                             id,
@@ -57,7 +57,7 @@ class location_repository(abstract_repository):
                         WHERE 
                             id = %s and kennel_id = %s
                         """
-            cur.execute(query, (id,))
+            cur.execute(query, (id, kennel_id,))
             row = cur.fetchone()
 
         return Location(**row)
@@ -77,7 +77,7 @@ class location_repository(abstract_repository):
     def delete(self, id: int, kennel_id: int):
         with self._connection.cursor(cursor_factory= RealDictCursor) as cur:
             try:
-                query = """DELETE FROM activity_location WHERE id = %s and kennel_id = %s;"""
+                query = """DELETE FROM activity_locations WHERE id = %s and kennel_id = %s;"""
                 cur.execute(query, (id,kennel_id,))
                 self._connection.commit()
                 return cur.rowcount > 0
@@ -89,7 +89,7 @@ class location_repository(abstract_repository):
         with self._connection.cursor(cursor_factory= RealDictCursor) as cur:
             try:
                 # can only update own id so kennel_id is not needed here
-                query = """ UPDATE activity_location
+                query = """ UPDATE activity_locations
                             SET name = %s
                             WHERE id = %s;
                         """

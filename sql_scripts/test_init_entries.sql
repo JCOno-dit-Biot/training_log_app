@@ -44,10 +44,10 @@ INSERT INTO users(username, password_hash, kennel_id) VALUES ('john@domain.com',
 INSERT INTO users(username, password_hash, kennel_id) VALUES ('john_doe@domain.com', 'bad_hashpassword', 1);
 
 -- Insert locations
-INSERT INTO activity_locations (id, name, kennel_id) VALUES
-    (1, 'Forest Loop',1), 
-    (2, 'City park',1),
-    (3, 'Mountain Trail',2);
+INSERT INTO activity_locations (name, kennel_id) VALUES
+    ('Forest Loop',1), 
+    ('City park',1),
+    ('Mountain Trail',2);
 
 -- Insert into activities
 INSERT INTO activities (
