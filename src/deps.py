@@ -40,7 +40,7 @@ def get_comment_repo(db=Depends(get_db)):
 def get_analytics_repo(db=Depends(get_db)):
     return analytics_repository(db)
 
-def get_analytics_repo(db=Depends(get_db)):
+def get_location_repo(db=Depends(get_db)):
     return location_repository(db)
 
 async def verify_jwt(request: Request, token: str = Depends(oauth2_scheme)):
