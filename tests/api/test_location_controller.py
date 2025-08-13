@@ -94,3 +94,16 @@ def test_update_locations(test_app, mock_repo):
     assert response.status_code == 200
     assert response.json() == {"success": True}
     mock_repo.update.assert_called_with(update_name='updated location', id=2)
+
+def test_update_location_update_fails(test_app, mock_repo):
+    client = TestClient(test_app)
+    mock_repo.update.return_value = False
+    
+    payload = {
+        "name": "updated location"
+    }
+    location = Location(**payload)
+    response = client.put("/locations/2", json=location.model_dump())
+
+    assert response.status_code == 200
+    assert response.json() == {"success": False}
