@@ -24,10 +24,9 @@ class LocationController:
         return self.repo.create(location.name, kennel_id)
 
     @router.put("/locations/{location_id}")
-    def update_location(self, location: Location):
-        #should check that id if passed in
-        if location.id is not None:
-            res = self.repo.update(location.name, location.id)
+    def update_location(self, location: Location, location_id: int):
+        if location_id is not None:
+            res = self.repo.update(update_name=location.name, id=location_id)
         return {"success": res}
         
 

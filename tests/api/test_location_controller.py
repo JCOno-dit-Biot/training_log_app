@@ -17,6 +17,8 @@ def mock_repo():
         Location(id = 3, kennel_id =2, name='Mock Location 3')
     ]
     mock.create.return_value = 4
+    mock.update.return_value = True
+
 
     return mock
 
@@ -69,15 +71,14 @@ def test_create_location(test_app, mock_repo):
 def test_delete_location(test_app, mock_repo):
     client = TestClient(test_app)
 
-    res = client.delete("locations/4")
-    print(res)
+    res = client.delete("/locations/4")
     mock_repo.delete.assert_called_once()
     mock_repo.delete.assert_called_with(4, 2)
 
 def test_delete_location_wrong_kennel(test_app, mock_repo):
     client = TestClient(test_app)
     mock_repo.delete.return_value = False
-    response = client.delete('locations/3')
+    response = client.delete('/locations/3')
     assert response.status_code == 404
     assert 'Location could not be deleted' in response.json()["detail"]
 
@@ -85,10 +86,11 @@ def test_update_locations(test_app, mock_repo):
     client = TestClient(test_app)
 
     payload = {
-        "id": 2,
         "name": "updated location"
     }
-
-    client.put("/locations/2", json = payload)
+    location = Location(**payload)
+    response = client.put("/locations/2", json =location.model_dump())
     mock_repo.update.assert_called_once()
-    mock_repo.update.assert_called_with(Location(**payload))
+    assert response.status_code == 200
+    assert response.json() == {"success": True}
+    mock_repo.update.assert_called_with(update_name='updated location', id=2)
