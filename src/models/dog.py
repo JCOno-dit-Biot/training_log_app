@@ -8,6 +8,7 @@ class Dog(BaseModel):
     name: str
     breed: str
     date_of_birth: date
+    color: str = "#ffffffff"  # Default color white in hex
     kennel: Optional[Kennel] = None
     image_url: Optional[str] = ""
 
@@ -38,3 +39,8 @@ class Dog(BaseModel):
         return age_years + fractional_year
 
     
+class DogUpdate(BaseModel):
+    name: Optional[str] = None
+    breed: Optional[str] = None
+    date_of_birth: Optional[date] = None
+    color: Optional[str] = None
