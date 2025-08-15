@@ -17,7 +17,8 @@ class dog_repository(abstract_repository):
                             dogs.id,
                             dogs.name,
                             date_of_birth, 
-                            breed, 
+                            breed,
+                            color,
                             k.id as kennel_id,
                             k.name as kennel_name,
                             image_path as image_url
@@ -49,6 +50,7 @@ class dog_repository(abstract_repository):
                             dogs.name,
                             date_of_birth, 
                             breed, 
+                            color,
                             k.id as kennel_id,
                             k.name as kennel_name,
                             image_path as image_url
@@ -84,7 +86,8 @@ class dog_repository(abstract_repository):
                             dogs.id,
                             dogs.name,
                             date_of_birth, 
-                            breed, 
+                            breed,
+                            color,
                             k.id as kennel_id,
                             k.name as kennel_name,
                             latest_images.image_path as image_url
@@ -128,8 +131,28 @@ class dog_repository(abstract_repository):
                          (dog.name, dog.kennel.name))
             self._connection.commit()
 
-    def update(self, obj):
-        return super().update(obj)
+    def update(self, fields: dict, dog_id: int):
+        keys = list(fields.keys())
+        values = list(fields.values())
+
+        set_clause = ", ".join([f"{key} = %s" for key in keys])
+
+        query = f"""
+            UPDATE dogs
+            SET {set_clause}
+            WHERE id = %s
+        """
+
+        values.append(dog_id)
+        try:
+            with self._connection.cursor(cursor_factory= RealDictCursor) as cur:
+                cur.execute(query, values)
+                self._connection.commit()
+                return cur.rowcount > 0
+        except Exception as e:
+            print(e)
+            self._connection.rollback()
+            return False
     
     def get_total_count(self):
         return super().get_total_count()
