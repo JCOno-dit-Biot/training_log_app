@@ -3,6 +3,7 @@ from src.models.kennel import Kennel
 import pytest
 from src.repositories.dog_repository import dog_repository
 from datetime import date, timedelta
+from psycopg2.extras import RealDictCursor
 
 @pytest.fixture
 def dog_repo(test_db_conn):
@@ -33,7 +34,8 @@ def test_create_dog(dog_repo, test_kennel):
     assert dog.id is not None
     assert len(results) == 1
     assert results[0][1] == "Buddy"
-    assert results[0][-1] == 1
+    assert results[0][-2] == 1
+    assert results[0][-1] == "#ffffff"  # Default color white in hex
 
 def test_get_dog_by_name(dog_repo):
     Idefix = dog_repo.get_by_name("Milou")[0]
@@ -71,3 +73,17 @@ def test_delete_dog(dog_repo, test_kennel):
         results = cur.fetchall()
 
     assert len(results) == 0    
+
+def test_update_dog(dog_repo):
+
+    fields = {"name": "Updated Dog Name", "color": "#831E1E"}
+    dog_id = 1
+
+    success = dog_repo.update(fields, dog_id)
+    assert success is True
+    with dog_repo._connection.cursor(cursor_factory= RealDictCursor) as cur:
+        cur.execute(""" SELECT * FROM dogs WHERE id = %s """, (dog_id,))
+        results = cur.fetchall()
+    assert len(results) == 1
+    assert results[0]['name'] == "Updated Dog Name" 
+    assert results[0]['color'] == "#831E1E"

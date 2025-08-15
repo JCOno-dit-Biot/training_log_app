@@ -72,3 +72,18 @@ def test_create_dog(test_app, mock_repo):
     assert response.status_code == 200
     assert Dog(**response.json()) == returned_dog
     mock_repo.create.assert_called_once_with(Dog(**input_data))
+
+def test_update_dog(test_app, mock_repo):
+    client = TestClient(test_app)
+
+    # Fake input payload
+    input_data = {
+        "name": "Fido",
+        "breed": "Labrador"
+    }
+
+    dog_id = 1
+    response = client.put(f"/dogs/{dog_id}", json=input_data)
+
+    assert response.status_code == 200
+    mock_repo.update.assert_called_once_with(input_data, dog_id)

@@ -144,15 +144,15 @@ class dog_repository(abstract_repository):
         """
 
         values.append(dog_id)
-        
-        with self._connection.cursor() as cur:
-            cur.execute(query, values)
-            self._connection.commit()
-            return cur.rowcount > 0
-           
-    
-
-    
+        try:
+            with self._connection.cursor(cursor_factory= RealDictCursor) as cur:
+                cur.execute(query, values)
+                self._connection.commit()
+                return cur.rowcount > 0
+        except Exception as e:
+            print(e)
+            self._connection.rollback()
+            return False
     
     def get_total_count(self):
         return super().get_total_count()

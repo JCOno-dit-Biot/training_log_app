@@ -10,7 +10,7 @@ CREATE TABLE IF NOT EXISTS "dogs" (
     "date_of_birth" DATE,
     "breed" VARCHAR(50),
     "kennel_id" INTEGER,
-    "color" VARCHAR(7) DEFAULT '#ffffffff', -- default color white in hex
+    "color" VARCHAR(7) DEFAULT '#ffffff', -- default color white in hex
     CONSTRAINT "dogs_pkey" PRIMARY KEY ("id"),
     CONSTRAINT "dogs_fkey_kennelid_id" FOREIGN KEY ("kennel_id") REFERENCES "kennels"("id"),
     UNIQUE("name","kennel_id")
