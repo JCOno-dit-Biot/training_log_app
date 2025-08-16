@@ -74,6 +74,10 @@ CREATe TABLE IF NOT EXISTS "activity_locations" (
     CONSTRAINT "location_fkey_kennelid_id" FOREIGN KEY ("kennel_id") REFERENCES "kennels"("id")
 );
 
+-- ensure uniqueness of location name per kennel (case-insensitive)
+CREATE UNIQUE INDEX IF NOT EXISTS ux_locations_kennel_name_ci
+ON activity_locations (kennel_id, lower(name));
+
 CREATE TABLE IF NOT EXISTS "activities"(
     "id" SERIAL,
     "runner_id" INTEGER,
