@@ -20,6 +20,7 @@ def default_activity_row():
         "timestamp": "2025-04-01T09:30:00Z",
         "notes": "Morning speed workout",
         "location": "Forest Loop",
+        "location_id": 1,
         "workout": True,
         "speed": 20.3,
         "distance": 8.0,
@@ -35,14 +36,16 @@ def default_activity_row():
             "name": "Bolt",
             "breed": "Husky",
             "date_of_birth": "2021-05-14",
-            "rating": 9
+            "rating": 9,
+            'color': "#914a4a"
             },
             {
             "id": 11,
             "name": "Shadow",
             "breed": "Malinois",
             "date_of_birth": "2020-09-02",
-            "rating": 8
+            "rating": 8,
+            'color': "#2c35e2"
             }
         ],
         "laps": [
@@ -76,7 +79,8 @@ def test_dog_parser():
         'date_of_birth' : '2024-01-01',
         'kennel_id': 1,
         'kennel_name' : 'test_kennel',
-        'image_url': 'test_dog_image'
+        'image_url': 'test_dog_image',
+        'color': '#ffffff'
         
     }
 

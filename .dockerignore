@@ -1,0 +1,6 @@
+tests/
+
+.venv
+.pytest_cache
+.github
+auth

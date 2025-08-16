@@ -4,7 +4,7 @@ import { getWeeklyStats } from '../api/stats/weeklyStats';
 import { getCalendarDay } from '../api/stats/dogCalendarDay';
 import ActivityCard from '../components/ActivityCard';
 import { RightSidebar } from '../components/stats_sidebar/RightSideBar';
-import { Activity } from '../types/Activity';
+import { Activity, PaginatedActivities } from '../types/Activity';
 import { ActivityFilter } from '../types/ActivityFilter';
 import { DogCalendarDay } from '../types/DogCalendarDay';
 import { WeeklyStats } from '../types/WeeklyStats';
@@ -15,18 +15,26 @@ import { FunnelIcon } from 'lucide-react';
 import { Transition } from '@headlessui/react';
 import { useClickAway } from 'react-use'; // optional for clean click-out
 import ActivityFilterPanel from '../components/ActivityFilterPanel';
+import Pagination from '../components/Pagination';
+
 
 
 export default function ActivityFeed() {
-  const [activities, setActivities] = useState<Activity[]>([]);
+  //const [activities, setActivities] = useState<Activity[]>([]);
   const [showModal, setShowModal] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
   const [filters, setFilters] = useState<ActivityFilter>({})
   const [editActivity, setEditActivity] = useState<Activity | null>(null);
   const panelRef = useRef(null);
-  //stats usestates
-  const [calendar, setCalendar] = useState<DogCalendarDay[]>([])
-  const [weeklyStats, setWeeklyStats] = useState<WeeklyStats[]>([])
+
+  const [pagination, setPagination] = useState<PaginatedActivities>({
+    data: [],
+    total_count: 0,
+    limit: 10,
+    offset: 0,
+    next: null,
+    previous: null,
+  });
 
   useClickAway(panelRef, () => setShowFilters(false));
 
@@ -37,12 +45,17 @@ export default function ActivityFeed() {
 
   const { sports, runners, dogs } = useGlobalCache();
 
+  const loadPage = async (offset: number, filtersOverride: ActivityFilter = filters) => {
+    try {
+      const result = await getActivities({ sports, limit: pagination.limit, offset, filters: filtersOverride });
+      setPagination(result);
+    } catch (err) {
+      console.error('Failed to fetch activities:', err);
+    }
+  };
+
   useEffect(() => {
-    getActivities({ sports, limit: 10, offset: 0, filters: {} })
-      .then((data) => {
-        setActivities(data);
-      })
-      .catch(console.error);
+    loadPage(0);
   }, []);
 
   useEffect(() => {
@@ -50,8 +63,8 @@ export default function ActivityFeed() {
     if (filters.__trigger === 'calendar') {
       const fetch = async () => {
         try {
-          const data = await getActivities({ sports, filters: filtersToSend, limit: 10, offset: 0 });
-          setActivities(data);
+          const results = await getActivities({ sports, filters: filtersToSend, limit: 10, offset: 0 });
+          setPagination(results);
 
           // Strip the trigger tag after applying
           setFilters(prev => {
@@ -70,13 +83,11 @@ export default function ActivityFeed() {
 
 
   const reloadActivities = async () => {
-    const data = await getActivities({ sports, limit: 10, offset: 0, filters: {} });
-    setActivities(data);
+    loadPage(0);
   };
 
   const applyFilters = async () => {
-    const data = await getActivities({ sports, filters, limit: 10, offset: 0 });
-    setActivities(data);
+    loadPage(0, filters)
   };
 
 
@@ -135,7 +146,7 @@ export default function ActivityFeed() {
           </Transition>
         </div>
 
-        {activities.map((activity) => (
+        {pagination.data.map((activity) => (
           <ActivityCard
             key={activity.id}
             activity={activity}
@@ -143,6 +154,13 @@ export default function ActivityFeed() {
             onSuccess={reloadActivities}
             onEdit={openEditModal} />
         ))}
+
+        <Pagination
+          total={pagination.total_count}
+          limit={pagination.limit}
+          offset={pagination.offset}
+          onPageChange={loadPage}
+        />
 
 
         <AddActivityButton

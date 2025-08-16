@@ -1,5 +1,5 @@
 import axios from './axios';
-import { Activity } from '../types/Activity'
+import { Activity, PaginatedActivities} from '../types/Activity'
 import { ActivityFilter } from '../types/ActivityFilter';
 import { Sport } from '../types/Sport';
 import { ActivityForm } from '../components/AddActivityForm';
@@ -13,7 +13,7 @@ type FetchActivitiesOptions = {
 };
 
 
-export const getActivities = async ({ sports, limit = 10, offset = 0, filters = {} }:  FetchActivitiesOptions): Promise<Activity[]> => {
+export const getActivities = async ({ sports, limit = 10, offset = 0, filters = {} }:  FetchActivitiesOptions): Promise<PaginatedActivities> => {
 
   const params = new URLSearchParams();
 
@@ -25,12 +25,20 @@ export const getActivities = async ({ sports, limit = 10, offset = 0, filters = 
       params.append(key, String(value));
     }
   });
-  console.log(sports)
   const res = await axios.get(`/activities?${params.toString()}`);
-  return res.data.data.map((activity: Activity) => {
+  const items = res.data.data.map((activity: Activity) => {
     const matchedSport = [...sports.values()].find(s => s.name === activity.sport.name);
     return { ...activity, sport: matchedSport ?? activity.sport };
   });
+
+  return {
+    data: items,
+    total_count: res.data.total_count,
+    limit: res.data.limit,
+    offset: res.data.offset,
+    next: res.data.next,
+    previous: res.data.previous,
+  };
 };
 
 export const postActivity = async (formData: ActivityForm) : Promise<{id: number}> => {
