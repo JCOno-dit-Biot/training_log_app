@@ -76,7 +76,7 @@ def test_delete_dog(dog_repo, test_kennel):
 
 def test_update_dog(dog_repo):
 
-    fields = {"name": "Updated Dog Name", "color": "#831E1E"}
+    fields = {"breed": "Updated Dog Breed", "color": "#831E1E"}
     dog_id = 1
 
     success = dog_repo.update(fields, dog_id)
@@ -85,5 +85,5 @@ def test_update_dog(dog_repo):
         cur.execute(""" SELECT * FROM dogs WHERE id = %s """, (dog_id,))
         results = cur.fetchall()
     assert len(results) == 1
-    assert results[0]['name'] == "Updated Dog Name" 
+    assert results[0]['breed'] == "Updated Dog Breed" 
     assert results[0]['color'] == "#831E1E"
