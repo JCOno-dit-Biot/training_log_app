@@ -24,6 +24,7 @@ def test_dog():
 
 def test_get_all(weight_repo, test_dog):
     weight_entries = weight_repo.get_all(test_dog.kennel.id, filters=WeightQueryFilter())
+    print(weight_entries)
     assert len(weight_entries) == 4
     assert all(x.dog.name in ('Milou', "Fido") for x in weight_entries)
 
