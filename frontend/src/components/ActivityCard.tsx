@@ -80,7 +80,7 @@ export default function ActivityCard({
   const DEFAULT_AVATAR = 'https://www.gravatar.com/avatar/?d=mp';
   const { runners, dogs, sports } = useGlobalCache();
   const date = formatActivityDate(activity.timestamp);
-  const capitalizedLocation = activity.location.charAt(0).toUpperCase() + activity.location.slice(1);
+  const capitalizedLocation = activity.location.name.charAt(0).toUpperCase() + activity.location.name.slice(1);
 
   //const dogNames = activity.dogs.map((d) => d.name).join(', ');
 

@@ -10,6 +10,11 @@ interface DogActivityRead {
   rating: number
 }
 
+interface Location {
+  id?: number,
+  name: string
+}
+
 export interface Activity {
   id: number;
   timestamp: string;
@@ -19,7 +24,7 @@ export interface Activity {
   distance: number;
   speed: number;
   pace: string;
-  location: string;
+  location: Location;
   workout: boolean;
   laps: Lap[];
   weather: Weather;
