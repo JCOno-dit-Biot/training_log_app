@@ -7,6 +7,7 @@ export interface Dog {
     date_of_birth: string; // ISO string
     kennel: Kennel
     image_url: string
+    color: string
   }
   
 export interface SelectedDog {
