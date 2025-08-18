@@ -14,15 +14,16 @@ export default function DogCard({ dog }: DogCardProps) {
   const dobFormatted =
     dobParts.length === 3
       ? new Date(`${dobParts[1]}/${dobParts[2]}/${dobParts[0]}`).toLocaleDateString("en-US", {
-          month: "long",
-          day: "numeric",
-          year: "numeric",
-        })
+        month: "long",
+        day: "numeric",
+        year: "numeric",
+      })
       : "Unknown";
 
   // modal states
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [successMsg, setSuccessMsg] = useState<string | null>(null);
 
   // form states
   const [name, setName] = useState(dog.name ?? "");
@@ -54,7 +55,7 @@ export default function DogCard({ dog }: DogCardProps) {
       alert("Date must be in YYYY-MM-DD format");
       return;
     }
-    
+
     const patch = diff(dog, formSnapshot);
     if (Object.keys(patch).length === 0) {
       setOpen(false);
@@ -65,6 +66,8 @@ export default function DogCard({ dog }: DogCardProps) {
     try {
       updateDog(dog.id, patch);
       setOpen(false);
+      setSuccessMsg(`Successfully edited dog ${formSnapshot.name}`);
+      setTimeout(() => setSuccessMsg(null), 4000); // auto-hide after 4s
     } catch (e) {
       console.error(e);
       alert("Failed to save changes. Please try again.");
@@ -196,6 +199,12 @@ export default function DogCard({ dog }: DogCardProps) {
           </div>
         </div>
       )}
+      {successMsg && (
+        <div className="fixed bottom-4 left-1/2 -translate-x-1/2 w-auto max-w-md rounded bg-green-100 border border-green-400 text-green-700 px-4 py-2 shadow-md">
+          {successMsg}
+        </div>
+      )}
+
     </div>
   );
 }
