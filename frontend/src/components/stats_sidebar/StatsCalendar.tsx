@@ -78,7 +78,8 @@ export function StatsCalendar({
               <span className="day-number">{date.getDate()}</span>
               {dogs.length === 1 && (
                 <span
-                  className={`dog-dot centered ${dogColors.get(dogs[0]) ?? 'bg-gray-400'}`}
+                  className={`dog-dot centered`}
+                  style={{ backgroundColor: dogColors.get(dogs[0]) ?? "#9ca3af" }}
                 />
               )}
               {dogs.length > 1 && (
@@ -86,7 +87,8 @@ export function StatsCalendar({
                   {visibleDots.map((id) => (
                     <span
                       key={id}
-                      className={`dog-dot ${dogColors.get(id) ?? 'bg-gray-400'}`}
+                      className={`dog-dot`}
+                      style={{ backgroundColor: dogColors.get(id) ?? "#9ca3af" }}
                     />
                   ))}{extra && <span className="dog-count">+</span>}
                   

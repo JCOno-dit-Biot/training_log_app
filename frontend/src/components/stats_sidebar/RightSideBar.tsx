@@ -5,6 +5,7 @@ import { DogStatsCard } from "./DogStatsCard"
 import { Dog } from "../../types/Dog"
 import { ActivityFilter } from "../../types/ActivityFilter";
 import { format } from 'date-fns';
+//import { useGlobalCache } from "../../context/GlobalCacheContext";
 
 interface SidebarProps {
   dogs: Map<number, Dog>;
@@ -23,14 +24,11 @@ export function RightSidebar({ dogs, filters, setFilters }: SidebarProps) {
     monthlyDogDay
   } = useActivityStats();
 
-  // temporary map for development
-  const dogColors = new Map<number, string>([
-    [1, "bg-red-500"],
-    [2, "bg-cyan-400"],
-    [3, "bg-blue-700"],
-    [4, "bg-orange-500"]
-  ])
-  console.log(weeklyStats)
+  
+  const dogColors = new Map(
+    Array.from(dogs.entries()).map(([id, dog]) => [id, dog.color])
+  );
+
   return (
     <div className="fixed right-0 top-0 h-screen w-[350px] border-l bg-primary p-4 shadow-md overflow-y-auto">
       <StatsCalendar
