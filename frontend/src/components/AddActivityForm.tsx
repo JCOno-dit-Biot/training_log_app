@@ -8,8 +8,9 @@ import { SelectedDog } from "../types/Dog";
 import { Lap } from "../types/Lap";
 import { postActivity, updateActivity } from "../api/activities";
 import { Weather } from "../types/Weather";
-import { Activity } from "../types/Activity"
+import { Activity, Location } from "../types/Activity"
 import { getActivityChanges } from "../functions/helpers/getActivityChanges";
+import { getLocations } from "../api/locations";
 import { convertToFormData } from "../functions/helpers/convertToFormData";
 
 // import { Dog } from "../types/Dog";
@@ -28,7 +29,7 @@ export interface ActivityForm {
   weather: Weather
   workout: boolean;
   laps: Lap[];
-  location: string;
+  location_id: number | null;
 }
 
 type AddActivityFormProps ={
@@ -44,13 +45,15 @@ export default function AddActivityForm( { onClose, onSuccess, initialData }: Ad
 
   const isEdit = !!initialData;
 
+  const [locations, setLocations] = useState<Location[]>([]); 
+
   const [formData, setFormData] = useState<ActivityForm>(() =>
     initialData ? convertToFormData(initialData) : {
       timestamp: new Date().toISOString(),
       runner_id: null,
       sport_id: null,
       dogs: [],
-      location:'',
+      location_id: null,
       distance: 0,
       speed: undefined,
       pace: '',
@@ -67,6 +70,20 @@ export default function AddActivityForm( { onClose, onSuccess, initialData }: Ad
   const { runners, dogs, sports } = useGlobalCache();
 
   useEffect(() => {
+    let alive = true;
+    (async () => {
+      try {
+        const data = await getLocations();
+        if (alive) setLocations(data);
+      } catch (e) {
+        console.error("Failed to fetch locations", e);
+        if (alive) setLocations([]);
+      }
+    })();
+    return () => { alive = false };
+  }, []);
+
+  useEffect(() => {
     if (initialData) {
       setFormData(convertToFormData(initialData));
     } else {
@@ -75,7 +92,7 @@ export default function AddActivityForm( { onClose, onSuccess, initialData }: Ad
         runner_id: null,
         sport_id: null,
         dogs: [],
-        location:'',
+        location_id:null,
         distance: 0,
         speed: undefined,
         pace: '',
@@ -274,15 +291,18 @@ export default function AddActivityForm( { onClose, onSuccess, initialData }: Ad
       )}
       <div className="mb-2">
         <label className="block text-gray-700">Location</label>
-        <input
-          type="text"
+        <select
           className="w-full border rounded p-2"
-          value={formData.location}
-          onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-        />
-
-        {/* add other fields like sport, runner dropdown, dogs multiselect, etc. */}
+          value={formData.location_id ?? ''}
+          onChange={e => handleInputChange('location_id', e.target.value ? Number(e.target.value) : null)}
+        >
+          <option value="">Select Location</option>
+          {locations.map(loc => (
+            <option key={loc.id} value={loc.id}>{loc.name}</option>
+          ))}
+        </select>
       </div>
+
 
       <div className="mb-2 flex gap-4">
         <div className="flex-2">
