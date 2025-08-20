@@ -10,7 +10,7 @@ interface DogActivityRead {
   rating: number
 }
 
-interface Location {
+export interface Location {
   id?: number,
   name: string
 }
