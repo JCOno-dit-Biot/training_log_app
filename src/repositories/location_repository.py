@@ -3,6 +3,10 @@ from src.models.location import Location
 from .abstract_repository import abstract_repository
 from typing import List, Optional
 from psycopg2.extras import RealDictCursor
+from psycopg2.errors import UniqueViolation
+
+class DuplicateLocationError(Exception):
+    pass
 
 class location_repository(abstract_repository):
 
@@ -69,7 +73,11 @@ class location_repository(abstract_repository):
                 cur.execute(query, (location_name.lower(), kennel_id))
                 location_id = cur.fetchone()['id']
                 self._connection.commit()
-                return location_id
+                new_loc = Location(id = location_id, name = location_name)
+                return new_loc
+            except UniqueViolation:
+                self._connection.rollback()
+                raise DuplicateLocationError(f'Location: {location_name} already exists for this kennel')
             except Exception as e:
                 print(e)
                 self._connection.rollback()
