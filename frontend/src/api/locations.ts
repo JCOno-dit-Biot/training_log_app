@@ -6,3 +6,9 @@ export const getLocations = async (): Promise<Location[]> => {
   return res.data;
 };
 
+
+export const createLocation = async(content: string): Promise<number> => {
+  const res = await axios.post(`/locations`, {name: content});
+  return res.data
+}
+

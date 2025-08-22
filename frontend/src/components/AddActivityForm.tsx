@@ -3,14 +3,14 @@ import { useState, useEffect } from "react";
 import { useGlobalCache } from "../context/GlobalCacheContext";
 import DogSelector from "./DogSelector";
 import LapEditor from './LapEditor';
-
+import LocationAutocomplete from "./LocationAutocomplete";
 import { SelectedDog } from "../types/Dog";
 import { Lap } from "../types/Lap";
 import { postActivity, updateActivity } from "../api/activities";
 import { Weather } from "../types/Weather";
 import { Activity, Location } from "../types/Activity"
 import { getActivityChanges } from "../functions/helpers/getActivityChanges";
-import { getLocations } from "../api/locations";
+import { getLocations, createLocation} from "../api/locations";
 import { convertToFormData } from "../functions/helpers/convertToFormData";
 
 // import { Dog } from "../types/Dog";
@@ -32,20 +32,20 @@ export interface ActivityForm {
   location_id: number | null;
 }
 
-type AddActivityFormProps ={
+type AddActivityFormProps = {
   onClose: () => void;
   onSuccess?: () => void;
   initialData?: Activity;
 }
 
-export default function AddActivityForm( { onClose, onSuccess, initialData }: AddActivityFormProps) {
+export default function AddActivityForm({ onClose, onSuccess, initialData }: AddActivityFormProps) {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const isEdit = !!initialData;
 
-  const [locations, setLocations] = useState<Location[]>([]); 
+  const [locations, setLocations] = useState<Location[]>([]);
 
   const [formData, setFormData] = useState<ActivityForm>(() =>
     initialData ? convertToFormData(initialData) : {
@@ -92,7 +92,7 @@ export default function AddActivityForm( { onClose, onSuccess, initialData }: Ad
         runner_id: null,
         sport_id: null,
         dogs: [],
-        location_id:null,
+        location_id: null,
         distance: 0,
         speed: undefined,
         pace: '',
@@ -129,8 +129,8 @@ export default function AddActivityForm( { onClose, onSuccess, initialData }: Ad
 
   const handleWeatherChange = (field: keyof Weather, value: any) => {
     const parsedValue = field === 'humidity'
-    ? (parseFloat(value) / 100)
-    : value;
+      ? (parseFloat(value) / 100)
+      : value;
 
     setFormData(prev => ({
       ...prev,
@@ -291,16 +291,23 @@ export default function AddActivityForm( { onClose, onSuccess, initialData }: Ad
       )}
       <div className="mb-2">
         <label className="block text-gray-700">Location</label>
-        <select
-          className="w-full border rounded p-2"
-          value={formData.location_id ?? ''}
-          onChange={e => handleInputChange('location_id', e.target.value ? Number(e.target.value) : null)}
-        >
-          <option value="">Select Location</option>
-          {locations.map(loc => (
-            <option key={loc.id} value={loc.id}>{loc.name}</option>
-          ))}
-        </select>
+        <LocationAutocomplete
+          locations={locations}
+          value={formData.location_id}
+          onChange={(id) => handleInputChange('location_id', id)}
+          placeholder="Type to search…"
+          allowCreateOption
+          onCreateNew={async (name) => {
+            const location_id = createLocation(name);
+            const newLocation: Location = {
+              id: location_id,
+              name: name
+            }
+            setLocations(prev => [...prev, newLocation]);
+            handleInputChange('location_id', location_id );
+            console.log("Create new location:", name);
+          }}
+        />
       </div>
 
 

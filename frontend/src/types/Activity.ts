@@ -11,7 +11,7 @@ interface DogActivityRead {
 }
 
 export interface Location {
-  id?: number,
+  id: number,
   name: string
 }
 
