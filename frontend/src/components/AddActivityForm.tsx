@@ -13,10 +13,6 @@ import { getActivityChanges } from "../functions/helpers/getActivityChanges";
 import { getLocations, createLocation} from "../api/locations";
 import { convertToFormData } from "../functions/helpers/convertToFormData";
 
-// import { Dog } from "../types/Dog";
-// import { Runner } from "../types/Runner";
-// import { Weather } from "../types/Weather";
-// import { Sport } from "../types/Sport";
 
 export interface ActivityForm {
   timestamp: string
