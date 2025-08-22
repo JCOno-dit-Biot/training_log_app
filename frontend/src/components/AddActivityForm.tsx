@@ -1,5 +1,5 @@
 // components/AddActivityForm.tsx
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useGlobalCache } from "../context/GlobalCacheContext";
 import DogSelector from "./DogSelector";
 import LapEditor from './LapEditor';
@@ -10,7 +10,7 @@ import { postActivity, updateActivity } from "../api/activities";
 import { Weather } from "../types/Weather";
 import { Activity, Location } from "../types/Activity"
 import { getActivityChanges } from "../functions/helpers/getActivityChanges";
-import { getLocations, createLocation} from "../api/locations";
+import { getLocations, createLocation } from "../api/locations";
 import { convertToFormData } from "../functions/helpers/convertToFormData";
 
 
@@ -34,13 +34,19 @@ type AddActivityFormProps = {
   initialData?: Activity;
 }
 
+function upsertLocation(list: { id: number; name: string }[], loc: { id: number; name: string }) {
+  const exists = list.some(l => l.id === loc.id);
+  return exists ? list : [...list, loc].sort((a, b) => a.name.localeCompare(b.name));
+}
+
 export default function AddActivityForm({ onClose, onSuccess, initialData }: AddActivityFormProps) {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
   const isEdit = !!initialData;
 
+  const [creatingLoc, setCreatingLoc] = useState(false);
+  const [locError, setLocError] = useState<string | null>(null);
   const [locations, setLocations] = useState<Location[]>([]);
 
   const [formData, setFormData] = useState<ActivityForm>(() =>
@@ -115,6 +121,37 @@ export default function AddActivityForm({ onClose, onSuccess, initialData }: Add
       setFormData(prev => ({ ...prev, [field]: value }));
     }
   };
+
+
+  const handleCreateLocation = useCallback(async (rawName: string) => {
+    const name = rawName.trim();
+    if (!name) return;
+
+    // client-side duplicate guard by name (optional)
+    const dup = locations.find(l => l.name.toLowerCase() === name.toLowerCase());
+    if (dup) {
+      setLocError(`Location "${name}" already exists.`);
+      return;
+    }
+
+    setLocError(null);
+    setCreatingLoc(true);
+    try {
+      const created = await createLocation(name);
+      setLocations(prev => upsertLocation(prev, created));
+      handleInputChange("location_id", created.id);
+    } catch (err: any) {
+      // Expect backend to send 409 on duplicate
+      if (err?.response?.status === 409) {
+        setLocError(`Location "${name}" already exists.`);
+      } else {
+        setLocError(err?.response?.data?.detail || "Failed to create location.");
+      }
+    } finally {
+      setCreatingLoc(false);
+    }
+  }, [locations, handleInputChange]);
+
 
   const handlePaceChange = (value: string) => {
     const regex = /^\d{0,2}:?\d{0,2}$/;
@@ -290,20 +327,13 @@ export default function AddActivityForm({ onClose, onSuccess, initialData }: Add
         <LocationAutocomplete
           locations={locations}
           value={formData.location_id}
-          onChange={(id) => handleInputChange('location_id', id)}
-          placeholder="Type to search…"
+          onChange={id => handleInputChange("location_id", id)}
           allowCreateOption
-          onCreateNew={async (name) => {
-            const location_id = createLocation(name);
-            const newLocation: Location = {
-              id: location_id,
-              name: name
-            }
-            setLocations(prev => [...prev, newLocation]);
-            handleInputChange('location_id', location_id );
-            console.log("Create new location:", name);
-          }}
+          onCreateNew={handleCreateLocation}   // <-- passed as a stable callback
+          disabled={creatingLoc}
+          error={locError}
         />
+        {locError && <p className="mt-1 text-sm text-red-600">{locError}</p>}
       </div>
 
 

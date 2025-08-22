@@ -8,7 +8,8 @@ type Props = {
   onChange: (id: number | null) => void; // emit id when selected
   placeholder?: string;
   allowCreateOption?: boolean;           // optional: show "Add new"
-  onCreateNew?: (name: string) => void;  // optional handler
+  onCreateNew?: (name: string) => Promise<void> | void; 
+  disabled?: boolean;
 };
 
 export default function LocationAutocomplete({
