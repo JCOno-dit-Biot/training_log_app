@@ -35,8 +35,8 @@ export default function LocationAutocomplete({
   // filter (top 10)
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    if (!q) return locations.slice(0, 3);
-    return locations.filter(l => l.name.toLowerCase().includes(q)).slice(0, 3);
+    if (!q) return locations.slice(0, 5);
+    return locations.filter(l => l.name.toLowerCase().includes(q)).slice(0, 5);
   }, [locations, query]);
 
   useEffect(() => {
@@ -99,6 +99,17 @@ export default function LocationAutocomplete({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value, selected?.name]);
 
+  async function handleCreateClick() {
+  if (!onCreateNew) return;
+  try {
+    const res = await onCreateNew(query);
+    // res?.ok === true → success or 409 handled (auto-selected)
+  } finally {
+    // close either way so the user sees the banner
+    setOpen(false);
+    inputRef.current?.blur();
+  }
+}
   return (
     <div className="relative">
       <input
@@ -141,7 +152,7 @@ export default function LocationAutocomplete({
             <div
               onMouseDown={(e) => {
                 e.preventDefault();
-                if (onCreateNew) onCreateNew(query.trim());
+                handleCreateClick();
               }}
               onMouseEnter={() => setHighlight(filtered.length)}
               className={`px-3 py-2 cursor-pointer border-t ${highlight === filtered.length ? "bg-gray-100" : ""}`}

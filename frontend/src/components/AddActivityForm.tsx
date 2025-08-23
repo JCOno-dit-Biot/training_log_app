@@ -46,7 +46,7 @@ export default function AddActivityForm({ onClose, onSuccess, initialData }: Add
   const isEdit = !!initialData;
 
   const [creatingLoc, setCreatingLoc] = useState(false);
-  const [locError, setLocError] = useState<string | null>(null);
+  const [banner, setBanner] = useState<{ type: "success" | "info" | "error"; msg: string } | null>(null);
   const [locations, setLocations] = useState<Location[]>([]);
 
   const [formData, setFormData] = useState<ActivityForm>(() =>
@@ -127,28 +127,29 @@ export default function AddActivityForm({ onClose, onSuccess, initialData }: Add
     const name = rawName.trim();
     if (!name) return;
 
-    // client-side duplicate guard by name (optional)
-    const dup = locations.find(l => l.name.toLowerCase() === name.toLowerCase());
-    if (dup) {
-      setLocError(`Location "${name}" already exists.`);
-      return;
-    }
 
-    setLocError(null);
     setCreatingLoc(true);
     try {
       const created = await createLocation(name);
       setLocations(prev => upsertLocation(prev, created));
       handleInputChange("location_id", created.id);
+      setBanner({ type: "success", msg: `Added "${created.name}".` });
+      return { ok: true }
     } catch (err: any) {
-      // Expect backend to send 409 on duplicate
       if (err?.response?.status === 409) {
-        setLocError(`Location "${name}" already exists.`);
-      } else {
-        setLocError(err?.response?.data?.detail || "Failed to create location.");
+        // pick existing if present locally
+        const existing = locations.find(l => l.name.toLowerCase() === name.toLowerCase());
+        if (existing) {
+          handleInputChange("location_id", existing.id);
+          setBanner({ type: "info", msg: `Selected existing "${existing.name}".` });
+          return { ok: true }
+        }
+        // if not cached, just inform; user can type to find
+        setBanner({ type: "info", msg: `Location already exists. Please select it.` });
+        return { ok: false };
       }
-    } finally {
-      setCreatingLoc(false);
+      setBanner({ type: "error", msg: "Failed to create location." });
+      return { ok: false };
     }
   }, [locations, handleInputChange]);
 
@@ -329,12 +330,20 @@ export default function AddActivityForm({ onClose, onSuccess, initialData }: Add
           value={formData.location_id}
           onChange={id => handleInputChange("location_id", id)}
           allowCreateOption
-          onCreateNew={handleCreateLocation}   // <-- passed as a stable callback
+          onCreateNew={handleCreateLocation}
           disabled={creatingLoc}
-          error={locError}
         />
-        {locError && <p className="mt-1 text-sm text-red-600">{locError}</p>}
       </div>
+      {banner && (
+        <div
+          className={`mt-2 rounded px-3 py-2 text-sm ${banner.type === "success" ? "bg-green-100 text-green-800" :
+              banner.type === "info" ? "bg-blue-100 text-blue-800" :
+                "bg-red-100 text-red-800"
+            }`}
+        >
+          {banner.msg}
+        </div>
+      )}
 
 
       <div className="mb-2 flex gap-4">
