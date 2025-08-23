@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { Dog } from '../types/Dog';
 import { diff } from '../functions/helpers/diffObject';
 import { updateDog } from '../api/dogs';
+import { Pencil } from 'lucide-react';
 
 interface DogCardProps {
   dog: Dog;
@@ -85,25 +86,28 @@ export default function DogCard({ dog }: DogCardProps) {
     setOpen(true);
 
   }
+
   return (
     <div className="relative flex flex-col justify-between border border-gray-300 rounded-xl shadow-md p-4 w-full sm:w-64 h-40 bg-white">
-      {/* Edit button */}
-      <button
-        onClick={openEditor}
-        aria-label={`Edit ${dog.name}`}
-        className="absolute top-2 right-2 rounded-full border px-2 py-1 text-xs text-gray-600 hover:bg-gray-50"
-      >
-        Edit
-      </button>
+      
       {/* Top-left: name and breed */}
       <div className="text-left">
+        <div className="flex gap-2">
         <h2 className="text-lg font-bold text-gray-800">{dog.name}</h2>
+        <Pencil
+        onClick={openEditor}
+        aria-label={`Edit ${dog.name}`}
+        className="w-3 h-3 text-gray-600 mt-1"
+      >
+      </Pencil>
+      </div>
         <p className="text-sm text-gray-600">{dog.breed}</p>
       </div>
       <img
         src={`/profile_picture/dogs/${dog.image_url}`}
         alt={dog.name}
-        className="absolute top-3 right-6 aspect-square w-auto h-25 rounded-full object-cover border"
+        className="absolute top-3 right-6 aspect-square w-auto h-25 rounded-full object-cover border-3 p-1"
+        style={{ borderColor: dog.color ?? "#9ca3af" }} // fallback to gray
       />
       {/* Bottom-right: DOB */}
       <p className="absolute bottom-3 right-4 text-xs text-gray-500">
@@ -189,7 +193,7 @@ export default function DogCard({ dog }: DogCardProps) {
                 Cancel
               </button>
               <button
-                className="rounded-md bg-gray-900 px-3 py-2 text-sm text-white disabled:opacity-50"
+                className="rounded-md bg-primary px-3 py-2 text-sm text-white disabled:opacity-50"
                 onClick={handleSave}
                 disabled={busy}
               >
