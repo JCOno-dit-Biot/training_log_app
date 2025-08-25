@@ -12,6 +12,7 @@ import { Activity, Location } from "../types/Activity"
 import { getActivityChanges } from "../functions/helpers/getActivityChanges";
 import { getLocations, createLocation } from "../api/locations";
 import { convertToFormData } from "../functions/helpers/convertToFormData";
+import { validateActivityForm } from "../functions/validation/validateActivityForm";
 
 
 export interface ActivityForm {
@@ -45,6 +46,11 @@ export default function AddActivityForm({ onClose, onSuccess, initialData }: Add
   const [error, setError] = useState<string | null>(null);
   const isEdit = !!initialData;
 
+  // form validator
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [validationMsg, setValidationMsg] = useState<string | null>(null);
+
+  // location creation and error handling
   const [creatingLoc, setCreatingLoc] = useState(false);
   const [banner, setBanner] = useState<{ type: "success" | "info" | "error"; msg: string } | null>(null);
   const [locations, setLocations] = useState<Location[]>([]);
@@ -178,9 +184,18 @@ export default function AddActivityForm({ onClose, onSuccess, initialData }: Add
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
     setError(null);
-    // TODO: Call backend API with formData
+    
+    // validate form data
+    const errs = validateActivityForm(formData, sports);
+    setFieldErrors(errs);
+
+    if (Object.keys(errs).length > 0) {
+      setValidationMsg("Please fix the highlighted fields.");
+      return; // abort submit
+    }
+    setValidationMsg(null);
+    setLoading(true);
     try {
       if (isEdit && initialData) {
         const original = convertToFormData(initialData);
@@ -205,25 +220,34 @@ export default function AddActivityForm({ onClose, onSuccess, initialData }: Add
     <form onSubmit={handleSubmit} className="space-y-4">
       <h2 className="text-xl font-bold text-charcoal">{initialData ? 'Edit Activity' : 'Add New Activity'}</h2>
 
+      {validationMsg && (
+        <div className="mt-2 rounded px-3 py-2 text-sm bg-red-100 text-red-800">
+          {validationMsg}
+        </div>
+      )}
       <div className="mb-2 flex gap-4">
         <div className="flex-1">
-          <label className="block text-gray-700">Date</label>
+          <label htmlFor="date" className="block text-gray-700">Date</label>
           <input
+            id="date"
             type="date"
-            className="w-full border rounded p-2"
+            className={`w-full border rounded p-2 ${fieldErrors.timestamp ? 'border-red-500' : ''}`}
             value={new Date(formData.timestamp).toISOString().split('T')[0]}
             onChange={(e) => {
               const time = new Date(formData.timestamp).toISOString().split('T')[1]; // keep current time
               const combined = new Date(`${e.target.value}T${time}`);
               setFormData(prev => ({ ...prev, timestamp: combined.toISOString() }));
             }}
+            aria-invalid={!!fieldErrors.timestamp}
+            aria-describedby={fieldErrors.timestamp ? 'timestamp-error' : undefined}
           />
         </div>
         <div className="flex-1">
-          <label className="block text-gray-700">Time</label>
+          <label htmlFor="time" className="block text-gray-700">Time</label>
           <input
+            id="time"
             type="time"
-            className="w-full border rounded p-2"
+            className={`w-full border rounded p-2 ${fieldErrors.timestamp ? 'border-red-500' : ''}`}
             value={new Date(formData.timestamp).toLocaleTimeString('en-GB', { hour12: false }).slice(0, 5)}
             onChange={(e) => {
               const [hours, minutes] = e.target.value.split(':').map(Number);
@@ -232,78 +256,128 @@ export default function AddActivityForm({ onClose, onSuccess, initialData }: Add
               date.setMinutes(minutes);
               setFormData(prev => ({ ...prev, timestamp: date.toISOString() }));
             }}
+            aria-invalid={!!fieldErrors.timestamp}
+            aria-describedby={fieldErrors.timestamp ? 'timestamp-error' : undefined}
           />
-        </div>
+          </div>
+          {fieldErrors.timestamp && (
+            <p id="timestamp-error" className="text-red-600 text-sm mt-1">
+              {fieldErrors.timestamp}
+            </p>
+          )}
+
       </div>
 
       <div className="mb-2">
         {/* Sport selection dropdown */}
-        <label className="block text-gray-700">Sport</label>
+        <label htmlFor="sport" className="block text-gray-700">Sport</label>
         <select
-          className="w-full border rounded p-2"
+          id = "sport"
+          className={`w-full border rounded p-2 ${fieldErrors.sport_id ? 'border-red-500' : ''}`}
           value={formData.sport_id ?? ''}
           onChange={e => handleInputChange('sport_id', Number(e.target.value))}
+          aria-invalid={!!fieldErrors.sport_id}
+          aria-describedby={fieldErrors.sport_id ? 'sport-error' : undefined}
         >
           <option value="">Select Sport</option>
           {[...sports.entries()].map(([id, sport]) => (
             <option key={id} value={id}>{sport.name}</option>
           ))}
         </select>
+        {fieldErrors.sport_id && (
+          <p id="sport-error" className="text-red-600 text-sm mt-1">
+            {fieldErrors.sport_id}
+          </p>
+        )}
       </div>
       <div className="mb-2">
-        <label className="block text-gray-700">Runner</label>
+        <label htmlFor="runner" className="block text-gray-700">Runner</label>
         <select
-          className="w-full border rounded p-2"
+          id="runner"
+          className={`w-full border rounded p-2 ${fieldErrors.runner_id ? 'border-red-500' : ''}`}
           value={formData.runner_id ?? ''}
           onChange={e => handleInputChange('runner_id', Number(e.target.value))}
+          aria-invalid={!!fieldErrors.runner_id}
+          aria-describedby={fieldErrors.runner_id ? 'runner-error' : undefined}
         >
           <option value="">Select Runner</option>
           {[...runners.entries()].map(([id, runner]) => (
             <option key={id} value={id}>{runner.name}</option>
           ))}
         </select>
+        {fieldErrors.runner_id && (
+          <p id="runner-error" className="text-red-600 text-sm mt-1">
+            {fieldErrors.runner_id}
+          </p>
+        )}
       </div>
 
       <DogSelector selectedDogs={formData.dogs} setSelectedDogs={(dogs) => handleInputChange('dogs', dogs)} dogs={dogs} />
+      {fieldErrors.dogs && <p className="text-red-600 text-sm mt-1">{fieldErrors.dogs}</p>}
 
       <div className="mb-2 flex gap-4">
         <div className="flex-2">
-          <label className="block text-gray-700">Distance (km)</label>
+          <label htmlFor="distance" className="block text-gray-700">Distance (km)</label>
           <input
+            id="distance"
             type="number"
             step="0.1"
-            className="w-full border rounded p-2"
+            className={`w-full border rounded p-2 ${fieldErrors.distance ? 'border-red-500' : ''}`}
             value={formData.distance === 0 ? '' : formData.distance.toString()}
-            onChange={e => handleInputChange('distance', parseFloat(e.target.value))}
+            onChange={(e) => handleInputChange('distance', parseFloat(e.target.value))}
+            aria-invalid={!!fieldErrors.distance}
+            aria-describedby={fieldErrors.distance ? 'distance-error' : undefined}
           />
+          {fieldErrors.distance && (
+            <p id="distance-error" className="text-red-600 text-sm mt-1">
+              {fieldErrors.distance}
+            </p>
+          )}
         </div>
         {selectedSport?.display_mode === 'pace' ? (
           <div className="flex-2">
-            <label className="block text-gray-700">Pace</label>
+            <label htmlFor="distance" className="block text-gray-700">Pace</label>
             <input
+              id="pace"
               type="text"
-              className={`w-full border rounded p-2 ${formData.pace ? 'text-black' : 'text-gray-400'}`}
+              className={`w-full border rounded p-2 ${formData.pace ? 'text-black' : 'text-gray-400'} ${fieldErrors.pace ? 'border-red-500' : ''}`}
               placeholder="MM:SS"
               value={formData.pace}
               onChange={e => handlePaceChange(e.target.value)}
+              aria-invalid={!!fieldErrors.pace}
+              aria-describedby={fieldErrors.pace ? 'pace-error' : undefined}
             />
+            {fieldErrors.distance && (
+            <p id="pace-error" className="text-red-600 text-sm mt-1">
+              {fieldErrors.pace}
+            </p>
+          )}
           </div>
         ) : (
           <div className="flex-2">
-            <label className="block text-gray-700">Speed (km/h)</label>
+            <label htmlFor="speed" className="block text-gray-700">Speed (km/h)</label>
             <input
+              id="speed"
               type="number"
               step="0.1"
-              className="w-full border rounded p-2"
+              className={`w-full border rounded p-2 ${fieldErrors.speed ? 'border-red-500' : ''}`}
               value={formData.speed ?? ''}
               onChange={e => handleInputChange('speed', parseFloat(e.target.value))}
+              aria-invalid={!!fieldErrors.speed}
+              aria-describedby={fieldErrors.speed ? 'speed-error' : undefined}
             />
+            {fieldErrors.speed && (
+            <p id="speed-error" className="text-red-600 text-sm mt-1">
+              {fieldErrors.speed}
+            </p>
+          )}
           </div>
         )}
 
         <div className="mb-4 flex-1 flex flex-col items-center gap-2">
-          <label className="text-gray-700 flex-1 font-medium">Workout
+          <label htmlFor="workout" className="text-gray-700 flex-1 font-medium">Workout
             <input
+              id="workout"
               type="checkbox"
               checked={formData.workout}
               className="flex-1 peer appearance-none "
@@ -318,13 +392,20 @@ export default function AddActivityForm({ onClose, onSuccess, initialData }: Add
         </div>
       </div>
       {formData.workout && (
+        <>
         <LapEditor
           laps={formData.laps}
           setLaps={(laps) => setFormData(prev => ({ ...prev, laps }))}
         />
+        {fieldErrors.laps && (
+          <p id="laps-error" className="text-red-600 text-sm mt-1">
+            {fieldErrors.laps}
+          </p>
+        )}
+      </>
       )}
       <div className="mb-2">
-        <label className="block text-gray-700">Location</label>
+        <label htmlFor="location" className="block text-gray-700">Location</label>
         <LocationAutocomplete
           locations={locations}
           value={formData.location_id}
@@ -333,6 +414,7 @@ export default function AddActivityForm({ onClose, onSuccess, initialData }: Add
           onCreateNew={handleCreateLocation}
           disabled={creatingLoc}
         />
+        {fieldErrors.location_id && <p className="text-red-600 text-sm mt-1">{fieldErrors.location_id}</p>}
       </div>
       {banner && (
         <div
@@ -357,24 +439,32 @@ export default function AddActivityForm({ onClose, onSuccess, initialData }: Add
           />
         </div>
         <div className="flex-1">
-          <label className="block text-gray-700">T (°C)</label>
+          <label htmlFor="temperature" className="block text-gray-700">T (°C)</label>
           <input
-            type="number"
-            step="0.1"
-            className="w-full border rounded p-2"
-            value={formData.weather?.temperature ?? ''}
-            onChange={e => handleWeatherChange('temperature', parseFloat(e.target.value))}
-          />
-        </div>
-        <div className="flex-1">
-          <label className="block text-gray-700">Humidity (%)</label>
-          <input
+            id="temperature"
             type="number"
             step="1"
-            className="w-full border rounded p-2"
+            className={`w-full border rounded p-2 ${fieldErrors.temperature ? 'border-red-500' : ''}`}
+            value={formData.weather?.temperature ?? ''}
+            onChange={e => handleWeatherChange('temperature', parseFloat(e.target.value))}
+            aria-invalid={!!fieldErrors.temperature}
+            aria-describedby={fieldErrors.temperature ? 'temperature-error' : undefined}
+          />
+          {fieldErrors.temperature && <p className="text-red-600 text-sm mt-1">{fieldErrors.temperature}</p>}
+        </div>
+        <div className="flex-1">
+          <label htmlFor="humidity" className="block text-gray-700">Humidity (%)</label>
+          <input
+            id="humidity"
+            type="number"
+            step="1"
+            className={`w-full border rounded p-2 ${fieldErrors.humidity ? 'border-red-500' : ''}`}
             value={formData.weather.humidity != null ? (formData.weather.humidity * 100).toFixed(0) : ''}
             onChange={e => handleWeatherChange('humidity', parseFloat(e.target.value))}
+            aria-invalid={!!fieldErrors.humidity}
+            aria-describedby={fieldErrors.humidity ? 'humidity-error' : undefined}
           />
+          {fieldErrors.humidity && <p className="text-red-600 text-sm mt-1">{fieldErrors.humidity}</p>}
         </div>
       </div>
 
