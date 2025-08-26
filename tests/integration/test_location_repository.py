@@ -33,10 +33,10 @@ def test_get_by_id(location_repo):
     assert loc.id == 1
 
 def test_create(test_location_no_id, location_repo):
-    id = location_repo.create(test_location_no_id.name, kennel_id = 2)
-    print(id)
+    location = location_repo.create(test_location_no_id.name, kennel_id = 2)
+    print(location)
     with location_repo._connection.cursor() as cur:
-        cur.execute(""" SELECT * FROM activity_locations WHERE id = %s """, (id,))
+        cur.execute(""" SELECT * FROM activity_locations WHERE id = %s """, (location.id,))
         result = cur.fetchone()
 
     print(result)
@@ -44,7 +44,7 @@ def test_create(test_location_no_id, location_repo):
     assert result[0] == id
     assert result[2] == test_location_no_id.name.lower()
 
-def test_update_comment(location_repo):
+def test_update_location(location_repo):
     with location_repo._connection.cursor() as cur:
         cur.execute(""" SELECT * FROM activity_locations WHERE id = 1""")
         result = cur.fetchone()

@@ -16,7 +16,7 @@ def mock_repo():
         Location(id = 2, kennel_id =2, name='Mock Location 2'),
         Location(id = 3, kennel_id =2, name='Mock Location 3')
     ]
-    mock.create.return_value = 4
+    mock.create.return_value = Location(id = 4, name = "Created New location")
     mock.update.return_value = True
 
 
@@ -63,7 +63,7 @@ def test_create_location(test_app, mock_repo):
     
     response = client.post(url="/locations", json = payload)
     assert response.status_code == 200
-    assert response.json()==4
+    assert Location(**response.json()).id == 4
     mock_repo.create.assert_called_once()
     mock_repo.create.assert_called_with("Inserted location",2)
 
