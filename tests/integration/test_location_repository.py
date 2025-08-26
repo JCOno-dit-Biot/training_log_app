@@ -34,14 +34,14 @@ def test_get_by_id(location_repo):
 
 def test_create(test_location_no_id, location_repo):
     location = location_repo.create(test_location_no_id.name, kennel_id = 2)
-    print(location)
+   
     with location_repo._connection.cursor() as cur:
         cur.execute(""" SELECT * FROM activity_locations WHERE id = %s """, (location.id,))
         result = cur.fetchone()
 
-    print(result)
+
     assert result is not None
-    assert result[0] == id
+    assert result[0] == location.id
     assert result[2] == test_location_no_id.name.lower()
 
 def test_update_location(location_repo):
