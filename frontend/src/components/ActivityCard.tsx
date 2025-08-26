@@ -1,6 +1,6 @@
 import { Activity } from '../types/Activity'
 import { Comment } from '../types/Comment';
-import { Menu } from '@headlessui/react'
+import { Menu, MenuButton, MenuItems, MenuItem } from '@headlessui/react';
 import { useState, useEffect } from 'react';
 import React from 'react';
 import { useGlobalCache } from '../context/GlobalCacheContext'
@@ -80,7 +80,7 @@ export default function ActivityCard({
   const DEFAULT_AVATAR = 'https://www.gravatar.com/avatar/?d=mp';
   const { runners, dogs, sports } = useGlobalCache();
   const date = formatActivityDate(activity.timestamp);
-  const capitalizedLocation = activity.location.charAt(0).toUpperCase() + activity.location.slice(1);
+  const capitalizedLocation = activity.location.name.charAt(0).toUpperCase() + activity.location.name.slice(1);
 
   //const dogNames = activity.dogs.map((d) => d.name).join(', ');
 
@@ -114,40 +114,44 @@ export default function ActivityCard({
   return (
     <div className="flex flex-col bg-white border border-stone rounded-2xl shadow-md p-4 gap-1">
 
-      {/* Top-right: Edit Icon */}
-      <Menu as="div" className="flex justify-end bg-white">
+      {/* Top-right: Edit/Delete menu */}
+      <Menu as="div" className="relative ml-auto">
+        <MenuButton
+          className="p-1 rounded-2xl hover:bg-stone-100 focus:outline-none focus:ring-2 focus:ring-stone-300"
+          aria-label="Activity options"
+        >
+          <MoreHorizontal className="w-6 h-6 text-stone-600" />
+        </MenuButton>
 
-        <Menu.Button>
-          <MoreHorizontal className="w-6 h-6 text-stone cursor-pointer bg-white" />
-        </Menu.Button>
-
-        <Menu.Items className="absolute right-0 mt-2 w-32 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black/5 focus:outline-none z-10">
+        {/* anchor keeps the panel attached to the trigger regardless of sidebars/overflow */}
+        <MenuItems
+          anchor="bottom end"
+          className="z-50 mt-1 w-36 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black/5 focus:outline-none"
+        >
           <div className="py-1">
-            <Menu.Item>
+            <MenuItem>
               {({ active }) => (
                 <button
                   onClick={() => onEdit(activity)}
-                  className={`${active ? 'bg-gray-100' : 'bg-white'
-                    } w-full text-left px-4 py-2 text-sm text-charcoal`}
+                  className={`${active ? 'bg-gray-100' : 'bg-white'} w-full text-left px-4 py-2 text-sm text-charcoal`}
                 >
                   Edit
                 </button>
               )}
-            </Menu.Item>
+            </MenuItem>
 
-            <Menu.Item>
+            <MenuItem>
               {({ active }) => (
                 <button
                   onClick={() => onDelete(activity.id)}
-                  className={`${active ? 'bg-gray-100' : 'bg-white'
-                    } w-full text-left px-4 py-2 text-sm text-red-600`}
+                  className={`${active ? 'bg-gray-100' : 'bg-white'} w-full text-left px-4 py-2 text-sm text-red-600`}
                 >
                   Delete
                 </button>
               )}
-            </Menu.Item>
+            </MenuItem>
           </div>
-        </Menu.Items>
+        </MenuItems>
       </Menu>
       {/* Runner + Dogs + Weather */}
       <div className="flex justify-between gap-4 items-center flex-wrap">

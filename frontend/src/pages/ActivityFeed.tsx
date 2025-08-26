@@ -113,7 +113,7 @@ export default function ActivityFeed() {
           <div className="absolute right-0 top-0">
             <button
               onClick={() => setShowFilters(prev => !prev)}
-              className={`flex items-center gap-2 px-4 py-2 border rounded hover:bg-gray-100 z-30 relative ${showFilters ? 'bg-gray-100' : ''
+              className={`flex items-center gap-2 px-4 py-2 border border-stone rounded hover:bg-gray-100 z-30 relative ${showFilters ? 'bg-gray-100' : ''
                 }`}
             >
               <FunnelIcon className="w-4 h-4" />
@@ -131,7 +131,7 @@ export default function ActivityFeed() {
           >
             <div
               ref={panelRef}
-              className="absolute right-0 top-full mt-2 w-72 p-4 bg-white border rounded-lg shadow-lg z-10"
+              className="absolute right-0 top-full mt-2 w-72 p-4 bg-white border border-stone rounded-lg shadow-lg z-10"
             >
               <ActivityFilterPanel
                 filters={filters}

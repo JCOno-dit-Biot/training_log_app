@@ -15,9 +15,8 @@ export default function App() {
     <div className="min-h-screen bg-gray-50">
         <Routes>
           <Route path="/" element={<LoginPage />} />
-          <Route path="/register" element={<RegisterPage />} />
+          {/* <Route path="/register" element={<RegisterPage />} /> */}
            {/* Protected route with shared layout */}
-          <Route path="/dashboard" element={<PrivateRoute><Layout><DashboardPage /></Layout></PrivateRoute>} />
           <Route path="/kennel" element={<PrivateRoute><Layout><MyKennelPage /></Layout></PrivateRoute>} />
          
           <Route path="/activities" element={<PrivateRoute><Layout><ActivityFeed /></Layout></PrivateRoute>} />

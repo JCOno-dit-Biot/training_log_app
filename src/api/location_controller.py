@@ -5,6 +5,7 @@ from src.models.location import Location
 from src.deps import (
     get_location_repo
 )
+from src.repositories.location_repository import DuplicateLocationError
 
 router = APIRouter()
 
@@ -21,7 +22,12 @@ class LocationController:
     @router.post("/locations")
     def create_location(self, request: Request, location: Location):
         kennel_id = request.state.kennel_id
-        return self.repo.create(location.name, kennel_id)
+        try:
+            loc = self.repo.create(location.name, kennel_id)
+            return loc  # {id, name}
+        except DuplicateLocationError as e:
+            # Return 409 and a clear message. Optionally include the existing resource info if you fetch it.
+            raise HTTPException(status_code=409, detail=str(e))
 
     @router.put("/locations/{location_id}")
     def update_location(self, location: Location, location_id: int):
