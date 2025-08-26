@@ -16,7 +16,7 @@ export default function LoginPage() {
     useEffect(() => {
     const token = localStorage.getItem('access_token');
     if (token) {
-        navigate('/dashboard');
+        navigate('/kennel');
     } 
     }, []);
 
@@ -32,7 +32,7 @@ export default function LoginPage() {
             localStorage.setItem("email", username)
             localStorage.setItem("access_token", response.access_token)
             setAuthenticated(true)
-            navigate('/dashboard');
+            navigate('/kennel');
 
             } catch (err) {
                 setError('Invalid credentials');
@@ -71,9 +71,9 @@ export default function LoginPage() {
           </form>
 
         <div className="mt-4 text-sm text=center space-y-2">
-          <p>   
+          {/* <p>   
             <a href="/register" className="text-blue-600 hover:underline">Register</a> 
-          </p>
+          </p> */}
           <p>
             <a href="/reset-password" className="text-blue-600 hover:underline">Forgot your password?</a>
           </p>

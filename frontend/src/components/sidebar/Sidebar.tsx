@@ -4,7 +4,6 @@ import { Home, PawPrint, Bike, Weight, LogOut } from 'lucide-react'
 import { logout } from '../../api/auth/logout';
 
 const tabs = [
-  { path: '/', label: 'Dashboard', icon: <Home size={20} /> },
   { path: '/kennel', label: 'My Kennel', icon: <PawPrint size={20} /> },
   { path: '/activities', label: 'Activities', icon: <Bike size={20} /> },
   { path: '/weight', label: 'Weight', icon: <Weight size={20} /> },

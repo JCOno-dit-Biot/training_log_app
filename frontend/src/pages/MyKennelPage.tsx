@@ -22,7 +22,7 @@ export default function MyKennelPage() {
     <div className="space-y-20 max-w-full">
       {/* Runners Section */}
       <section className='w-full max-w-full'>
-        <h2 className="text-2xl text-centered font-bold mb-4 text-cream bg-primary rounded">Runners</h2>
+        <h2 className="text-2xl text-centered font-bold mb-4 p-1 text-cream bg-primary rounded">Runners</h2>
         <div className='overflow-x-auto max-w-full scroll-snap-x scroll-smooth'>
           <div className="flex gap-3 pb-2 snap-x snap-mandatory">
             {runners.map((runner) => (
@@ -36,7 +36,7 @@ export default function MyKennelPage() {
 
       {/* Dogs Section */}
       <section className='w-full max-w-full'>
-        <h2 className="text-2xl font-bold mb-4 text-cream bg-primary rounded">Dogs</h2>
+        <h2 className="text-2xl font-bold mb-4 p-1 text-cream bg-primary rounded">Dogs</h2>
         <div className='overflow-x-auto max-w-full scroll-snap-x scroll-smooth'>
           <div className="flex gap-3 pb-2 snap-x snap-mandatory">
             {sortedDogs.map(dog => (
