@@ -41,10 +41,22 @@ services:
     networks:
       - db_network
 
+  frontend:
+    build: 
+      context: ../
+      dockerfile: ./frontend/Dockerfile
+    ports:
+      - "80:80"           # browse at http://<PI_IP>/
+    depends_on: [app]
+    networks: [db_network]
+
 volumes:
   pg_data:
 
 networks:
   db_network:
     driver: bridge
+    ipam:
+      config:
+        - subnet: 172.18.0.0/16
      
