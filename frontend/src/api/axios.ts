@@ -1,7 +1,12 @@
 import axios from 'axios';
 
+const baseURL =
+  import.meta.env.VITE_API_URL ||           // explicit override (e.g. http://192.168.2.31:8000)
+  (import.meta.env.PROD ? "/api" : "http://localhost:8000"); // prod: via Nginx proxy; dev: local
+
+
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:8000',
+  baseURL,
   headers: {
     'Content-Type': 'application/json',
   },
