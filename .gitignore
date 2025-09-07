@@ -167,3 +167,7 @@ cython_debug/
 #.idea/
 
 .vscode
+
+#frontend stuff
+/public/
+*/public
