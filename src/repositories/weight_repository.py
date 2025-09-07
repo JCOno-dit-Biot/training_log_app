@@ -1,4 +1,4 @@
-from src.models import Dog, Kennel, DogWeightEntry
+from src.models import Dog, Kennel, DogWeightEntry, WeightQueryFilter
 from datetime import date
 from typing import List
 from src.repositories.abstract_repository import abstract_repository
@@ -31,7 +31,7 @@ class weight_repository(abstract_repository):
             row = cur.fetchone()
             return parse_weight_from_row(row)
 
-    def get_all(self, kennel_id: int, filters) -> List[DogWeightEntry]:
+    def get_all(self, kennel_id: int, filters: WeightQueryFilter) -> List[DogWeightEntry]:
 
         where_clause, values = build_conditions(filters)
         
@@ -49,6 +49,7 @@ class weight_repository(abstract_repository):
                         kennels ON d.kennel_id = kennels.id
                     WHERE 
                         d.kennel_id = %s AND {where_clause}
+                    ORDER BY date DESC
                 """
             values.insert(0, kennel_id)
             cur.execute(query, values)
