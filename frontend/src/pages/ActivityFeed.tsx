@@ -97,7 +97,12 @@ export default function ActivityFeed() {
       const res = await deleteActivity(activity_id);
 
       if (res.success) {
-        setActivities(prev => prev.filter(a => a.id !== activity_id));
+
+        setPagination(prev =>({
+          ...prev,
+          data: prev.data.filter(a => a.id !== activity_id),
+          total_count: prev.total_count -1
+        }));
       }
     } catch (err) {
       console.error('Failed to delete activity', err);
