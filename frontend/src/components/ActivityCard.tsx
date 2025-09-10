@@ -4,7 +4,7 @@ import { Menu, MenuButton, MenuItems, MenuItem } from '@headlessui/react';
 import { useState, useEffect } from 'react';
 import React from 'react';
 import { useGlobalCache } from '../context/GlobalCacheContext'
-import { MessageCircle, MoreHorizontal, Trash2, Rocket } from 'lucide-react';
+import { MessageCircle, MoreHorizontal, Trash2, Rocket, Send } from 'lucide-react';
 import { formatActivityDate } from '../functions/helpers/FormatDate';
 import { getRatingColor } from '../functions/helpers/GetRatingColor';
 import { getComments, postComment, deleteComment } from '../api/comment';
@@ -214,20 +214,20 @@ export default function ActivityCard({
 
       </div>
       {showLaps && activity.laps.length > 0 && (
-      <div className="mt-3 px-4 py-2 rounded-md bg-secondary border border-primary">
-        <div className="grid grid-cols-3 gap-2 text-center text-sm text-charcoal">
-          <div className="font-bold text-primary">Lap</div>
-          <div className="font-bold text-primary">Distance</div>
-          <div className="font-bold text-primary">Time</div>
+        <div className="mt-3 px-4 py-2 rounded-md bg-secondary border border-primary">
+          <div className="grid grid-cols-3 gap-2 text-center text-sm text-charcoal">
+            <div className="font-bold text-primary">Lap</div>
+            <div className="font-bold text-primary">Distance</div>
+            <div className="font-bold text-primary">Time</div>
 
-          {activity.laps.map((lap) => (
-            <React.Fragment key={lap.lap_number}>
-              <div>Lap {lap.lap_number + 1}</div>
-              <div>{lap.lap_distance} km</div>
-              <div>{lap.lap_time}</div>
-            </React.Fragment>
-          ))}
-        </div>
+            {activity.laps.map((lap) => (
+              <React.Fragment key={lap.lap_number}>
+                <div>Lap {lap.lap_number + 1}</div>
+                <div>{lap.lap_distance} km</div>
+                <div>{lap.lap_time}</div>
+              </React.Fragment>
+            ))}
+          </div>
         </div>
       )}
 
@@ -256,20 +256,29 @@ export default function ActivityCard({
             <div className="italic text-stone">No comments yet.</div>
           )}
           <div className="flex items-center gap-2 mt-2">
+             <div className="relative flex-1">
             <input
               type="text"
               placeholder="Add a comment..."
               value={newComment}
               onChange={e => setNewComment(e.target.value)}
-              className="flex-1 bg-gray-200 rounded px-2 py-1 text-sm"
+              onKeyDown={e => {
+                if (e.key === "Enter" && newComment.trim()) {
+                  e.preventDefault(); // stop form submit or newline
+                  handleAddComment();
+                }
+              }}
+              className="w-full bg-gray-200 rounded px-2 pr-8 py-1 text-sm"
             />
             <button
               onClick={handleAddComment}
-              className="px-3 py-1 bg-primary text-white cursor-pointer rounded hover:bg-opacity-90 text-sm"
+              className="absolute right-2 top-1/2 -translate-y-1/2 text-primary bg-gray-200 hover:text-gray-800 disabled:text-gray-400"
               disabled={!newComment.trim()}
+              aria-label="Send comment"
             >
-              Post
+              <Send className="w-4 h-4" />
             </button>
+            </div>
           </div>
         </div>
       )}
