@@ -20,7 +20,7 @@ export function convertToFormData(activity: Activity): ActivityForm {
       humidity: activity.weather.humidity,
       condition: activity.weather.condition,
     },
-    location: activity.location,
+    location_id: activity.location.id,
     workout: activity.workout,
     laps: activity.laps.map(lap => ({
       lap_number: lap.lap_number,

@@ -36,6 +36,7 @@ export default function ActivityFeed() {
     previous: null,
   });
 
+  
   useClickAway(panelRef, () => setShowFilters(false));
 
   const openEditModal = (activity: Activity) => {
