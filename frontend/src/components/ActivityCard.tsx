@@ -27,6 +27,8 @@ export default function ActivityCard({
   const [newComment, setNewComment] = useState('');
   const [showLaps, setShowLaps] = useState(false);
 
+  const [commentCount, setCommentCount] = useState<number>(activity.comment_count)
+
   
   const currentUsername = localStorage.getItem("email");
 
@@ -61,11 +63,17 @@ export default function ActivityCard({
       const savedComment = { ...comment, id: saved.id };
 
       setComments(prev => [...prev, savedComment]);
+      setCommentCount(c => c+1)
       setNewComment('');
     } catch (err) {
       console.error('Error adding comment:', err);
     }
   };
+
+  // sync comment count to activity
+  useEffect(() => {
+    setCommentCount(activity.comment_count ?? 0);
+  }, [activity.comment_count]);
 
   //activity.dogs.dog.forEach(dog => console.log('Dog:', dog));
 
@@ -224,11 +232,11 @@ export default function ActivityCard({
       )}
 
       {/* Comment bottom right */}
-      {activity.comment_count !== undefined && (
+      {commentCount !== undefined && (
         <div onClick={handleToggleComments}
           className="flex items-center justify-end text-charcoal gap-1 cursor-pointer">
           <MessageCircle className="w-4 h-4 hover:text-primary hover:scale-110 transition-transform duration-150" />
-          <span>{activity.comment_count}</span>
+          <span>{commentCount}</span>
         </div>
       )}
       {showComments && (
@@ -245,8 +253,10 @@ export default function ActivityCard({
                 onReplace={(updated) =>
                   setComments((prev) => prev.map((x) => (x.id === updated.id ? { ...x, ...updated } : x)))
                 }
-                onRemove={(id) =>
+                onRemove={(id) => {
                   setComments((prev) => prev.filter((x) => x.id !== id))
+                  setCommentCount(c => Math.max(0, c - 1))
+                }
                 }
                 onError={(msg) => console.error(msg)}
               />
