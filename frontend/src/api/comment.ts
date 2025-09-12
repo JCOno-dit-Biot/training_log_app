@@ -25,5 +25,6 @@ export const editComment = async(activity_id: number, comment_id: number, conten
     ...content
   }
   const res = await axios.put(`/activities/${activity_id}/comments/${comment_id}`, payload);
+  console.log(res)
   return {success: res.data}
 }

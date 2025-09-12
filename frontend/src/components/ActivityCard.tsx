@@ -8,6 +8,7 @@ import { MessageCircle, MoreHorizontal, Trash2, Rocket, Send } from 'lucide-reac
 import { formatActivityDate } from '../functions/helpers/FormatDate';
 import { getRatingColor } from '../functions/helpers/GetRatingColor';
 import { getComments, postComment, deleteComment } from '../api/comment';
+import { CommentItem } from './CommentItem';
 
 export default function ActivityCard({
   activity,
@@ -244,45 +245,53 @@ export default function ActivityCard({
           {loadingComments ? (
             <div className="italic text-stone">Loading comments...</div>
           ) : comments.length > 0 ? (
-            comments.map(comment => (
-              <div key={comment.id} className="flex justify-between item-center gap-2">
-                <span>{comment.comment}</span>
-                {currentUsername === comment.username && (
-                  <Trash2 className="w-4 h-4 text-red-500 text-xs" onClick={() => handleDeleteComment(comment.id)} />
-                )}
-              </div>
+            comments.map((c) => (
+              <CommentItem
+                key={c.id}
+                activityId={activity.id}
+                comment={c}
+                currentUsername={currentUsername}
+                onReplace={(updated) =>
+                  setComments((prev) => prev.map((x) => (x.id === updated.id ? { ...x, ...updated } : x)))
+                }
+                onRemove={(id) =>
+                  setComments((prev) => prev.filter((x) => x.id !== id))
+                }
+                onError={(msg) => console.error(msg)}
+              />
             ))
           ) : (
             <div className="italic text-stone">No comments yet.</div>
           )}
+
           <div className="flex items-center gap-2 mt-2">
-             <div className="relative flex-1">
-            <input
-              type="text"
-              placeholder="Add a comment..."
-              value={newComment}
-              onChange={e => setNewComment(e.target.value)}
-              onKeyDown={e => {
-                if (e.key === "Enter" && newComment.trim()) {
-                  e.preventDefault(); // stop form submit or newline
-                  handleAddComment();
-                }
-              }}
-              className="w-full bg-gray-200 rounded px-2 pr-8 py-1 text-sm"
-            />
-            <button
-              onClick={handleAddComment}
-              className="absolute right-2 top-1/2 -translate-y-1/2 text-primary bg-gray-200 hover:text-gray-800 disabled:text-gray-400"
-              disabled={!newComment.trim()}
-              aria-label="Send comment"
-            >
-              <Send className="w-4 h-4" />
-            </button>
+            <div className="relative flex-1">
+              <input
+                type="text"
+                placeholder="Add a comment..."
+                value={newComment}
+                onChange={e => setNewComment(e.target.value)}
+                onKeyDown={e => {
+                  if (e.key === "Enter" && newComment.trim()) {
+                    e.preventDefault(); // stop form submit or newline
+                    handleAddComment();
+                  }
+                }}
+                className="w-full bg-gray-200 rounded px-2 pr-8 py-1 text-sm"
+              />
+              <button
+                onClick={handleAddComment}
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-primary bg-gray-200 hover:text-gray-800 disabled:text-gray-400"
+                disabled={!newComment.trim()}
+                aria-label="Send comment"
+              >
+                <Send className="w-4 h-4" />
+              </button>
             </div>
           </div>
         </div>
       )}
-
-    </div>
+      
+      </div>
   );
 }
