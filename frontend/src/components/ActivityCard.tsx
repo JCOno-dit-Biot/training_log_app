@@ -27,6 +27,7 @@ export default function ActivityCard({
   const [newComment, setNewComment] = useState('');
   const [showLaps, setShowLaps] = useState(false);
 
+  
   const currentUsername = localStorage.getItem("email");
 
   const handleToggleComments = async () => {
@@ -59,20 +60,10 @@ export default function ActivityCard({
 
       const savedComment = { ...comment, id: saved.id };
 
-      console.log(savedComment)
       setComments(prev => [...prev, savedComment]);
       setNewComment('');
     } catch (err) {
       console.error('Error adding comment:', err);
-    }
-  };
-
-  const handleDeleteComment = async (commentId: number) => {
-    try {
-      await deleteComment(activity.id, commentId);
-      setComments(prev => prev.filter(c => c.id !== commentId));
-    } catch (err) {
-      console.error('Failed to delete comment:', err);
     }
   };
 
