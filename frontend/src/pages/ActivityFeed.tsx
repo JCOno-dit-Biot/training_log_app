@@ -113,12 +113,11 @@ export default function ActivityFeed() {
 
 
   return (
-    <section className="flex relative">
+     <section className="flex relative">
       <main className="flex-1 pr-[345px] space-y-4 relative">
         <ActivityHeader
           onOpenCreate={() => setShowModal(true)}
           onOpenFilter={() => setShowFilters((v) => !v)}
-          // className optional if you need extra padding/margins
         />
         <div className="relative">
           <Transition
@@ -189,7 +188,7 @@ export default function ActivityFeed() {
         dogs={dogs}
         filters={filters}
         setFilters={setFilters} />
-    </section >
+     </section >
 
   );
 }
