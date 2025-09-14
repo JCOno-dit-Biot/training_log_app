@@ -11,68 +11,64 @@ class analytics_repository():
     def __init__(self, connection):
         self._connection = connection
 
-    def get_weekly_stats(self, kennel_id: int, ts: datetime) -> list[WeeklyStats]:
+    def get_weekly_stats(self, kennel_id: int, anchor_ts: datetime) -> list[WeeklyStats]:
 
-        
-
-
-# Need two weeks, so:
- # for exclusive upper bound
-
-        #calculate the time range automatically, needs 14 days to get prior week data
-        selected_date = ts.astimezone(timezone.utc).date()
-        start_of_week = selected_date - timedelta(days=selected_date.weekday())  # Monday
-        end_of_week = start_of_week + timedelta(days=6)  # Sunday
-        
-        start_date = start_of_week - timedelta(days=7)
-        end_date = end_of_week# + timedelta(days=1) 
+        # Need two weeks, so:
+        # for exclusive upper bound
 
         with self._connection.cursor(cursor_factory= RealDictCursor) as cur:
             query = """
-                    WITH weeks AS (
-                        SELECT generate_series(
-                            DATE_TRUNC('week', %(start_date)s),
-                            DATE_TRUNC('week', %(end_date)s),
-                            interval '1 week'
-                        ) AS week_start
+                    WITH bounds AS (
+                    -- anchor_ts can be any timestamp within the "current" week you want to include
+                    SELECT
+                        DATE_TRUNC('week', %(anchor_ts)s)                 AS this_week_start,  -- Monday 00:00
+                        DATE_TRUNC('week', %(anchor_ts)s) - INTERVAL '1 week' AS prev_week_start,
+                        DATE_TRUNC('week', %(anchor_ts)s) + INTERVAL '1 week' AS next_week_start  -- exclusive upper bound
+                    ),
+                    weeks AS (
+                    -- generate exactly the two week starts you want to report on
+                    SELECT prev_week_start AS week_start FROM bounds
+                    UNION ALL
+                    SELECT this_week_start FROM bounds
                     ),
                     dogs_weeks AS (
-                        SELECT d.id AS dog_id, w.week_start
-                        FROM dogs d
-                        CROSS JOIN weeks w
-                        WHERE d.kennel_id = %(kennel_id)s
+                    SELECT d.id AS dog_id, w.week_start
+                    FROM dogs d
+                    CROSS JOIN weeks w
+                    WHERE d.kennel_id = %(kennel_id)s
                     ),
                     weekly_mileage AS (
                     SELECT
                         ad.dog_id,
                         DATE_TRUNC('week', a.timestamp) AS week_start,
                         SUM(a.distance) AS total_distance_km,
-                        AVG(ad.rating) AS average_rating 
+                        AVG(ad.rating) AS average_rating
                     FROM activity_dogs ad
                     JOIN activities a ON ad.activity_id = a.id
-                    WHERE a.timestamp BETWEEN %(start_date)s AND %(end_date)s
+                    JOIN bounds b ON a.timestamp >= b.prev_week_start     -- half-open interval
+                                AND a.timestamp <  b.next_week_start     -- covers prev week + current week fully
                     GROUP BY ad.dog_id, week_start
                     )
                     SELECT
-                        dw.dog_id,
-                        dw.week_start,
-                        COALESCE(wm.total_distance_km, 0) AS total_distance_km,
-                        COALESCE(LAG(total_distance_km) OVER (
-                            PARTITION BY dw.dog_id ORDER BY dw.week_start
-                        ), 0) AS previous_week_distance_km,
-                        wm.average_rating AS average_rating,
-                        LAG(average_rating) OVER (
-                            PARTITION BY dw.dog_id ORDER BY dw.week_start
-                        ) AS previous_week_average_rating
+                    dw.dog_id,
+                    dw.week_start,
+                    COALESCE(wm.total_distance_km, 0) AS total_distance_km,
+                    COALESCE(
+                        LAG(total_distance_km) OVER (PARTITION BY dw.dog_id ORDER BY dw.week_start),
+                        0
+                    ) AS previous_week_distance_km,
+                    wm.average_rating AS average_rating,
+                    LAG(average_rating) OVER (PARTITION BY dw.dog_id ORDER BY dw.week_start)
+                        AS previous_week_average_rating
                     FROM dogs_weeks dw
-                    LEFT JOIN weekly_mileage wm ON
-                    dw.dog_id = wm.dog_id AND
-                    dw.week_start = wm.week_start
-                    ORDER BY dw.dog_id, dw.week_start DESC                  
+                    LEFT JOIN weekly_mileage wm
+                    ON wm.dog_id = dw.dog_id
+                    AND wm.week_start = dw.week_start
+                    ORDER BY dw.dog_id, dw.week_start DESC;
+                  
                     """
             params = {
-                "start_date": start_date,
-                "end_date": end_date,
+                "anchor_ts": anchor_ts,
                 "kennel_id": kennel_id
             }
             cur.execute(query, params)
