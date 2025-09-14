@@ -20,7 +20,7 @@ export default function Pagination({ total, limit, offset, onPageChange }: Pagin
       </button>
 
       <span className="text-sm text-gray-700">
-        Page {currentPage} of {totalPages}
+        Page {currentPage} of {totalPages ? totalPages : 1}
       </span>
 
       <button

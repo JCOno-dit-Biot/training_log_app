@@ -82,14 +82,13 @@ export default function ActivityFeed() {
     }
   }, [filters]);
 
-
-
   const reloadActivities = async () => {
     loadPage(0);
   };
 
   const applyFilters = async () => {
-    loadPage(0, filters)
+    loadPage(0, filters);
+    setShowFilters(false);
   };
 
 
@@ -140,7 +139,9 @@ export default function ActivityFeed() {
                 dogs={dogs}
                 sports={sports}
                 onApply={applyFilters}
-                onClear={() => setFilters({})}
+                onClear={() => {
+                  setFilters({});
+                }}
               />
             </div>
           </Transition>
