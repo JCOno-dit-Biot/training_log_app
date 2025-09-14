@@ -1,5 +1,5 @@
 // components/AddActivityForm.tsx
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useGlobalCache } from "../context/GlobalCacheContext";
 import DogSelector from "./DogSelector";
 import LapEditor from './LapEditor';
@@ -13,6 +13,8 @@ import { getActivityChanges } from "../functions/helpers/getActivityChanges";
 import { getLocations, createLocation } from "../api/locations";
 import { convertToFormData } from "../functions/helpers/convertToFormData";
 import { validateActivityForm } from "../functions/validation/validateActivityForm";
+import { combineLocalDateTimeToUTCISO } from "../functions/helpers/combineDateToISO";
+
 
 
 export interface ActivityForm {
@@ -41,6 +43,8 @@ function upsertLocation(list: { id: number; name: string }[], loc: { id: number;
 }
 
 export default function AddActivityForm({ onClose, onSuccess, initialData }: AddActivityFormProps) {
+
+  const formRef = useRef<HTMLFormElement>(null);
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -75,7 +79,31 @@ export default function AddActivityForm({ onClose, onSuccess, initialData }: Add
     }
   );
 
+  // inside your component
+  const [dateStr, setDateStr] = useState<string>("");
+  const [timeStr, setTimeStr] = useState<string>("");
+
+
   const { runners, dogs, sports } = useGlobalCache();
+
+
+  // Initialize from existing timestamp (or now) and keep in sync if formData changes elsewhere
+  useEffect(() => {
+    const ts = formData.timestamp ? new Date(formData.timestamp) : new Date();
+    if (Number.isFinite(ts.getTime())) {
+      setDateStr(ts.toISOString().slice(0, 10));                            // YYYY-MM-DD
+      setTimeStr(ts.toLocaleTimeString("en-GB", { hour12: false }).slice(0, 5)); // HH:mm
+    }
+  }, [formData.timestamp]);
+
+  // Recompute formData.timestamp only when both strings are complete/valid
+  useEffect(() => {
+    const iso = combineLocalDateTimeToUTCISO(dateStr, timeStr);
+    if (iso) {
+      setFormData(prev => ({ ...prev, timestamp: iso }));
+    }
+    // If iso is null, user is mid-edit; DON'T touch formData.timestamp
+  }, [dateStr, timeStr, setFormData]);
 
   useEffect(() => {
     let alive = true;
@@ -96,7 +124,7 @@ export default function AddActivityForm({ onClose, onSuccess, initialData }: Add
       setFormData(convertToFormData(initialData));
     } else {
       setFormData({
-        timestamp: new Date().toISOString(),
+        timestamp: new Date().toISOString(), 
         runner_id: null,
         sport_id: null,
         dogs: [],
@@ -185,7 +213,7 @@ export default function AddActivityForm({ onClose, onSuccess, initialData }: Add
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
-    
+
     // validate form data
     const errs = validateActivityForm(formData, sports);
     setFieldErrors(errs);
@@ -217,7 +245,10 @@ export default function AddActivityForm({ onClose, onSuccess, initialData }: Add
   const selectedSport = formData.sport_id ? sports.get(formData.sport_id) : null;
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form 
+      ref={formRef}
+      onSubmit={handleSubmit}
+      className="space-y-4">
       <h2 className="text-xl font-bold text-charcoal">{initialData ? 'Edit Activity' : 'Add New Activity'}</h2>
 
       {validationMsg && (
@@ -232,12 +263,8 @@ export default function AddActivityForm({ onClose, onSuccess, initialData }: Add
             id="date"
             type="date"
             className={`w-full border rounded p-2 ${fieldErrors.timestamp ? 'border-red-500' : ''}`}
-            value={new Date(formData.timestamp).toISOString().split('T')[0]}
-            onChange={(e) => {
-              const time = new Date(formData.timestamp).toISOString().split('T')[1]; // keep current time
-              const combined = new Date(`${e.target.value}T${time}`);
-              setFormData(prev => ({ ...prev, timestamp: combined.toISOString() }));
-            }}
+            value={dateStr}
+            onChange={(e) => setDateStr(e.target.value)}   // no parsing here        
             aria-invalid={!!fieldErrors.timestamp}
             aria-describedby={fieldErrors.timestamp ? 'timestamp-error' : undefined}
           />
@@ -248,23 +275,17 @@ export default function AddActivityForm({ onClose, onSuccess, initialData }: Add
             id="time"
             type="time"
             className={`w-full border rounded p-2 ${fieldErrors.timestamp ? 'border-red-500' : ''}`}
-            value={new Date(formData.timestamp).toLocaleTimeString('en-GB', { hour12: false }).slice(0, 5)}
-            onChange={(e) => {
-              const [hours, minutes] = e.target.value.split(':').map(Number);
-              const date = new Date(formData.timestamp);
-              date.setHours(hours);
-              date.setMinutes(minutes);
-              setFormData(prev => ({ ...prev, timestamp: date.toISOString() }));
-            }}
+            value={timeStr}
+            onChange={(e) => setTimeStr(e.target.value)}   // no parsing here
             aria-invalid={!!fieldErrors.timestamp}
             aria-describedby={fieldErrors.timestamp ? 'timestamp-error' : undefined}
           />
-          </div>
-          {fieldErrors.timestamp && (
-            <p id="timestamp-error" className="text-red-600 text-sm mt-1">
-              {fieldErrors.timestamp}
-            </p>
-          )}
+        </div>
+        {fieldErrors.timestamp && (
+          <p id="timestamp-error" className="text-red-600 text-sm mt-1">
+            {fieldErrors.timestamp}
+          </p>
+        )}
 
       </div>
 
@@ -272,7 +293,7 @@ export default function AddActivityForm({ onClose, onSuccess, initialData }: Add
         {/* Sport selection dropdown */}
         <label htmlFor="sport" className="block text-gray-700">Sport</label>
         <select
-          id = "sport"
+          id="sport"
           className={`w-full border rounded p-2 ${fieldErrors.sport_id ? 'border-red-500' : ''}`}
           value={formData.sport_id ?? ''}
           onChange={e => handleInputChange('sport_id', Number(e.target.value))}
@@ -348,10 +369,10 @@ export default function AddActivityForm({ onClose, onSuccess, initialData }: Add
               aria-describedby={fieldErrors.pace ? 'pace-error' : undefined}
             />
             {fieldErrors.distance && (
-            <p id="pace-error" className="text-red-600 text-sm mt-1">
-              {fieldErrors.pace}
-            </p>
-          )}
+              <p id="pace-error" className="text-red-600 text-sm mt-1">
+                {fieldErrors.pace}
+              </p>
+            )}
           </div>
         ) : (
           <div className="flex-2">
@@ -367,10 +388,10 @@ export default function AddActivityForm({ onClose, onSuccess, initialData }: Add
               aria-describedby={fieldErrors.speed ? 'speed-error' : undefined}
             />
             {fieldErrors.speed && (
-            <p id="speed-error" className="text-red-600 text-sm mt-1">
-              {fieldErrors.speed}
-            </p>
-          )}
+              <p id="speed-error" className="text-red-600 text-sm mt-1">
+                {fieldErrors.speed}
+              </p>
+            )}
           </div>
         )}
 
@@ -393,16 +414,16 @@ export default function AddActivityForm({ onClose, onSuccess, initialData }: Add
       </div>
       {formData.workout && (
         <>
-        <LapEditor
-          laps={formData.laps}
-          setLaps={(laps) => setFormData(prev => ({ ...prev, laps }))}
-        />
-        {fieldErrors.laps && (
-          <p id="laps-error" className="text-red-600 text-sm mt-1">
-            {fieldErrors.laps}
-          </p>
-        )}
-      </>
+          <LapEditor
+            laps={formData.laps}
+            setLaps={(laps) => setFormData(prev => ({ ...prev, laps }))}
+          />
+          {fieldErrors.laps && (
+            <p id="laps-error" className="text-red-600 text-sm mt-1">
+              {fieldErrors.laps}
+            </p>
+          )}
+        </>
       )}
       <div className="mb-2">
         <label htmlFor="location" className="block text-gray-700">Location</label>
@@ -419,8 +440,8 @@ export default function AddActivityForm({ onClose, onSuccess, initialData }: Add
       {banner && (
         <div
           className={`mt-2 rounded px-3 py-2 text-sm ${banner.type === "success" ? "bg-green-100 text-green-800" :
-              banner.type === "info" ? "bg-blue-100 text-blue-800" :
-                "bg-red-100 text-red-800"
+            banner.type === "info" ? "bg-blue-100 text-blue-800" :
+              "bg-red-100 text-red-800"
             }`}
         >
           {banner.msg}

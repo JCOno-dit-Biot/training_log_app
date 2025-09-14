@@ -18,3 +18,13 @@ export const deleteComment = async(activity_id: number, comment_id: number): Pro
   const res = await axios.delete(`/activities/${activity_id}/comments/${comment_id}`);
   return {success: res.data}
 }
+
+
+export const editComment = async(activity_id: number, comment_id: number, content: Comment): Promise<{success: boolean}> => {
+  const payload = {
+    ...content
+  }
+  const res = await axios.put(`/activities/${activity_id}/comments/${comment_id}`, payload);
+  console.log(res)
+  return {success: res.data}
+}

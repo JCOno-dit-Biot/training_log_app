@@ -121,6 +121,8 @@ celerybeat.pid
 
 # Exclude certain data files
 data/
+secret/
+
 
 # Environments
 config/
@@ -167,7 +169,3 @@ cython_debug/
 #.idea/
 
 .vscode
-
-#frontend stuff
-/public/
-*/public

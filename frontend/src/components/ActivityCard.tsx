@@ -4,10 +4,11 @@ import { Menu, MenuButton, MenuItems, MenuItem } from '@headlessui/react';
 import { useState, useEffect } from 'react';
 import React from 'react';
 import { useGlobalCache } from '../context/GlobalCacheContext'
-import { MessageCircle, MoreHorizontal, Trash2, Rocket } from 'lucide-react';
+import { MessageCircle, MoreHorizontal, Trash2, Rocket, Send } from 'lucide-react';
 import { formatActivityDate } from '../functions/helpers/FormatDate';
 import { getRatingColor } from '../functions/helpers/GetRatingColor';
 import { getComments, postComment, deleteComment } from '../api/comment';
+import { CommentItem } from './CommentItem';
 
 export default function ActivityCard({
   activity,
@@ -26,6 +27,9 @@ export default function ActivityCard({
   const [newComment, setNewComment] = useState('');
   const [showLaps, setShowLaps] = useState(false);
 
+  const [commentCount, setCommentCount] = useState<number>(activity.comment_count)
+
+  
   const currentUsername = localStorage.getItem("email");
 
   const handleToggleComments = async () => {
@@ -58,22 +62,18 @@ export default function ActivityCard({
 
       const savedComment = { ...comment, id: saved.id };
 
-      console.log(savedComment)
       setComments(prev => [...prev, savedComment]);
+      setCommentCount(c => c+1)
       setNewComment('');
     } catch (err) {
       console.error('Error adding comment:', err);
     }
   };
 
-  const handleDeleteComment = async (commentId: number) => {
-    try {
-      await deleteComment(activity.id, commentId);
-      setComments(prev => prev.filter(c => c.id !== commentId));
-    } catch (err) {
-      console.error('Failed to delete comment:', err);
-    }
-  };
+  // sync comment count to activity
+  useEffect(() => {
+    setCommentCount(activity.comment_count ?? 0);
+  }, [activity.comment_count]);
 
   //activity.dogs.dog.forEach(dog => console.log('Dog:', dog));
 
@@ -214,29 +214,29 @@ export default function ActivityCard({
 
       </div>
       {showLaps && activity.laps.length > 0 && (
-      <div className="mt-3 px-4 py-2 rounded-md bg-secondary border border-primary">
-        <div className="grid grid-cols-3 gap-2 text-center text-sm text-charcoal">
-          <div className="font-bold text-primary">Lap</div>
-          <div className="font-bold text-primary">Distance</div>
-          <div className="font-bold text-primary">Time</div>
+        <div className="mt-3 px-4 py-2 rounded-md bg-secondary border border-primary">
+          <div className="grid grid-cols-3 gap-2 text-center text-sm text-charcoal">
+            <div className="font-bold text-primary">Lap</div>
+            <div className="font-bold text-primary">Distance</div>
+            <div className="font-bold text-primary">Time</div>
 
-          {activity.laps.map((lap) => (
-            <React.Fragment key={lap.lap_number}>
-              <div>Lap {lap.lap_number + 1}</div>
-              <div>{lap.lap_distance} km</div>
-              <div>{lap.lap_time}</div>
-            </React.Fragment>
-          ))}
-        </div>
+            {activity.laps.map((lap) => (
+              <React.Fragment key={lap.lap_number}>
+                <div>Lap {lap.lap_number + 1}</div>
+                <div>{lap.lap_distance} km</div>
+                <div>{lap.lap_time}</div>
+              </React.Fragment>
+            ))}
+          </div>
         </div>
       )}
 
       {/* Comment bottom right */}
-      {activity.comment_count !== undefined && (
+      {commentCount !== undefined && (
         <div onClick={handleToggleComments}
           className="flex items-center justify-end text-charcoal gap-1 cursor-pointer">
           <MessageCircle className="w-4 h-4 hover:text-primary hover:scale-110 transition-transform duration-150" />
-          <span>{activity.comment_count}</span>
+          <span>{commentCount}</span>
         </div>
       )}
       {showComments && (
@@ -244,36 +244,55 @@ export default function ActivityCard({
           {loadingComments ? (
             <div className="italic text-stone">Loading comments...</div>
           ) : comments.length > 0 ? (
-            comments.map(comment => (
-              <div key={comment.id} className="flex justify-between item-center gap-2">
-                <span>{comment.comment}</span>
-                {currentUsername === comment.username && (
-                  <Trash2 className="w-4 h-4 text-red-500 text-xs" onClick={() => handleDeleteComment(comment.id)} />
-                )}
-              </div>
+            comments.map((c) => (
+              <CommentItem
+                key={c.id}
+                activityId={activity.id}
+                comment={c}
+                currentUsername={currentUsername}
+                onReplace={(updated) =>
+                  setComments((prev) => prev.map((x) => (x.id === updated.id ? { ...x, ...updated } : x)))
+                }
+                onRemove={(id) => {
+                  setComments((prev) => prev.filter((x) => x.id !== id))
+                  setCommentCount(c => Math.max(0, c - 1))
+                }
+                }
+                onError={(msg) => console.error(msg)}
+              />
             ))
           ) : (
             <div className="italic text-stone">No comments yet.</div>
           )}
+
           <div className="flex items-center gap-2 mt-2">
-            <input
-              type="text"
-              placeholder="Add a comment..."
-              value={newComment}
-              onChange={e => setNewComment(e.target.value)}
-              className="flex-1 bg-gray-200 rounded px-2 py-1 text-sm"
-            />
-            <button
-              onClick={handleAddComment}
-              className="px-3 py-1 bg-primary text-white cursor-pointer rounded hover:bg-opacity-90 text-sm"
-              disabled={!newComment.trim()}
-            >
-              Post
-            </button>
+            <div className="relative flex-1">
+              <input
+                type="text"
+                placeholder="Add a comment..."
+                value={newComment}
+                onChange={e => setNewComment(e.target.value)}
+                onKeyDown={e => {
+                  if (e.key === "Enter" && newComment.trim()) {
+                    e.preventDefault(); // stop form submit or newline
+                    handleAddComment();
+                  }
+                }}
+                className="w-full bg-gray-200 rounded px-2 pr-8 py-1 text-sm"
+              />
+              <button
+                onClick={handleAddComment}
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-primary bg-gray-200 hover:text-gray-800 disabled:text-gray-400"
+                disabled={!newComment.trim()}
+                aria-label="Send comment"
+              >
+                <Send className="w-4 h-4" />
+              </button>
+            </div>
           </div>
         </div>
       )}
-
-    </div>
+      
+      </div>
   );
 }

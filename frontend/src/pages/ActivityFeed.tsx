@@ -11,10 +11,11 @@ import { WeeklyStats } from '../types/WeeklyStats';
 import AddActivityButton from "../components/AddActivityButton";
 import AddActivityForm from "../components/AddActivityForm";
 import { useGlobalCache } from '../context/GlobalCacheContext';
-import { FunnelIcon } from 'lucide-react';
+import { SlidersHorizontal } from 'lucide-react';
 import { Transition } from '@headlessui/react';
 import { useClickAway } from 'react-use'; // optional for clean click-out
-import ActivityFilterPanel from '../components/ActivityFilterPanel';
+import ActivityFilterPanel from '../components/ActivityFilterPanel'
+import { ActivityHeader } from '../components/ActivityHeader';
 import Pagination from '../components/Pagination';
 
 
@@ -35,6 +36,7 @@ export default function ActivityFeed() {
     next: null,
     previous: null,
   });
+
 
   useClickAway(panelRef, () => setShowFilters(false));
 
@@ -80,14 +82,13 @@ export default function ActivityFeed() {
     }
   }, [filters]);
 
-
-
   const reloadActivities = async () => {
     loadPage(0);
   };
 
   const applyFilters = async () => {
-    loadPage(0, filters)
+    loadPage(0, filters);
+    setShowFilters(false);
   };
 
 
@@ -97,7 +98,12 @@ export default function ActivityFeed() {
       const res = await deleteActivity(activity_id);
 
       if (res.success) {
-        setActivities(prev => prev.filter(a => a.id !== activity_id));
+
+        setPagination(prev => ({
+          ...prev,
+          data: prev.data.filter(a => a.id !== activity_id),
+          total_count: prev.total_count - 1
+        }));
       }
     } catch (err) {
       console.error('Failed to delete activity', err);
@@ -106,20 +112,13 @@ export default function ActivityFeed() {
 
 
   return (
-    <section className="flex relative">
+     <section className="flex relative">
       <main className="flex-1 pr-[345px] space-y-4 relative">
-        <div className='relative flex justify-center items-center py-2'>
-          <h2 className="flex text-xl text-center font-semibold text-charcoal">Recent Activity</h2>
-          <div className="absolute right-0 top-0">
-            <button
-              onClick={() => setShowFilters(prev => !prev)}
-              className={`flex items-center gap-2 px-4 py-2 border border-stone rounded hover:bg-gray-100 z-30 relative ${showFilters ? 'bg-gray-100' : ''
-                }`}
-            >
-              <FunnelIcon className="w-4 h-4" />
-              Filter
-            </button>
-          </div>
+        <ActivityHeader
+          onOpenCreate={() => setShowModal(true)}
+          onOpenFilter={() => setShowFilters((v) => !v)}
+        />
+        <div className="relative">
           <Transition
             show={showFilters}
             enter="transition ease-out duration-150"
@@ -140,7 +139,9 @@ export default function ActivityFeed() {
                 dogs={dogs}
                 sports={sports}
                 onApply={applyFilters}
-                onClear={() => setFilters({})}
+                onClear={() => {
+                  setFilters({});
+                }}
               />
             </div>
           </Transition>
@@ -162,10 +163,6 @@ export default function ActivityFeed() {
           onPageChange={loadPage}
         />
 
-
-        <AddActivityButton
-          onClick={() => setShowModal(true)}
-        />
 
 
         {showModal && (
@@ -192,7 +189,7 @@ export default function ActivityFeed() {
         dogs={dogs}
         filters={filters}
         setFilters={setFilters} />
-    </section>
+     </section >
 
   );
 }
