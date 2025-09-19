@@ -2,6 +2,7 @@ import SidebarItem from '../sidebar/SidebarItem'
 import { useNavigate } from 'react-router-dom';
 import { Home, PawPrint, Bike, Weight, LogOut } from 'lucide-react'
 import { logout } from '../../api/auth/logout';
+import { useAuth } from '../../context/AuthContext';
 
 const tabs = [
   { path: '/kennel', label: 'My Kennel', icon: <PawPrint size={20} /> },
@@ -13,13 +14,15 @@ export default function Sidebar() {
 
   const navigate = useNavigate()
 
+  const { isAuthenticated, logout } = useAuth()
+
   const handleLogout = async () => {
     try {
-      await logout(); // backend clears refresh cookie
+      logout()// backend clears refresh cookie
     } catch (err) {
       console.error('Logout error:', err); // optional toast here
     }
-    localStorage.removeItem('access_token'); // clear access token
+   
     navigate('/');
   }
   return (
