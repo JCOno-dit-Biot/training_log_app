@@ -4,8 +4,10 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import App from './App';
 import { GlobalCacheProvider } from './context/GlobalCacheContext';
 import { AuthProvider } from './context/AuthContext';
+import { AfterAuthWarmup } from './functions/auth/AfterAuthWarmup';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
+
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -26,9 +28,8 @@ ReactDOM.createRoot(document.getElementById('root')).render(
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
         <AuthProvider>
-          <GlobalCacheProvider>
-            <App />
-          </GlobalCacheProvider>
+          <AfterAuthWarmup />
+          <App />
         </AuthProvider>
       </BrowserRouter>
       <ReactQueryDevtools initialIsOpen={false} />
