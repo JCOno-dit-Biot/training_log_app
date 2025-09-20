@@ -1,13 +1,13 @@
 // AuthContext.tsx
 import { createContext, useContext, useEffect, useState, useMemo } from 'react';
 import { authStorage } from '../functions/auth/authStorage';
-import api from '../api/axios';
+import { validateToken, type User } from '../api/auth/authAxios';
+import { refreshAccessToken } from '../api/axios';
 import { getToken } from '../api/auth/token';
 import { logout } from '../api/auth/logout';
 import { useQueryClient } from '@tanstack/react-query';
 
 type SessionStatus = 'unknown' | 'authenticated' | 'guest';
-type User={id?: number, username: string}
 
 type AuthContextShape = {
   status: SessionStatus;
@@ -31,45 +31,59 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
 
   // Boot: try to restore session by refreshing access token or calling /me
+  // ---- Boot: run once on mount
   useEffect(() => {
     let cancelled = false;
 
-    async function boot() {
-      const hasAnyToken = !!authStorage.get().access_token;
-      if (!hasAnyToken) {
-        setStatus('guest');
+    (async () => {
+      const { access_token } = authStorage.get();
+      if (!access_token) {
+        if (!cancelled) setStatus('guest');
         return;
       }
+
+      // Try validate; if expired, try refresh then validate again
+      let me: User | null = null;
       try {
-        // Option A) call dedicated refresh endpoint (already in axios refresh)
-        // Option B) call /me to validate token and grab user
-        const me = await api.get('/auth/me').then(r => r.data as User); // adjust path
-        if (!cancelled) {
-          setUser(me);
-          setStatus('authenticated');
-        }
+        me = await validateToken(access_token);
       } catch {
-        if (!cancelled) {
-          authStorage.clear();
-          setUser(null);
-          setStatus('guest');
+        const newTok = await refreshAccessToken(access_token)
+        if (newTok) {
+          try {
+            me = await validateToken(newTok);
+          } catch {
+            // still invalid
+          }
         }
       }
-    }
 
-    boot();
+      if (cancelled) return;
+
+      if (me) {
+        setUser(me);
+        setStatus('authenticated');
+      } else {
+        authStorage.clear();
+        setUser(null);
+        setStatus('guest');
+        qc.clear();
+      }
+    })();
+
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [qc]); // <-- NOT [status]
 
   const login = async (email: string, password: string) => {
     const body = new URLSearchParams({ username: email, password });
     const token = await getToken(body)
+    const access = token.access_token as string | undefined;
+    if (!access) throw new Error('Missing access_token');
+    if (token.access_token) authStorage.set({ access_token: access });
 
-    if (token.access_token) authStorage.set({ access_token: token.access_token });
-
-    setUser( {username: email} );
+    const me = await validateToken(access);
+    setUser(me);
     setStatus('authenticated');
   };
 
@@ -87,7 +101,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       isAuthenticated: status === 'authenticated',
       login,
       logout,
-    }),
+    }
+  ),
     [status, user]
   );
 
