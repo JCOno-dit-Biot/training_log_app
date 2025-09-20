@@ -23,7 +23,7 @@ api.interceptors.request.use((config: InternalAxiosRequestConfig) => {
   return config;
 });
 
-async function refreshAccessToken(expiredToken: string): Promise<string | null> {
+export async function refreshAccessToken(expiredToken: string): Promise<string | null> {
   // Adjust endpoint & payload to your API
   try {
     const res = await axios.post(

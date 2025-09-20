@@ -1,5 +1,5 @@
-import axios from './authAxios';
+import { authAxios } from "./authAxios";
 
 export const logout = async(): Promise<void> => {
-    const res = await axios.post('/logout', null, {withCredentials: true});
+    const res = await authAxios.post('/logout', null, {withCredentials: true});
 }
