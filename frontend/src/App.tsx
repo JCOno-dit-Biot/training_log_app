@@ -4,11 +4,10 @@ import ActivityFeed from './pages/ActivityFeed';
 import MyKennelPage from './pages/MyKennelPage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage'
-import PrivateRoute from './components/PrivateRoutes';
+import { RequireAuth } from './functions/auth/RequireAuth';
 import Layout from './components/Layout';
 
 import './index.css';
-
 
 export default function App() {
   return (
@@ -16,11 +15,12 @@ export default function App() {
         <Routes>
           <Route path="/" element={<LoginPage />} />
           {/* <Route path="/register" element={<RegisterPage />} /> */}
+          <Route element={<RequireAuth />}>
            {/* Protected route with shared layout */}
-          <Route path="/kennel" element={<PrivateRoute><Layout><MyKennelPage /></Layout></PrivateRoute>} />
-         
-          <Route path="/activities" element={<PrivateRoute><Layout><ActivityFeed /></Layout></PrivateRoute>} />
-          {/* <Route path="/weight" element={<WeightPage />} />  */}
+            <Route path="/kennel" element={<Layout><MyKennelPage /></Layout>} />
+            <Route path="/activities" element={<Layout><ActivityFeed /></Layout>} />
+            {/* <Route path="/weight" element={<WeightPage />} />  */}
+          </Route>
         </Routes>
     </div>
   );
