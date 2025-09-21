@@ -15,12 +15,8 @@ export default function MyKennelPage() {
   //   getDogs().then(setDogs).catch(console.error);
   // }, []);
 
-  const { byId: dogsById } = useDogs();
-  const { byId: runnersById } = useRunners();
-
-  // arrays for rendering
-  const dogs = Array.from(dogsById.values());
-  const runners = Array.from(runnersById.values());
+  const { list: dogs } = useDogs();
+  const { list: runners } = useRunners();
 
   const sortedDogs = [...dogs].sort(
     (a, b) => new Date(a.date_of_birth).getTime() - new Date(b.date_of_birth).getTime()
