@@ -4,12 +4,14 @@ import { qk } from '../api/keys';
 import { getSports } from '../api/sports';
 import { Sport } from '../types/Sport';
 
-export function useSports({ enabled = true, staleTime = 5 * 60_000 } = {}) {
+export function useSports({ enabled = true, staleTime = 2 * 60_000 } = {}) {
   const q = useQuery({
     queryKey: qk.sports(),
     queryFn: getSports,
     enabled,
     staleTime,
+    gcTime: 12 * 60 *60_000,
+    refetchOnMount: false,
     placeholderData: (prev) => prev
   });
 
