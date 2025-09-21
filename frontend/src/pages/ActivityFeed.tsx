@@ -10,13 +10,15 @@ import { DogCalendarDay } from '../types/DogCalendarDay';
 import { WeeklyStats } from '../types/WeeklyStats';
 import AddActivityButton from "../components/AddActivityButton";
 import AddActivityForm from "../components/AddActivityForm";
-import { useGlobalCache } from '../context/GlobalCacheContext';
 import { SlidersHorizontal } from 'lucide-react';
 import { Transition } from '@headlessui/react';
 import { useClickAway } from 'react-use'; // optional for clean click-out
 import ActivityFilterPanel from '../components/ActivityFilterPanel'
 import { ActivityHeader } from '../components/ActivityHeader';
 import Pagination from '../components/Pagination';
+import { useSports } from '../hooks/useSports';
+import { useDogs } from '../hooks/useDogs';
+import { useRunners } from '../hooks/useRunners';
 
 
 
@@ -45,7 +47,9 @@ export default function ActivityFeed() {
     setShowModal(true);
   };
 
-  const { sports, runners, dogs } = useGlobalCache();
+  const { byId: sports } = useSports();
+  const { byId: dogs } = useDogs();
+  const { byId: runners } = useRunners();
 
   const loadPage = async (offset: number, filtersOverride: ActivityFilter = filters) => {
     try {

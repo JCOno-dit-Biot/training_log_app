@@ -3,7 +3,10 @@ import { Comment } from '../types/Comment';
 import { Menu, MenuButton, MenuItems, MenuItem } from '@headlessui/react';
 import { useState, useEffect } from 'react';
 import React from 'react';
-import { useGlobalCache } from '../context/GlobalCacheContext'
+import { useDogs } from '../hooks/useDogs';
+import { useRunners } from '../hooks/useRunners';
+import { useSports } from '../hooks/useSports';
+import { useAuth } from '../context/AuthContext';
 import { MessageCircle, MoreHorizontal, Trash2, Rocket, Send } from 'lucide-react';
 import { formatActivityDate } from '../functions/helpers/FormatDate';
 import { getRatingColor } from '../functions/helpers/GetRatingColor';
@@ -30,7 +33,7 @@ export default function ActivityCard({
   const [commentCount, setCommentCount] = useState<number>(activity.comment_count)
 
   
-  const currentUsername = localStorage.getItem("email");
+  const { user } = useAuth()
 
   const handleToggleComments = async () => {
     if (!showComments && comments.length === 0) {
@@ -52,7 +55,7 @@ export default function ActivityCard({
     if (!newComment.trim()) return;
     try {
       const comment: Comment = {
-        username: currentUsername,
+        username: user?.username,
         activity_id: activity.id,
         comment: newComment
       }
@@ -78,7 +81,11 @@ export default function ActivityCard({
   //activity.dogs.dog.forEach(dog => console.log('Dog:', dog));
 
   const DEFAULT_AVATAR = 'https://www.gravatar.com/avatar/?d=mp';
-  const { runners, dogs, sports } = useGlobalCache();
+  
+  const { byId: sports } = useSports();
+  const { byId: dogs } = useDogs();
+  const { byId: runners } = useRunners();
+
   const date = formatActivityDate(activity.timestamp);
   const capitalizedLocation = activity.location.name.charAt(0).toUpperCase() + activity.location.name.slice(1);
 
@@ -247,9 +254,9 @@ export default function ActivityCard({
             comments.map((c) => (
               <CommentItem
                 key={c.id}
-                activityId={activity.id}
+                activityId={activity.id}  
                 comment={c}
-                currentUsername={currentUsername}
+                currentUsername={user?.username}
                 onReplace={(updated) =>
                   setComments((prev) => prev.map((x) => (x.id === updated.id ? { ...x, ...updated } : x)))
                 }
