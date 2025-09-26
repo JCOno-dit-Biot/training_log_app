@@ -2,7 +2,7 @@ import { FunnelIcon } from 'lucide-react';
 import { Runner } from '../types/Runner';
 import { Dog } from '../types/Dog';
 import { Sport } from '../types/Sport';
-import { ActivityFilter } from '../types/ActivityFilter';
+import { ActivityFilter } from '../types/Activity';
 
 
 type Props = {
