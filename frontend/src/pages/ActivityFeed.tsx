@@ -1,23 +1,28 @@
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useMemo } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { getActivities, deleteActivity } from '../api/activities';
-import { getWeeklyStats } from '../api/stats/weeklyStats';
-import { getCalendarDay } from '../api/stats/dogCalendarDay';
-import ActivityCard from '../components/ActivityCard';
-import { RightSidebar } from '../components/stats_sidebar/RightSideBar';
+
 import { Activity, PaginatedActivities, ActivityFilter } from '../types/Activity';
-import { DogCalendarDay } from '../types/DogCalendarDay';
-import { WeeklyStats } from '../types/WeeklyStats';
-import AddActivityButton from "../components/AddActivityButton";
-import AddActivityForm from "../components/AddActivityForm";
-import { SlidersHorizontal } from 'lucide-react';
+
 import { Transition } from '@headlessui/react';
 import { useClickAway } from 'react-use'; // optional for clean click-out
-import ActivityFilterPanel from '../components/ActivityFilterPanel'
-import { ActivityHeader } from '../components/ActivityHeader';
-import Pagination from '../components/Pagination';
+;
+
 import { useSports } from '../hooks/useSports';
 import { useDogs } from '../hooks/useDogs';
 import { useRunners } from '../hooks/useRunners';
+
+import { useActivitiesQuery, usePrefetchActivitiesOffset } from '../hooks/useActivities';
+//import { useDeleteActivity } from '@/features/activities/mutations';
+import { qk } from '../api/keys';
+
+import ActivityFilterPanel from '../components/ActivityFilterPanel'
+import { ActivityHeader } from '../components/ActivityHeader';
+import Pagination from '../components/Pagination'
+import ActivityCard from '../components/ActivityCard';
+import { RightSidebar } from '../components/stats_sidebar/RightSideBar';
+import AddActivityForm from "../components/AddActivityForm";
+
 
 
 
@@ -25,7 +30,7 @@ export default function ActivityFeed() {
   //const [activities, setActivities] = useState<Activity[]>([]);
   const [showModal, setShowModal] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
-  const [filters, setFilters] = useState<ActivityFilter>({})
+  const [filters, setFilters] = useState<ActivityFilter>({}) // should we use useMemo()?
   const [editActivity, setEditActivity] = useState<Activity | null>(null);
   const panelRef = useRef(null);
 
@@ -38,50 +43,47 @@ export default function ActivityFeed() {
     previous: null,
   });
 
+  //set defaults for pagination
+  const limit = 10;
+  const [offset, setOffset] = useState<number>(0);
 
   useClickAway(panelRef, () => setShowFilters(false));
-
-  const openEditModal = (activity: Activity) => {
-    setEditActivity(activity);
-    setShowModal(true);
-  };
 
   const { byId: sports } = useSports();
   const { byId: dogs } = useDogs();
   const { byId: runners } = useRunners();
 
-  const loadPage = async (offset: number, filtersOverride: ActivityFilter = filters) => {
-    try {
-      const result = await getActivities({ sports, limit: pagination.limit, offset, filters: filtersOverride });
-      setPagination(result);
-    } catch (err) {
-      console.error('Failed to fetch activities:', err);
-    }
-  };
+  const filtersForQuery = useMemo(() => {
+    const { __trigger, ...rest } = filters;
+    return rest;
+  }, [filters]);
 
+  const {
+    items: activities,
+    page,
+    hasPrev,
+    hasNext,
+    isLoading,
+    isFetching,
+  } = useActivitiesQuery({ limit, offset, filters: filtersForQuery });
+
+  // Prefetch the next page on hover/focus (optional UX sugar)
+  const prefetchNext = usePrefetchActivitiesOffset({
+    limit,
+    offset: page?.next ?? offset + limit,
+    filters: filtersForQuery,
+  });
+  
+
+  // Calendar: when a date click sets __trigger='calendar', fetch immediately then strip the flag
   useEffect(() => {
-    loadPage(0);
-  }, []);
-
-  useEffect(() => {
-    const { __trigger, ...filtersToSend } = filters;
-    if (filters.__trigger === 'calendar') {
-      const fetch = async () => {
-        try {
-          const results = await getActivities({ sports, filters: filtersToSend, limit: 10, offset: 0 });
-          setPagination(results);
-
-          // Strip the trigger tag after applying
-          setFilters(prev => {
-            const { __trigger, ...cleaned } = prev;
-            return cleaned;
-          });
-        } catch (err) {
-          console.error('Failed to fetch activities:', err);
-        }
-      };
-
-      fetch(); // call it
+    if ((filters as any).__trigger === 'calendar') {
+      setOffset(0); // go to first page for a new date range
+      // strip the trigger so it doesn't persist
+      setFilters(prev => {
+        const { __trigger, ...rest } = prev as any;
+        return rest;
+      });
     }
   }, [filters]);
 
@@ -89,9 +91,15 @@ export default function ActivityFeed() {
     loadPage(0);
   };
 
-  const applyFilters = async () => {
-    loadPage(0, filters);
+  const openEditModal = (activity: Activity) => {
+    setEditActivity(activity);
+    setShowModal(true);
+  };
+
+  const applyFilters = () => {
+    setOffset(0);
     setShowFilters(false);
+    // The query auto-refetches because filtersForQuery changed
   };
 
 
@@ -150,7 +158,7 @@ export default function ActivityFeed() {
           </Transition>
         </div>
 
-        {pagination.data.map((activity) => (
+        {activities.map((activity) => (
           <ActivityCard
             key={activity.id}
             activity={activity}
@@ -160,11 +168,12 @@ export default function ActivityFeed() {
         ))}
 
         <Pagination
-          total={pagination.total_count}
-          limit={pagination.limit}
-          offset={pagination.offset}
-          onPageChange={loadPage}
+          total={page?.total_count ?? 0}
+          limit={page?.limit ?? limit}
+          offset={page?.offset ?? offset}
+          onPageChange={(newOffset) => setOffset(newOffset)}
         />
+
 
 
 
