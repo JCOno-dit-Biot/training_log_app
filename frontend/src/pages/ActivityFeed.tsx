@@ -13,6 +13,7 @@ import { useDogs } from '../hooks/useDogs';
 import { useRunners } from '../hooks/useRunners';
 
 import { useActivitiesQuery, usePrefetchActivitiesOffset } from '../hooks/useActivities';
+import { useDeleteActivity } from '../hooks/useActivities';
 //import { useDeleteActivity } from '@/features/activities/mutations';
 import { qk } from '../api/keys';
 
@@ -87,8 +88,13 @@ export default function ActivityFeed() {
     }
   }, [filters]);
 
-  const reloadActivities = async () => {
-    loadPage(0);
+  // Mutations
+  const qc = useQueryClient();
+  const { mutate: deleteActivity, isPending: deleting } = useDeleteActivity();
+
+  const reloadActivities = () => {
+    // re-fetch active lists (the current page + any mounted pages)
+    qc.invalidateQueries({ queryKey: ['activities'], refetchType: 'active' });
   };
 
   const openEditModal = (activity: Activity) => {
@@ -102,25 +108,10 @@ export default function ActivityFeed() {
     // The query auto-refetches because filtersForQuery changed
   };
 
-
   const handleDelete = async (activity_id: number) => {
-
-    try {
-      const res = await deleteActivity(activity_id);
-
-      if (res.success) {
-
-        setPagination(prev => ({
-          ...prev,
-          data: prev.data.filter(a => a.id !== activity_id),
-          total_count: prev.total_count - 1
-        }));
-      }
-    } catch (err) {
-      console.error('Failed to delete activity', err);
-    }
+   // Optimistic remove handled in the mutation hook; this will also tidy caches
+    deleteActivity(activity_id);
   }
-
 
   return (
      <section className="flex relative">

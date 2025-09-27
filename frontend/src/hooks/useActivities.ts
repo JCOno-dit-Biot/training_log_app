@@ -1,8 +1,32 @@
-import { useQuery, usePrefetchQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery, usePrefetchQuery, useQueryClient, useMutation } from '@tanstack/react-query';
 import { qk } from '../api/keys';
-import { getActivities } from '../api/activities';
-import { Activity, ActivityFilter } from '../types/Activity';
+import { 
+    getActivities, 
+    getActivity,
+    postActivity as createActivityApi, 
+    deleteActivity as deleteActivityApi, 
+    updateActivity as updateActivityApi
+} from '../api/activities';
+import { Activity, ActivityFilter, PaginatedActivities } from '../types/Activity';
+import { ActivityForm } from '../components/AddActivityForm';
 import { useAuth } from '../context/AuthContext';
+
+
+/** Helpers to touch ALL cached feed pages (any filters/offset/limit currently in cache) */
+function snapshotAllActivityPages(qc: ReturnType<typeof useQueryClient>) {
+  return qc.getQueriesData<PaginatedActivities>({ queryKey: ['activities'] })
+           .map(([key, page]) => ({ key, page }));
+}
+
+function setAllActivityPages(
+  qc: ReturnType<typeof useQueryClient>,
+  mapper: (page: PaginatedActivities) => PaginatedActivities
+) {
+  qc.getQueriesData<PaginatedActivities>({ queryKey: ['activities'] }).forEach(([key, page]) => {
+    if (!page) return;
+    qc.setQueryData<PaginatedActivities>(key, mapper(page));
+  });
+}
 
 export function useActivitiesQuery(
   { limit = 10, offset = 0, filters = {} as ActivityFilter }:
@@ -44,4 +68,108 @@ export function usePrefetchActivitiesOffset({
       queryFn: () => getActivities({ limit, offset, filters }),
       staleTime: 60_000,
     });
+}
+
+/** CREATE: returns id, unknown page => prefetch detail, invalidate active lists */
+export function useCreateActivity() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (payload: ActivityForm) => createActivityApi(payload),
+    onSuccess: async (id: number) => {
+      // Hydrate detail cache so if you navigate to it the data is instant
+      try {
+        const detail = await getActivity(id);
+        qc.setQueryData(qk.activity(id), detail);
+      } catch {
+        // ignore; detail will fetch on demand
+      }
+      // Let the server place the new record wherever it belongs
+      qc.invalidateQueries({ queryKey: ['activities'], refetchType: 'active' });
+    },
+  });
+}
+
+/** UPDATE: boolean return => optimistic patch + optional revalidate */
+export function useUpdateActivity({ revalidate = true }: { revalidate?: boolean } = {}) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, diff }: { id: number; diff: Partial<ActivityForm> }) =>
+      updateActivityApi(id, diff),
+
+    onMutate: async ({ id, diff }) => {
+      await qc.cancelQueries({ queryKey: ['activities'] });
+      await qc.cancelQueries({ queryKey: qk.activity(id) });
+
+      const pagesSnapshot = snapshotAllActivityPages(qc);
+      const prevDetail = qc.getQueryData<Activity>(qk.activity(id));
+
+      // Optimistic patch across lists
+      setAllActivityPages(qc, (page) => ({
+        ...page,
+        data: page.data.map((a) => (a.id === id ? ({ ...a, ...diff } as Activity) : a)),
+      }));
+      // Optimistic patch for detail
+      if (prevDetail) {
+        qc.setQueryData<Activity>(qk.activity(id), { ...prevDetail, ...diff });
+      }
+
+      return { pagesSnapshot, prevDetail, id };
+    },
+
+    onError: (_err, _vars, ctx) => {
+      // Roll back lists
+      ctx?.pagesSnapshot?.forEach(({ key, page }) => {
+        qc.setQueryData(key, page);
+      });
+      // Roll back detail
+      if (ctx?.prevDetail) qc.setQueryData(qk.activity(ctx.id), ctx.prevDetail);
+    },
+
+    onSuccess: (_ok, vars) => {
+      if (revalidate) {
+        qc.invalidateQueries({ queryKey: ['activities'], refetchType: 'active' });
+        qc.invalidateQueries({ queryKey: qk.activity(vars.id) });
+      }
+    },
+  });
+}
+
+/** DELETE: boolean return => optimistic remove + remove detail + optional revalidate */
+export function useDeleteActivity({ revalidate = false }: { revalidate?: boolean } = {}) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: number) => deleteActivityApi(id),
+
+    onMutate: async (id) => {
+      await qc.cancelQueries({ queryKey: ['activities'] });
+
+      const pagesSnapshot = snapshotAllActivityPages(qc);
+      const prevDetail = qc.getQueryData<Activity>(qk.activity(id));
+
+      // Optimistic remove
+      setAllActivityPages(qc, (page) => ({
+        ...page,
+        data: page.data.filter((a) => a.id !== id),
+        total_count: Math.max(0, page.total_count - 1),
+      }));
+
+      return { pagesSnapshot, prevDetail, id };
+    },
+
+    onError: (_err, _id, ctx) => {
+      // Roll back lists
+      ctx?.pagesSnapshot?.forEach(({ key, page }) => {
+        qc.setQueryData(key, page);
+      });
+      // Restore detail if we had it
+      if (ctx?.prevDetail) qc.setQueryData(qk.activity(ctx.id), ctx.prevDetail);
+    },
+
+    onSuccess: (_ok, id) => {
+      qc.removeQueries({ queryKey: qk.activity(id) });
+      if (revalidate) {
+        qc.invalidateQueries({ queryKey: ['activities'], refetchType: 'active' });
+      }
+    },
+  });
 }
