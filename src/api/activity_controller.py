@@ -21,7 +21,12 @@ class ActivityController:
         entry_count = self.repo.get_total_count(kennel_id, filters)
 
         return paginate_results(activities, entry_count, request, pagination.limit, pagination.offset)
-
+    
+    @router.get("/activities/{activity_id}", response_model=dict, status_code=200)
+    def list_activities(self, request: Request, activity_id:int):
+        activity = self.repo.get_by_id(activity_id)
+        return activity
+    
     @router.post("/activities", status_code=201)
     def create_activity(self, activity_entry: ActivityCreate):
         activity_id = self.repo.create(activity_entry)
