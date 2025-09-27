@@ -37,7 +37,12 @@ export const getActivities = async ({ limit = 10, offset = 0, filters = {} }:  F
   };
 };
 
-export const postActivity = async (formData: ActivityForm) : Promise<{id: number}> => {
+export const getActivity = async (activity_id: number): Promise<Activity> => {
+  const res = await axios.get(`/activities/${activity_id}`)
+  return res.data
+}
+
+export const postActivity = async (formData: ActivityForm) : Promise<number> => {
   const payload = {
     ...formData
   }
