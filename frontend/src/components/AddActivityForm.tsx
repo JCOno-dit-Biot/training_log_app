@@ -8,7 +8,8 @@ import LapEditor from './LapEditor';
 import LocationAutocomplete from "./LocationAutocomplete";
 import { SelectedDog } from "../types/Dog";
 import { Lap } from "../types/Lap";
-import { postActivity, updateActivity } from "../api/activities";
+import { useCreateActivity } from "../hooks/useActivities";
+import { useUpdateActivity } from "../hooks/useActivities";
 import { Weather } from "../types/Weather";
 import { Activity, Location } from "../types/Activity"
 import { getActivityChanges } from "../functions/helpers/getActivityChanges";
@@ -33,7 +34,6 @@ export default function AddActivityForm({ onClose, onSuccess, initialData }: Add
 
   const formRef = useRef<HTMLFormElement>(null);
 
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const isEdit = !!initialData;
 
@@ -75,6 +75,12 @@ export default function AddActivityForm({ onClose, onSuccess, initialData }: Add
   const { byId: dogs } = useDogs();
   const { byId: runners } = useRunners();
 
+
+  // create and update hook
+  const createMutation = useCreateActivity();
+  const updateMutation = useUpdateActivity({revalidate: true})
+
+  const saving = createMutation.isPending || updateMutation.isPending || creatingLoc;
 
   // Initialize from existing timestamp (or now) and keep in sync if formData changes elsewhere
   useEffect(() => {
@@ -212,23 +218,20 @@ export default function AddActivityForm({ onClose, onSuccess, initialData }: Add
       return; // abort submit
     }
     setValidationMsg(null);
-    setLoading(true);
     try {
-      if (isEdit && initialData) {
-        const original = convertToFormData(initialData);
-        const changes = getActivityChanges(original, formData);
-        await updateActivity(initialData.id, changes);
-      } else {
-        const response = await postActivity(formData);
-      }
+    if (isEdit && initialData) {
+      const original = convertToFormData(initialData);
+      const diff = getActivityChanges(original, formData); // what your API expects
+      await updateMutation.mutateAsync({ id: initialData.id, diff });
+    } else {
+      await createMutation.mutateAsync(formData); // returns id inside hook, warms detail, invalidates feed
+    }
       onSuccess?.();
       onClose(); // close the modal or reset form as needed
     } catch (err: any) {
       console.error('Submission error:', err);
       setError(err.response?.data?.message || 'Something went wrong.');
-    } finally {
-      setLoading(false);
-    }
+    } 
   };
 
   const selectedSport = formData.sport_id ? sports.get(formData.sport_id) : null;
@@ -478,8 +481,8 @@ export default function AddActivityForm({ onClose, onSuccess, initialData }: Add
         </div>
       </div>
 
-      <button type="submit" className="bg-primary text-white py-2 px-4 mt-2 rounded hover:bg-opacity-90" disabled={loading}>
-        {loading ? 'Saving...' : 'Save Activity'}
+      <button type="submit" className="bg-primary text-white py-2 px-4 mt-2 rounded hover:bg-opacity-90" disabled={saving}>
+        {saving ? 'Saving...' : 'Save Activity'}
       </button>
 
     </form>
