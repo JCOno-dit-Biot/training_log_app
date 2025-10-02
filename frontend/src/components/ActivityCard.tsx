@@ -91,9 +91,10 @@ export default function ActivityCard({
 
   //const dogNames = activity.dogs.map((d) => d.name).join(', ');
 
-  const sport = [...sports.values()].find(s => s.name === activity.sport.name);
+  //const sport = [...sports.values()].find(s => s.name === activity.sport.name);
+  activity.sport = [...sports.values()].find(s => s.name === activity.sport.name);// update the sport in activity to populate all fields, not just name
   const speedOrPace =
-    sport?.display_mode === 'pace' ? `${activity.pace} min/km` : `${activity.speed.toFixed(1)} km/h`;
+    activity.sport?.display_mode === 'pace' ? `${activity.pace} min/km` : `${activity.speed.toFixed(1)} km/h`;
   const runnerImageUrl = runners.get(activity.runner.id)
     ? `/profile_picture/runners/${runners.get(activity.runner.id)?.image_url}`
     : DEFAULT_AVATAR;
