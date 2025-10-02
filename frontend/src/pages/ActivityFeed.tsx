@@ -1,7 +1,5 @@
 import { useEffect, useState, useRef, useMemo } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { getActivities, deleteActivity } from '../api/activities';
-
 import { Activity, PaginatedActivities, ActivityFilter } from '../types/Activity';
 
 import { Transition } from '@headlessui/react';
@@ -23,8 +21,6 @@ import Pagination from '../components/Pagination'
 import ActivityCard from '../components/ActivityCard';
 import { RightSidebar } from '../components/stats_sidebar/RightSideBar';
 import AddActivityForm from "../components/AddActivityForm";
-
-
 
 
 export default function ActivityFeed() {

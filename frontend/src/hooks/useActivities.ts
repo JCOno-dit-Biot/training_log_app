@@ -8,9 +8,8 @@ import {
     updateActivity as updateActivityApi
 } from '../api/activities';
 import { Activity, ActivityFilter, PaginatedActivities } from '../types/Activity';
-import { ActivityForm } from '../components/AddActivityForm';
+import { ActivityForm } from '../types/Activity';
 import { useAuth } from '../context/AuthContext';
-
 
 /** Helpers to touch ALL cached feed pages (any filters/offset/limit currently in cache) */
 function snapshotAllActivityPages(qc: ReturnType<typeof useQueryClient>) {
@@ -74,7 +73,7 @@ export function usePrefetchActivitiesOffset({
 export function useCreateActivity() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (payload: ActivityForm) => createActivityApi(payload),
+    mutationFn: (payload: ActivityForm) => createActivityApi(payload) as Promise<number>,
     onSuccess: async (id: number) => {
       // Hydrate detail cache so if you navigate to it the data is instant
       try {
@@ -93,43 +92,13 @@ export function useCreateActivity() {
 export function useUpdateActivity({ revalidate = true }: { revalidate?: boolean } = {}) {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, diff }: { id: number; diff: Partial<ActivityForm> }) =>
-      updateActivityApi(id, diff),
+    mutationFn: ({ id, diff }: { id: number; diff: Record<string, unknown> }) =>
+      updateActivityApi(id, diff), // boolean
 
-    onMutate: async ({ id, diff }) => {
-      await qc.cancelQueries({ queryKey: ['activities'] });
-      await qc.cancelQueries({ queryKey: qk.activity(id) });
-
-      const pagesSnapshot = snapshotAllActivityPages(qc);
-      const prevDetail = qc.getQueryData<Activity>(qk.activity(id));
-
-      // Optimistic patch across lists
-      setAllActivityPages(qc, (page) => ({
-        ...page,
-        data: page.data.map((a) => (a.id === id ? ({ ...a, ...diff } as Activity) : a)),
-      }));
-      // Optimistic patch for detail
-      if (prevDetail) {
-        qc.setQueryData<Activity>(qk.activity(id), { ...prevDetail, ...diff });
-      }
-
-      return { pagesSnapshot, prevDetail, id };
-    },
-
-    onError: (_err, _vars, ctx) => {
-      // Roll back lists
-      ctx?.pagesSnapshot?.forEach(({ key, page }) => {
-        qc.setQueryData(key, page);
-      });
-      // Roll back detail
-      if (ctx?.prevDetail) qc.setQueryData(qk.activity(ctx.id), ctx.prevDetail);
-    },
-
-    onSuccess: (_ok, vars) => {
-      if (revalidate) {
-        qc.invalidateQueries({ queryKey: ['activities'], refetchType: 'active' });
-        qc.invalidateQueries({ queryKey: qk.activity(vars.id) });
-      }
+    onSuccess: (_ok, { id }) => {
+      // Only re-fetch pages that are mounted (no background spam)
+      qc.invalidateQueries({ queryKey: ['activities'], refetchType: 'active' });
+      qc.invalidateQueries({ queryKey: qk.activity(id) });
     },
   });
 }

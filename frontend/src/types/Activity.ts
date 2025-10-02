@@ -48,3 +48,17 @@ export interface ActivityFilter {
   start_date?: string; // ISO format
   end_date?: string;
 };
+
+export interface ActivityForm {
+  timestamp: string
+  runner_id: number | null;
+  sport_id: number | null;
+  dogs: SelectedDog[];
+  distance: number;
+  speed?: number;
+  pace?: string;
+  weather: Weather
+  workout: boolean;
+  laps: Lap[];
+  location_id: number | null;
+}
