@@ -1,6 +1,8 @@
 // components/AddActivityForm.tsx
 import { useState, useEffect, useCallback, useRef } from "react";
-import { useGlobalCache } from "../context/GlobalCacheContext";
+import { useDogs } from "../hooks/useDogs";
+import { useRunners } from "../hooks/useRunners";
+import { useSports } from "../hooks/useSports";
 import DogSelector from "./DogSelector";
 import LapEditor from './LapEditor';
 import LocationAutocomplete from "./LocationAutocomplete";
@@ -14,22 +16,7 @@ import { getLocations, createLocation } from "../api/locations";
 import { convertToFormData } from "../functions/helpers/convertToFormData";
 import { validateActivityForm } from "../functions/validation/validateActivityForm";
 import { combineLocalDateTimeToUTCISO } from "../functions/helpers/combineDateToISO";
-
-
-
-export interface ActivityForm {
-  timestamp: string
-  runner_id: number | null;
-  sport_id: number | null;
-  dogs: SelectedDog[];
-  distance: number;
-  speed?: number;
-  pace?: string;
-  weather: Weather
-  workout: boolean;
-  laps: Lap[];
-  location_id: number | null;
-}
+import { ActivityForm } from "../types/Activity";
 
 type AddActivityFormProps = {
   onClose: () => void;
@@ -84,7 +71,9 @@ export default function AddActivityForm({ onClose, onSuccess, initialData }: Add
   const [timeStr, setTimeStr] = useState<string>("");
 
 
-  const { runners, dogs, sports } = useGlobalCache();
+  const { byId: sports } = useSports();
+  const { byId: dogs } = useDogs();
+  const { byId: runners } = useRunners();
 
 
   // Initialize from existing timestamp (or now) and keep in sync if formData changes elsewhere
