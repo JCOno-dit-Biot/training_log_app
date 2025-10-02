@@ -67,10 +67,21 @@ export default function ActivityFeed() {
   // Prefetch the next page on hover/focus (optional UX sugar)
   const prefetchNext = usePrefetchActivitiesOffset({
     limit,
-    offset: page?.next ?? offset + limit,
+    offset: offset + limit,
     filters: filtersForQuery,
   });
-  
+
+  useEffect(() => {
+    if (!page || !hasNext) return;
+    // Don’t block the main render; prefetch when the browser is idle if available.
+    if ('requestIdleCallback' in window) {
+      const id = (window as any).requestIdleCallback(() => prefetchNext());
+      return () => (window as any).cancelIdleCallback?.(id);
+    } else {
+      const t = setTimeout(() => prefetchNext(), 0);
+      return () => clearTimeout(t);
+    }
+  }, [page?.next, hasNext, prefetchNext]);
 
   // Calendar: when a date click sets __trigger='calendar', fetch immediately then strip the flag
   useEffect(() => {
@@ -105,12 +116,12 @@ export default function ActivityFeed() {
   };
 
   const handleDelete = async (activity_id: number) => {
-   // Optimistic remove handled in the mutation hook; this will also tidy caches
+    // Optimistic remove handled in the mutation hook; this will also tidy caches
     deleteActivity(activity_id);
   }
 
   return (
-     <section className="flex relative">
+    <section className="flex relative">
       <main className="flex-1 pr-[345px] space-y-4 relative">
         <ActivityHeader
           onOpenCreate={() => setShowModal(true)}
@@ -188,7 +199,7 @@ export default function ActivityFeed() {
         dogs={dogs}
         filters={filters}
         setFilters={setFilters} />
-     </section >
+    </section >
 
   );
 }
