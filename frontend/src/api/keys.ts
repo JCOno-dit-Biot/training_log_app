@@ -6,6 +6,8 @@ export const qk = {
   runners: () => ['runners'] as const,
   sports: () => ['sports'] as const,
   dog: (id: number) => ['dog', id] as const,
+  locations: () => ['location'] as const,
+  location: (id:number) => ['location', id] as const,
   // Lists are keyed by filters + page/limit so we can page and filter independently
   activities: (filters: ActivityFilter, page: number, limit: number) =>
     ['activities', { filters, page, limit }] as const,
