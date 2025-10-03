@@ -215,7 +215,7 @@ export default function ActivityCard({
         </div>
         <div>
           <div className="text-xs text-stone uppercase tracking-wide">
-            {sport?.display_mode === 'pace' ? 'Pace' : 'Speed'}
+            {activity.sport?.display_mode === 'pace' ? 'Pace' : 'Speed'}
           </div>
           <div className="text-xl font-bold text-charcoal">{speedOrPace}</div>
         </div>
