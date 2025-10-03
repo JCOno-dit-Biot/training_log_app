@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { useDogs } from "../hooks/useDogs";
 import { useRunners } from "../hooks/useRunners";
 import { useSports } from "../hooks/useSports";
+import { useLocations } from "../hooks/useLocations";
 import DogSelector from "./DogSelector";
 import LapEditor from './LapEditor';
 import LocationAutocomplete from "./LocationAutocomplete";
@@ -10,6 +11,7 @@ import { SelectedDog } from "../types/Dog";
 import { Lap } from "../types/Lap";
 import { useCreateActivity } from "../hooks/useActivities";
 import { useUpdateActivity } from "../hooks/useActivities";
+import { useCreateLocation } from "../hooks/useLocations";
 import { Weather } from "../types/Weather";
 import { Activity, Location } from "../types/Activity"
 import { getActivityChanges } from "../functions/helpers/getActivityChanges";
@@ -42,9 +44,9 @@ export default function AddActivityForm({ onClose, onSuccess, initialData }: Add
   const [validationMsg, setValidationMsg] = useState<string | null>(null);
 
   // location creation and error handling
-  const [creatingLoc, setCreatingLoc] = useState(false);
+  const { mutateAsync: createLoc, isPending: creatingLoc } = useCreateLocation();
   const [banner, setBanner] = useState<{ type: "success" | "info" | "error"; msg: string } | null>(null);
-  const [locations, setLocations] = useState<Location[]>([]);
+
 
   const [formData, setFormData] = useState<ActivityForm>(() =>
     initialData ? convertToFormData(initialData) : {
@@ -74,11 +76,12 @@ export default function AddActivityForm({ onClose, onSuccess, initialData }: Add
   const { byId: sports } = useSports();
   const { byId: dogs } = useDogs();
   const { byId: runners } = useRunners();
+  const { list: locations } = useLocations();
 
 
   // create and update hook
   const createMutation = useCreateActivity();
-  const updateMutation = useUpdateActivity({revalidate: true})
+  const updateMutation = useUpdateActivity({ revalidate: true })
 
   const saving = createMutation.isPending || updateMutation.isPending || creatingLoc;
 
@@ -101,25 +104,11 @@ export default function AddActivityForm({ onClose, onSuccess, initialData }: Add
   }, [dateStr, timeStr, setFormData]);
 
   useEffect(() => {
-    let alive = true;
-    (async () => {
-      try {
-        const data = await getLocations();
-        if (alive) setLocations(data);
-      } catch (e) {
-        console.error("Failed to fetch locations", e);
-        if (alive) setLocations([]);
-      }
-    })();
-    return () => { alive = false };
-  }, []);
-
-  useEffect(() => {
     if (initialData) {
       setFormData(convertToFormData(initialData));
     } else {
       setFormData({
-        timestamp: new Date().toISOString(), 
+        timestamp: new Date().toISOString(),
         runner_id: null,
         sport_id: null,
         dogs: [],
@@ -152,36 +141,51 @@ export default function AddActivityForm({ onClose, onSuccess, initialData }: Add
   };
 
 
-  const handleCreateLocation = useCallback(async (rawName: string) => {
+  // const handleCreateLocation = useCallback(async (rawName: string) => {
+  //   const name = rawName.trim();
+  //   if (!name) return;
+
+
+  //   setCreatingLoc(true);
+  //   try {
+  //     const created = await createLocation(name);
+  //     setLocations(prev => upsertLocation(prev, created));
+  //     handleInputChange("location_id", created.id);
+  //     setBanner({ type: "success", msg: `Added "${created.name}".` });
+  //     return { ok: true }
+  //   } catch (err: any) {
+  //     if (err?.response?.status === 409) {
+  //       // pick existing if present locally
+  //       const existing = locations.find(l => l.name.toLowerCase() === name.toLowerCase());
+  //       if (existing) {
+  //         handleInputChange("location_id", existing.id);
+  //         setBanner({ type: "info", msg: `Selected existing "${existing.name}".` });
+  //         return { ok: true }
+  //       }
+  //       // if not cached, just inform; user can type to find
+  //       setBanner({ type: "info", msg: `Location already exists. Please select it.` });
+  //       return { ok: false };
+  //     }
+  //     setBanner({ type: "error", msg: "Failed to create location." });
+  //     return { ok: false };
+  //   }
+  // }, [locations, handleInputChange]);
+
+  const handleCreateLocation = async (rawName: string) => {
     const name = rawName.trim();
     if (!name) return;
 
-
-    setCreatingLoc(true);
     try {
-      const created = await createLocation(name);
-      setLocations(prev => upsertLocation(prev, created));
-      handleInputChange("location_id", created.id);
-      setBanner({ type: "success", msg: `Added "${created.name}".` });
-      return { ok: true }
-    } catch (err: any) {
-      if (err?.response?.status === 409) {
-        // pick existing if present locally
-        const existing = locations.find(l => l.name.toLowerCase() === name.toLowerCase());
-        if (existing) {
-          handleInputChange("location_id", existing.id);
-          setBanner({ type: "info", msg: `Selected existing "${existing.name}".` });
-          return { ok: true }
-        }
-        // if not cached, just inform; user can type to find
-        setBanner({ type: "info", msg: `Location already exists. Please select it.` });
-        return { ok: false };
-      }
-      setBanner({ type: "error", msg: "Failed to create location." });
+      const created = await createLoc(name); // resolves to the server Location
+      // select the newly created location in the form
+      handleInputChange('location_id', created.id);
+      setBanner({ type: 'success', msg: `Added "${created.name}".` });
+      return { ok: true };
+    } catch {
+      setBanner({ type: 'error', msg: 'Failed to create location.' });
       return { ok: false };
     }
-  }, [locations, handleInputChange]);
-
+  };
 
   const handlePaceChange = (value: string) => {
     const regex = /^\d{0,2}:?\d{0,2}$/;
@@ -219,25 +223,25 @@ export default function AddActivityForm({ onClose, onSuccess, initialData }: Add
     }
     setValidationMsg(null);
     try {
-    if (isEdit && initialData) {
-      const original = convertToFormData(initialData);
-      const diff = getActivityChanges(original, formData); // what your API expects
-      await updateMutation.mutateAsync({ id: initialData.id, diff });
-    } else {
-      await createMutation.mutateAsync(formData); // returns id inside hook, warms detail, invalidates feed
-    }
+      if (isEdit && initialData) {
+        const original = convertToFormData(initialData);
+        const diff = getActivityChanges(original, formData); // what your API expects
+        await updateMutation.mutateAsync({ id: initialData.id, diff });
+      } else {
+        await createMutation.mutateAsync(formData); // returns id inside hook, warms detail, invalidates feed
+      }
       onSuccess?.();
       onClose(); // close the modal or reset form as needed
     } catch (err: any) {
       console.error('Submission error:', err);
       setError(err.response?.data?.message || 'Something went wrong.');
-    } 
+    }
   };
 
   const selectedSport = formData.sport_id ? sports.get(formData.sport_id) : null;
 
   return (
-    <form 
+    <form
       ref={formRef}
       onSubmit={handleSubmit}
       className="space-y-4">
