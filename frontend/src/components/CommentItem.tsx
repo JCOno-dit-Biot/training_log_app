@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { deleteComment, editComment } from '../api/comment';
+import { useUpdateComment, useDeleteComment } from '../hooks/useComments';
 import { Pencil, X, Check, Trash2 } from "lucide-react";
 import { Comment } from "../types/Comment";
 
@@ -7,23 +7,21 @@ interface CommentItemProps {
   comment: Comment;
   // parent provides a setter for the list
   currentUsername: string;
-  onReplace: (updated: Comment) => void; // parent updates item
-  onRemove: (id: number) => void;        // parent removes item
   onError?: (msg: string) => void;       // optional error surfacing
 }
 
-export function CommentItem({comment,
+export function CommentItem({ comment,
   currentUsername,
-  onReplace,
-  onRemove,
   onError
 }: CommentItemProps) {
 
-   const isOwner = currentUsername === comment.username;
-
+  const isOwner = currentUsername === comment.username;
   const [isEditing, setIsEditing] = useState(false);
   const [draft, setDraft] = useState(comment.comment);
-  const [busy, setBusy] = useState<null | "save" | "delete">(null);
+
+  const { mutate: editComment, isPending: saving } = useUpdateComment();
+  const { mutate: removeComment, isPending: deleting } = useDeleteComment();
+
 
   const startEdit = () => {
     setDraft(comment.comment);
@@ -42,39 +40,27 @@ export function CommentItem({comment,
       return;
     }
 
-    // optimistic: update locally first
-    const optimistic: Comment = { ...comment, comment: trimmed };
-
-    setBusy("save");
-    try {
-      onReplace(optimistic); // optimistic
-      const res = await editComment(comment.activity_id, comment.id, optimistic);
-      onReplace(optimistic);    // ensure server truth
-      setIsEditing(false);
-    } catch (e: any) {
-      // rollback
-      onReplace(comment);
-      onError?.(e?.response?.data?.detail ?? "Failed to update comment.");
-    } finally {
-      setBusy(null);
-    }
+    editComment(
+      { activityId: comment.activity_id, id: comment.id, text: trimmed, username: currentUsername ?? null },
+      {
+        onSuccess: () => setIsEditing(false),
+        onError: (e: any) => onError?.(e?.response?.data?.detail ?? "Failed to update comment."),
+      }
+    );
   };
 
-  const remove = async () => {
+
+
+  const remove = () => {
     if (!confirm("Delete this comment?")) return;
-    setBusy("delete");
-    const snapshot = comment;
-    try {
-      onRemove(comment.id); // optimistic remove
-      await deleteComment(comment.activity_id, comment.id);
-    } catch (e: any) {
-      // rollback on failure
-      onReplace(snapshot);
-      onError?.(e?.response?.data?.detail ?? "Failed to delete comment.");
-    } finally {
-      setBusy(null);
-    }
+    removeComment(
+      { activityId: comment.activity_id, id: comment.id },
+      {
+        onError: (e: any) => onError?.(e?.response?.data?.detail ?? "Failed to delete comment."),
+      }
+    );
   };
+
 
   return (
     <div className="flex justify-between items-start gap-2 py-1">
@@ -97,7 +83,7 @@ export function CommentItem({comment,
             }
           }}
           autoFocus
-          disabled={busy === "save"}
+          disabled={saving}
         />
       )}
 
@@ -116,7 +102,7 @@ export function CommentItem({comment,
               <button
                 className="text-red-500 hover:text-red-600 disabled:opacity-50 bg-white"
                 onClick={remove}
-                disabled={busy !== null}
+                disabled={deleting}
                 title="Delete"
                 aria-label="Delete comment"
               >
@@ -128,7 +114,7 @@ export function CommentItem({comment,
               <button
                 className="text-gray-500 hover:text-gray-700"
                 onClick={cancelEdit}
-                disabled={busy === "save"}
+                disabled={saving}
                 title="Cancel"
                 aria-label="Cancel edit"
               >
@@ -137,12 +123,12 @@ export function CommentItem({comment,
               <button
                 className="text-white bg-primary rounded px-2 py-1 text-xs hover:bg-opacity-90 disabled:opacity-60"
                 onClick={save}
-                disabled={busy === "save" || !draft.trim()}
+                disabled={saving || !draft.trim()}
                 title="Save"
                 aria-label="Save edit"
               >
                 <Check className="w-4 h-4 inline-block align-[-2px]" />{" "}
-                {busy === "save" ? "Saving..." : "Save"}
+                {saving ? "Saving..." : "Save"}
               </button>
             </>
           )}

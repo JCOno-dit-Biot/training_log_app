@@ -1,5 +1,4 @@
 import { Activity } from '../types/Activity'
-import { Comment } from '../types/Comment';
 import { Menu, MenuButton, MenuItems, MenuItem } from '@headlessui/react';
 import { useState, useEffect } from 'react';
 import React from 'react';
@@ -10,7 +9,7 @@ import { useAuth } from '../context/AuthContext';
 import { MessageCircle, MoreHorizontal, Trash2, Rocket, Send } from 'lucide-react';
 import { formatActivityDate } from '../functions/helpers/FormatDate';
 import { getRatingColor } from '../functions/helpers/GetRatingColor';
-import { getComments, postComment, deleteComment } from '../api/comment';
+import { useActivityComments, useAddComment, useUpdateComment, useDeleteComment } from '../hooks/useComments';
 import { CommentItem } from './CommentItem';
 
 export default function ActivityCard({
@@ -25,52 +24,28 @@ export default function ActivityCard({
   onEdit: (activity: Activity) => void;
 }) {
   const [showComments, setShowComments] = useState(false);
-  const [comments, setComments] = useState<Comment[]>([]);
-  const [loadingComments, setLoadingComments] = useState(false);
   const [newComment, setNewComment] = useState('');
   const [showLaps, setShowLaps] = useState(false);
 
   const [commentCount, setCommentCount] = useState<number>(activity.comment_count)
 
-  
+
   const { user } = useAuth()
 
-  const handleToggleComments = async () => {
-    if (!showComments && comments.length === 0) {
-      setLoadingComments(true);
-      try {
-        const res = await getComments(activity.id)
-        setComments(res); // expect: Comment[]
-      } catch (err) {
-        console.error('Failed to load comments', err);
-        setComments([]);
-      } finally {
-        setLoadingComments(false);
-      }
-    }
-    setShowComments(prev => !prev);
-  };
+  const { data: comments = [], isLoading: loadingComments } = useActivityComments(activity.id, showComments);
+  const { mutate: addComment } = useAddComment();
+  const { mutate: editComment } = useUpdateComment();
+  const { mutate: removeComment } = useDeleteComment();
 
-  const handleAddComment = async () => {
+  // Comments are lazy loaded on render so we just need to set the visibility to true
+  const handleToggleComments = () => setShowComments(v => !v);
+
+  const handleAddComment = () => {
     if (!newComment.trim()) return;
-    try {
-      const comment: Comment = {
-        username: user?.username,
-        activity_id: activity.id,
-        comment: newComment
-      }
-      const saved = await postComment(
-        comment
-      );
-
-      const savedComment = { ...comment, id: saved.id };
-
-      setComments(prev => [...prev, savedComment]);
-      setCommentCount(c => c+1)
-      setNewComment('');
-    } catch (err) {
-      console.error('Error adding comment:', err);
-    }
+    addComment(
+      { activityId: activity.id, username: user?.sub ?? null, text: newComment.trim() },
+      { onSuccess: () => setNewComment('') }
+    );
   };
 
   // sync comment count to activity
@@ -81,7 +56,7 @@ export default function ActivityCard({
   //activity.dogs.dog.forEach(dog => console.log('Dog:', dog));
 
   const DEFAULT_AVATAR = 'https://www.gravatar.com/avatar/?d=mp';
-  
+
   const { byId: sports } = useSports();
   const { byId: dogs } = useDogs();
   const { byId: runners } = useRunners();
@@ -255,17 +230,14 @@ export default function ActivityCard({
             comments.map((c) => (
               <CommentItem
                 key={c.id}
-                activityId={activity.id}  
+                activityId={activity.id}
                 comment={c}
-                currentUsername={user?.username}
+                currentUsername={user?.sub}
                 onReplace={(updated) =>
-                  setComments((prev) => prev.map((x) => (x.id === updated.id ? { ...x, ...updated } : x)))
+                  editComment({ activityId: activity.id, id: updated.id, text: updated.comment, username: user?.username ?? null })
                 }
-                onRemove={(id) => {
-                  setComments((prev) => prev.filter((x) => x.id !== id))
-                  setCommentCount(c => Math.max(0, c - 1))
-                }
-                }
+                onRemove={(id) => removeComment({ activityId: activity.id, id })}
+
                 onError={(msg) => console.error(msg)}
               />
             ))
@@ -300,7 +272,7 @@ export default function ActivityCard({
           </div>
         </div>
       )}
-      
-      </div>
+
+    </div>
   );
 }
