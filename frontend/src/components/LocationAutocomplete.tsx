@@ -141,7 +141,7 @@ export default function LocationAutocomplete({
               key={loc.id}
               onMouseDown={(e) => { e.preventDefault(); commitSelection(loc); }}
               onMouseEnter={() => setHighlight(idx)}
-              className={`px-3 py-2 cursor-pointer ${idx === highlight ? "bg-gray-100" : ""}`}
+              className={`px-3 py-2 capitalize cursor-pointer ${idx === highlight ? "bg-gray-100" : ""}`}
               role="option"
               aria-selected={value === loc.id}
             >

@@ -135,37 +135,6 @@ export default function AddActivityForm({ onClose, onSuccess, initialData }: Add
     }
   };
 
-
-  // const handleCreateLocation = useCallback(async (rawName: string) => {
-  //   const name = rawName.trim();
-  //   if (!name) return;
-
-
-  //   setCreatingLoc(true);
-  //   try {
-  //     const created = await createLocation(name);
-  //     setLocations(prev => upsertLocation(prev, created));
-  //     handleInputChange("location_id", created.id);
-  //     setBanner({ type: "success", msg: `Added "${created.name}".` });
-  //     return { ok: true }
-  //   } catch (err: any) {
-  //     if (err?.response?.status === 409) {
-  //       // pick existing if present locally
-  //       const existing = locations.find(l => l.name.toLowerCase() === name.toLowerCase());
-  //       if (existing) {
-  //         handleInputChange("location_id", existing.id);
-  //         setBanner({ type: "info", msg: `Selected existing "${existing.name}".` });
-  //         return { ok: true }
-  //       }
-  //       // if not cached, just inform; user can type to find
-  //       setBanner({ type: "info", msg: `Location already exists. Please select it.` });
-  //       return { ok: false };
-  //     }
-  //     setBanner({ type: "error", msg: "Failed to create location." });
-  //     return { ok: false };
-  //   }
-  // }, [locations, handleInputChange]);
-
   const handleCreateLocation = async (rawName: string) => {
     const name = rawName.trim();
     if (!name) return { ok: false };
