@@ -29,6 +29,7 @@ export function useLocations({ enabled = true, staleTime = 30 * 60_000 } = {}) {
 
 export function useCreateLocation({ sortByName = true }: { sortByName?: boolean } = {}) {
     const qc = useQueryClient();
+    const key = qk.locations();
 
     const upsert = (list: Location[], loc: Location) => {
         const exists = list.some(l => l.id === loc.id);
@@ -36,75 +37,37 @@ export function useCreateLocation({ sortByName = true }: { sortByName?: boolean 
         return sortByName ? [...next].sort((a, b) => a.name.localeCompare(b.name)) : next;
     };
 
-    // base mutation no de-duplication
-    const base = useMutation<Location, unknown, { name: string; tempId?: number }, { prev?: Location[]; tempId?: number }>({
-        mutationFn: ( { name }) => {
-            // Not a dup: call server
-            const created = createLocation(name); // api returns Location
-            return created; // normalize to CreateResult in onSuccess
-        },
+    return useMutation<Location, any, string, { prev?: Location[]; tempId?: number }>({
+        mutationFn: (name: string) => createLocation(name.trim()), // MUST return {id, name}
 
-        // 2) onMutate: optimistic append only if not a dup in cache
-        onMutate: async (name) => {
-            await qc.cancelQueries({ queryKey: qk.locations() });
+        onMutate: async (rawName) => {
+            await qc.cancelQueries({ queryKey: key });
 
-            const prev = qc.getQueryData<Location[]>(qk.locations());
+            const prev = qc.getQueryData<Location[]>(key);
+            const name = rawName.trim();
+            const tempId = -Date.now(); // unique negative id
 
-            // Append a temp row
-            const tempId = Number.MIN_SAFE_INTEGER + Math.floor(Math.random() * 10_000);
             const optimistic: Location = { id: tempId, name };
-
-            qc.setQueryData<Location[]>(qk.locations(), (old = []) =>
-                upsert(old, optimistic)
-            );
+            qc.setQueryData<Location[]>(key, (old = []) => upsert(old, optimistic));
 
             return { prev, tempId };
         },
-        // 3) onError: rollback only if we appended a temp
-        onError: (err, _name, ctx) => {
-            if (ctx?.prev) {
-                qc.setQueryData(qk.locations(), ctx?.prev);
-            }
 
-            // If server said 409, refetch to get the existing item then leave it to the caller to select
-            if (err?.response?.status === 409) {
-                qc.invalidateQueries({ queryKey: qk.locations(), refetchType: 'active' });
-            }
+        onError: (_err, _name, ctx) => {
+            // rollback to previous list
+            if (ctx?.prev) qc.setQueryData(key, ctx.prev);
         },
 
-        // 4) onSuccess: replace temp or upsert result; surface created/existing
         onSuccess: (created, _name, ctx) => {
+            // replace temp with server row
+            qc.setQueryData<Location[]>(key, (old = []) =>
+                old.map(l => (l.id === ctx?.tempId ? created : l))
+            );
+        },
 
-            qc.setQueryData<Location[]>(qk.locations(), (old = []) => {
-                // If we appended a temp, replace it; otherwise just upsert the real row
-                if (ctx.tempId != null) {
-                    const replaced = old.map(l => (l.id === ctx.tempId ? created : l));
-                    return sortByName ? [...replaced].sort((a, b) => a.name.localeCompare(b.name)) : replaced;
-                }
-                return upsert(old, created);
-            });
-            },
-  });
-
-
-            // Smart wrapper that PRE-checks duplicates before calling the mutation
-            const createLocationSmart = async (rawName: string): Promise<{ location: Location; created: boolean }> => {
-                const name = rawName.trim();
-                if (!name) throw new Error('Location name required');
-
-                const cached = (qc.getQueryData<Location[]>(qk.locations()) ?? []);
-                const existing = cached.find(l => normalize(l.name) === normalize(name));
-                if (existing) {
-                    // No network, no optimistic; just return existing
-                    return { location: existing, created: false };
-                }
-
-                const created = await base.mutateAsync({ name });
-                return { location: created, created: true };
-            };
-
-            return {
-                createLocation: createLocationSmart,
-                isPending: base.isPending,
-            };
-        }
+        onSettled: () => {
+            // keep server as source of truth for ordering / dedup w.r.t other clients
+            qc.invalidateQueries({ queryKey: key, refetchType: 'active' });
+        },
+    });
+}
