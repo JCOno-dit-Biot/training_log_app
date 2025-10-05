@@ -27,11 +27,6 @@ type AddActivityFormProps = {
   initialData?: Activity;
 }
 
-function upsertLocation(list: { id: number; name: string }[], loc: { id: number; name: string }) {
-  const exists = list.some(l => l.id === loc.id);
-  return exists ? list : [...list, loc].sort((a, b) => a.name.localeCompare(b.name));
-}
-
 export default function AddActivityForm({ onClose, onSuccess, initialData }: AddActivityFormProps) {
 
   const formRef = useRef<HTMLFormElement>(null);
@@ -173,19 +168,27 @@ export default function AddActivityForm({ onClose, onSuccess, initialData }: Add
 
   const handleCreateLocation = async (rawName: string) => {
     const name = rawName.trim();
-    if (!name) return;
+    if (!name) return { ok: false };
 
-    try {
-      const created = await createLoc(name); // resolves to the server Location
-      // select the newly created location in the form
-      handleInputChange('location_id', created.id);
-      setBanner({ type: 'success', msg: `Added "${created.name}".` });
+    // 1) preflight de-dup using current cache
+    const existing = locations.find(l => l.name.toLowerCase() === name.toLowerCase());
+    if (existing) {
+      handleInputChange('location_id', existing.id);
+      setBanner({ type: 'info', msg: `Selected existing "${existing.name}".` });
       return { ok: true };
-    } catch {
-      setBanner({ type: 'error', msg: 'Failed to create location.' });
-      return { ok: false };
     }
-  };
+
+    // 2) create with optimistic update
+    try {
+    const created = await createLoc(name); // resolves to server {id,name}
+    handleInputChange('location_id', created.id);
+    setBanner({ type: 'success', msg: `Added "${created.name}".` });
+    return { ok: true };
+  } catch {
+    setBanner({ type: 'error', msg: 'Failed to create location.' });
+    return { ok: false };
+  }
+};
 
   const handlePaceChange = (value: string) => {
     const regex = /^\d{0,2}:?\d{0,2}$/;
