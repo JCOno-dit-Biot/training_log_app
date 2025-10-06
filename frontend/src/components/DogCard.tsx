@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { Dog } from '../types/Dog';
 import { diff } from '../functions/helpers/diffObject';
-import { updateDog } from '../api/dogs';
+import { useUpdateDog } from '../hooks/useDogs';
 import { Pencil } from 'lucide-react';
 
 interface DogCardProps {
@@ -10,6 +10,9 @@ interface DogCardProps {
 }
 
 export default function DogCard({ dog }: DogCardProps) {
+
+  const { mutate: updateDog, isPending } = useUpdateDog({ revalidate: true });
+
   // Format DOB and protect against malformed DOB
   const dobParts = (dog.date_of_birth ?? "").split("-");
   const dobFormatted =
@@ -65,7 +68,7 @@ export default function DogCard({ dog }: DogCardProps) {
 
     setBusy(true);
     try {
-      updateDog(dog.id, patch);
+      updateDog({id: dog.id, diff: patch});
       setOpen(false);
       setSuccessMsg(`Successfully edited dog ${formSnapshot.name}`);
       setTimeout(() => setSuccessMsg(null), 4000); // auto-hide after 4s

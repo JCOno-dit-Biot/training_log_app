@@ -1,30 +1,33 @@
-import { useEffect, useState, useRef } from 'react';
-import { getActivities, deleteActivity } from '../api/activities';
-import { getWeeklyStats } from '../api/stats/weeklyStats';
-import { getCalendarDay } from '../api/stats/dogCalendarDay';
-import ActivityCard from '../components/ActivityCard';
-import { RightSidebar } from '../components/stats_sidebar/RightSideBar';
-import { Activity, PaginatedActivities } from '../types/Activity';
-import { ActivityFilter } from '../types/ActivityFilter';
-import { DogCalendarDay } from '../types/DogCalendarDay';
-import { WeeklyStats } from '../types/WeeklyStats';
-import AddActivityButton from "../components/AddActivityButton";
-import AddActivityForm from "../components/AddActivityForm";
-import { useGlobalCache } from '../context/GlobalCacheContext';
-import { SlidersHorizontal } from 'lucide-react';
+import { useEffect, useState, useRef, useMemo } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
+import { Activity, PaginatedActivities, ActivityFilter } from '../types/Activity';
+
 import { Transition } from '@headlessui/react';
 import { useClickAway } from 'react-use'; // optional for clean click-out
+;
+
+import { useSports } from '../hooks/useSports';
+import { useDogs } from '../hooks/useDogs';
+import { useRunners } from '../hooks/useRunners';
+
+import { useActivitiesQuery, usePrefetchActivitiesOffset } from '../hooks/useActivities';
+import { useDeleteActivity } from '../hooks/useActivities';
+//import { useDeleteActivity } from '@/features/activities/mutations';
+import { qk } from '../api/keys';
+
 import ActivityFilterPanel from '../components/ActivityFilterPanel'
 import { ActivityHeader } from '../components/ActivityHeader';
-import Pagination from '../components/Pagination';
-
+import Pagination from '../components/Pagination'
+import ActivityCard from '../components/ActivityCard';
+import { RightSidebar } from '../components/stats_sidebar/RightSideBar';
+import AddActivityForm from "../components/AddActivityForm";
 
 
 export default function ActivityFeed() {
   //const [activities, setActivities] = useState<Activity[]>([]);
   const [showModal, setShowModal] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
-  const [filters, setFilters] = useState<ActivityFilter>({})
+  const [filters, setFilters] = useState<ActivityFilter>({}) // should we use useMemo()?
   const [editActivity, setEditActivity] = useState<Activity | null>(null);
   const panelRef = useRef(null);
 
@@ -37,82 +40,88 @@ export default function ActivityFeed() {
     previous: null,
   });
 
+  //set defaults for pagination
+  const limit = 10;
+  const [offset, setOffset] = useState<number>(0);
 
   useClickAway(panelRef, () => setShowFilters(false));
+
+  const { byId: sports } = useSports();
+  const { byId: dogs } = useDogs();
+  const { byId: runners } = useRunners();
+
+  const filtersForQuery = useMemo(() => {
+    const { __trigger, ...rest } = filters;
+    return rest;
+  }, [filters]);
+
+  const {
+    items: activities,
+    page,
+    hasPrev,
+    hasNext,
+    isLoading,
+    isFetching,
+  } = useActivitiesQuery({ limit, offset, filters: filtersForQuery });
+
+  // Prefetch the next page on hover/focus (optional UX sugar)
+  const prefetchNext = usePrefetchActivitiesOffset({
+    limit,
+    offset: offset + limit,
+    filters: filtersForQuery,
+  });
+
+  useEffect(() => {
+    if (!page || !hasNext) return;
+    // Don’t block the main render; prefetch when the browser is idle if available.
+    if ('requestIdleCallback' in window) {
+      const id = (window as any).requestIdleCallback(() => prefetchNext());
+      return () => (window as any).cancelIdleCallback?.(id);
+    } else {
+      const t = setTimeout(() => prefetchNext(), 0);
+      return () => clearTimeout(t);
+    }
+  }, [page?.next, hasNext, prefetchNext]);
+
+  // Calendar: when a date click sets __trigger='calendar', fetch immediately then strip the flag
+  useEffect(() => {
+    if ((filters as any).__trigger === 'calendar') {
+      setOffset(0); // go to first page for a new date range
+      // strip the trigger so it doesn't persist
+      setFilters(prev => {
+        const { __trigger, ...rest } = prev as any;
+        return rest;
+      });
+    }
+  }, [filters]);
+
+  // Mutations
+  const qc = useQueryClient();
+  const { mutate: deleteActivity, isPending: deleting } = useDeleteActivity();
+
+  const reloadActivities = () => {
+    // re-fetch active lists (the current page + any mounted pages)
+    qc.invalidateQueries({ queryKey: ['activities'], refetchType: 'active' });
+  };
 
   const openEditModal = (activity: Activity) => {
     setEditActivity(activity);
     setShowModal(true);
   };
 
-  const { sports, runners, dogs } = useGlobalCache();
-
-  const loadPage = async (offset: number, filtersOverride: ActivityFilter = filters) => {
-    try {
-      const result = await getActivities({ sports, limit: pagination.limit, offset, filters: filtersOverride });
-      setPagination(result);
-    } catch (err) {
-      console.error('Failed to fetch activities:', err);
-    }
-  };
-
-  useEffect(() => {
-    loadPage(0);
-  }, []);
-
-  useEffect(() => {
-    const { __trigger, ...filtersToSend } = filters;
-    if (filters.__trigger === 'calendar') {
-      const fetch = async () => {
-        try {
-          const results = await getActivities({ sports, filters: filtersToSend, limit: 10, offset: 0 });
-          setPagination(results);
-
-          // Strip the trigger tag after applying
-          setFilters(prev => {
-            const { __trigger, ...cleaned } = prev;
-            return cleaned;
-          });
-        } catch (err) {
-          console.error('Failed to fetch activities:', err);
-        }
-      };
-
-      fetch(); // call it
-    }
-  }, [filters]);
-
-  const reloadActivities = async () => {
-    loadPage(0);
-  };
-
-  const applyFilters = async () => {
-    loadPage(0, filters);
+  const applyFilters = () => {
+    setOffset(0);
     setShowFilters(false);
+    // The query auto-refetches because filtersForQuery changed
   };
-
 
   const handleDelete = async (activity_id: number) => {
-
-    try {
-      const res = await deleteActivity(activity_id);
-
-      if (res.success) {
-
-        setPagination(prev => ({
-          ...prev,
-          data: prev.data.filter(a => a.id !== activity_id),
-          total_count: prev.total_count - 1
-        }));
-      }
-    } catch (err) {
-      console.error('Failed to delete activity', err);
-    }
+    // Optimistic remove handled in the mutation hook; this will also tidy caches
+    deleteActivity(activity_id);
   }
 
-
   return (
-     <section className="flex relative">
+    <section className="flex relative">
       <main className="flex-1 pr-[345px] space-y-4 relative">
         <ActivityHeader
           onOpenCreate={() => setShowModal(true)}
@@ -147,7 +156,7 @@ export default function ActivityFeed() {
           </Transition>
         </div>
 
-        {pagination.data.map((activity) => (
+        {activities.map((activity) => (
           <ActivityCard
             key={activity.id}
             activity={activity}
@@ -157,11 +166,12 @@ export default function ActivityFeed() {
         ))}
 
         <Pagination
-          total={pagination.total_count}
-          limit={pagination.limit}
-          offset={pagination.offset}
-          onPageChange={loadPage}
+          total={page?.total_count ?? 0}
+          limit={page?.limit ?? limit}
+          offset={page?.offset ?? offset}
+          onPageChange={(newOffset) => setOffset(newOffset)}
         />
+
 
 
 
@@ -189,7 +199,7 @@ export default function ActivityFeed() {
         dogs={dogs}
         filters={filters}
         setFilters={setFilters} />
-     </section >
+    </section >
 
   );
 }

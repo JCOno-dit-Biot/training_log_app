@@ -8,7 +8,7 @@ type Props = {
   onChange: (id: number | null) => void; // emit id when selected
   placeholder?: string;
   allowCreateOption?: boolean;           // optional: show "Add new"
-  onCreateNew?: (name: string) => Promise<void> | void; 
+  onCreateNew?: (name: string) => Promise<boolean>;
   disabled?: boolean;
 };
 
@@ -32,11 +32,11 @@ export default function LocationAutocomplete({
     [value, locations]
   );
 
-  // filter (top 10)
   const filtered = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    if (!q) return locations.slice(0, 5);
-    return locations.filter(l => l.name.toLowerCase().includes(q)).slice(0, 5);
+    const q = (query || '').trim().toLowerCase();
+    const safe = (locations ?? []).filter((l): l is Location => !!l && typeof l.name === 'string');
+    const base = q ? safe.filter(l => l.name.toLowerCase().includes(q)) : safe;
+    return base.slice(0, 5);
   }, [locations, query]);
 
   useEffect(() => {
@@ -100,16 +100,16 @@ export default function LocationAutocomplete({
   }, [value, selected?.name]);
 
   async function handleCreateClick() {
-  if (!onCreateNew) return;
-  try {
-    const res = await onCreateNew(query);
-    // res?.ok === true → success or 409 handled (auto-selected)
-  } finally {
-    // close either way so the user sees the banner
-    setOpen(false);
-    inputRef.current?.blur();
+    if (!onCreateNew) return;
+    try {
+      const res = await onCreateNew(query);
+      // res?.ok === true → success or 409 handled (auto-selected)
+    } finally {
+      // close either way so the user sees the banner
+      setOpen(false);
+      inputRef.current?.blur();
+    }
   }
-}
   return (
     <div className="relative">
       <input
@@ -141,7 +141,7 @@ export default function LocationAutocomplete({
               key={loc.id}
               onMouseDown={(e) => { e.preventDefault(); commitSelection(loc); }}
               onMouseEnter={() => setHighlight(idx)}
-              className={`px-3 py-2 cursor-pointer ${idx === highlight ? "bg-gray-100" : ""}`}
+              className={`px-3 py-2 capitalize cursor-pointer ${idx === highlight ? "bg-gray-100" : ""}`}
               role="option"
               aria-selected={value === loc.id}
             >

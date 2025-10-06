@@ -1,9 +1,9 @@
 // src/api/dogs.js
-import axios from './authAxios';
+import { authAxios } from "./authAxios";
 
 
 export const register = async (payload: URLSearchParams): Promise<{data: string, status_code: number}>=> {
-  const res = await axios.post(
+  const res = await authAxios.post(
     '/register',
     payload,
     {headers: {

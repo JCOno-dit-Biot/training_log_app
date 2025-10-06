@@ -6,14 +6,13 @@ import { ActivityForm } from '../components/AddActivityForm';
 
 
 type FetchActivitiesOptions = {
-  sports: Map<number, Sport>;
   limit: number;
   offset: number;
   filters?: ActivityFilter; 
 };
 
 
-export const getActivities = async ({ sports, limit = 10, offset = 0, filters = {} }:  FetchActivitiesOptions): Promise<PaginatedActivities> => {
+export const getActivities = async ({ limit = 10, offset = 0, filters = {} }:  FetchActivitiesOptions): Promise<PaginatedActivities> => {
 
   const params = new URLSearchParams();
 
@@ -26,22 +25,24 @@ export const getActivities = async ({ sports, limit = 10, offset = 0, filters = 
     }
   });
   const res = await axios.get(`/activities?${params.toString()}`);
-  const items = res.data.data.map((activity: Activity) => {
-    const matchedSport = [...sports.values()].find(s => s.name === activity.sport.name);
-    return { ...activity, sport: matchedSport ?? activity.sport };
-  });
+  const d = res.data;
 
   return {
-    data: items,
-    total_count: res.data.total_count,
-    limit: res.data.limit,
-    offset: res.data.offset,
-    next: res.data.next,
-    previous: res.data.previous,
+    data: d.data ?? d.items ?? d.results ?? [],  // be tolerant
+    total_count: d.total_count,
+    limit: d.limit ?? limit,
+    offset: d.offset ?? offset,
+    next: d.next ?? null,
+    previous: d.previous ?? null,
   };
 };
 
-export const postActivity = async (formData: ActivityForm) : Promise<{id: number}> => {
+export const getActivity = async (activity_id: number): Promise<Activity> => {
+  const res = await axios.get(`/activities/${activity_id}`)
+  return res.data
+}
+
+export const postActivity = async (formData: ActivityForm) : Promise<number> => {
   const payload = {
     ...formData
   }
@@ -55,7 +56,7 @@ export const deleteActivity = async (activity_id: number): Promise<{ success: bo
   return response.data;
 }
 
-export const updateActivity = async (id: number, changes: Partial<ActivityForm>) => {
+export const updateActivity = async (id: number, changes: Partial<ActivityForm>): Promise<{ success: boolean }> => {
   const response = await axios.put(`/activities/${id}`, changes);
   return response.data;
 }

@@ -1,19 +1,22 @@
 import { useEffect, useState } from 'react';
-import { getRunners } from '../api/runners';
-import { getDogs } from '../api/dogs';
+import { useDogs } from '../hooks/useDogs';
+import { useRunners } from '../hooks/useRunners';
 import { Dog } from '../types/Dog';
 import { Runner } from '../types/Runner';
 import RunnerCard from '../components/RunnerCard';
 import DogCard from '../components/DogCard';
 
 export default function MyKennelPage() {
-  const [runners, setRunners] = useState<Runner[]>([]);
-  const [dogs, setDogs] = useState<Dog[]>([]);
+  // const [runners, setRunners] = useState<Runner[]>([]);
+  // const [dogs, setDogs] = useState<Dog[]>([]);
 
-  useEffect(() => {
-    getRunners().then(setRunners).catch(console.error);
-    getDogs().then(setDogs).catch(console.error);
-  }, []);
+  // useEffect(() => {
+  //   getRunners().then(setRunners).catch(console.error);
+  //   getDogs().then(setDogs).catch(console.error);
+  // }, []);
+
+  const { list: dogs } = useDogs();
+  const { list: runners } = useRunners();
 
   const sortedDogs = [...dogs].sort(
     (a, b) => new Date(a.date_of_birth).getTime() - new Date(b.date_of_birth).getTime()
