@@ -1,10 +1,8 @@
-// AuthContext.tsx
 import { createContext, useContext, useEffect, useState, useMemo } from 'react';
-import { authStorage } from '../functions/auth/authStorage';
-import { validateToken, type User } from '../api/auth/authAxios';
-import { refreshAccessToken } from '../api/axios';
-import { getToken } from '../api/auth/token';
-import { logout } from '../api/auth/logout';
+import { authStorage } from '@app/auth/auth-storage'
+import { validateToken, type User } from '@shared/api/authAxios';
+import { refreshAccessToken } from '@shared/api/axios';
+import { getToken } from '@entities/auth/api/token';
 import { useQueryClient } from '@tanstack/react-query';
 
 type SessionStatus = 'unknown' | 'authenticated' | 'guest';

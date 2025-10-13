@@ -1,5 +1,5 @@
 // src/api/dogs.js
-import { authAxios } from "./authAxios";
+import { authAxios } from '@shared/api/authAxios';
 
 
 export const register = async (payload: URLSearchParams): Promise<{data: string, status_code: number}>=> {

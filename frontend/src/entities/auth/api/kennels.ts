@@ -1,5 +1,5 @@
 // src/api/dogs.js
-import { authAxios } from './authAxios';
+import { authAxios } from '@shared/api/authAxios';
 import { Kennel } from '../../types/Kennel'
 
 export const getKennels = async (): Promise<Kennel[]> => {
