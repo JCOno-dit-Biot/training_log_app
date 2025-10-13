@@ -1,8 +1,7 @@
-import { FunnelIcon } from 'lucide-react';
-import { Runner } from '../types/Runner';
-import { Dog } from '../types/Dog';
-import { Sport } from '../types/Sport';
-import { ActivityFilter } from '../types/Activity';
+import { Runner } from '@entities/runners/model';
+import { Dog } from '@entities/dogs/model';
+import { Sport } from '@entities/sports/model';
+import { ActivityFilter } from '@entities/activities/model';
 
 
 type Props = {

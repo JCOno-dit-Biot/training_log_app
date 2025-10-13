@@ -1,5 +1,4 @@
 import axios from 'axios';
-import { authStorage } from '../../functions/auth/authStorage';
 
 export type User = {
   id: number; 

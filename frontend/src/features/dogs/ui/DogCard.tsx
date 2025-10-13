@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
-import { Dog } from '../types/Dog';
-import { diff } from '../functions/helpers/diffObject';
-import { useUpdateDog } from '../hooks/useDogs';
+import { Dog } from '@entities/dogs/model';
+import { diff } from '@shared/util/diffObject';
+import { useUpdateDog } from '../model/useDogs';
 import { Pencil } from 'lucide-react';
 
 interface DogCardProps {

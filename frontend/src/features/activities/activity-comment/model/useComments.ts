@@ -1,9 +1,9 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { qk } from '../api/keys';
-import { getComments, postComment, deleteComment, editComment } from '../api/comment';
-import { Comment } from '../types/Comment';
-import { useAuth } from '../context/AuthContext';
-import { adjustActivityCommentCount } from '../functions/helpers/commentCountHelper';
+import { qk } from '@shared/api/keys'
+import { getComments, postComment, deleteComment, editComment } from '@entities/activities/api/comment';
+import { Comment } from '@entities/activities/model';
+import { useAuth } from '@app/providers/auth-provider';
+import { adjustActivityCommentCount } from '../util/commentCountHelper';
 
 export function useActivityComments(activityId: number, enabled: boolean) {
   const { isAuthenticated } = useAuth();

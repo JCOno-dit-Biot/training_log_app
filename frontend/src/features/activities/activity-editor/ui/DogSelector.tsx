@@ -1,6 +1,6 @@
 import React from 'react';
 import { useState } from 'react';
-import { Dog, SelectedDog } from '../types/Dog';
+import { Dog, SelectedDog } from '@entities/dogs/model';
 
 
 

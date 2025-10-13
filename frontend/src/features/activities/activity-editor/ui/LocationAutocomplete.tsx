@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Location } from "../types/Activity";
+import { Location } from "@entities/activities/model";
 
 
 type Props = {

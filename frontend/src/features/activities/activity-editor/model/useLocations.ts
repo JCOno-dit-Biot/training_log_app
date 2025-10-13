@@ -1,12 +1,8 @@
 import { useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { getLocations, createLocation } from '../api/locations';
-import { Location } from '../types/Activity';
-import { qk } from '../api/keys';
-
-type CreateResult = { location: Location; created: boolean };
-
-const normalize = (s: string) => s.trim().toLowerCase();
+import { getLocations, createLocation } from '@entities/activities/api/locations';
+import { Location } from '@entities/activities/model';
+import { qk } from '@shared/api/keys'
 
 export function useLocations({ enabled = true, staleTime = 30 * 60_000 } = {}) {
     const q = useQuery({

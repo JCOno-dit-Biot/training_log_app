@@ -1,5 +1,5 @@
-import { WeeklyStats, Trend } from "../../types/WeeklyStats"
-import { Dog } from "../../types/Dog"
+import { WeeklyStats, Trend } from '@entities/activity-stats/model'
+import { Dog } from '@entities/dogs/model'
 
 import { TrendingUp, TrendingDown, Minus } from 'lucide-react'
 

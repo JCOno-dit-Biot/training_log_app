@@ -1,4 +1,4 @@
-import { ActivityFilter } from "../types/Activity";
+import { ActivityFilter } from "@entities/activities/model";
 
 // define keys for useQuery
 export const qk = {

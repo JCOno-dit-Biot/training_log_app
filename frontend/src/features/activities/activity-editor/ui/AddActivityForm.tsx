@@ -1,25 +1,23 @@
 // components/AddActivityForm.tsx
-import { useState, useEffect, useCallback, useRef } from "react";
-import { useDogs } from "../hooks/useDogs";
-import { useRunners } from "../hooks/useRunners";
-import { useSports } from "../hooks/useSports";
-import { useLocations } from "../hooks/useLocations";
+import { useState, useEffect, useRef } from "react";
+import { useDogs } from '@features/dogs/model/useDogs';
+import { useRunners } from '@features/runners/model/useRunners';
+import { useSports } from '@features/sports/model/useSports';
+import { useLocations } from "@features/activities/activity-editor/model/useLocations";
+
 import DogSelector from "./DogSelector";
 import LapEditor from './LapEditor';
 import LocationAutocomplete from "./LocationAutocomplete";
-import { SelectedDog } from "../types/Dog";
-import { Lap } from "../types/Lap";
-import { useCreateActivity } from "../hooks/useActivities";
-import { useUpdateActivity } from "../hooks/useActivities";
-import { useCreateLocation } from "../hooks/useLocations";
-import { Weather } from "../types/Weather";
-import { Activity, Location } from "../types/Activity"
-import { getActivityChanges } from "../functions/helpers/getActivityChanges";
-import { getLocations, createLocation } from "../api/locations";
-import { convertToFormData } from "../functions/helpers/convertToFormData";
-import { validateActivityForm } from "../functions/validation/validateActivityForm";
-import { combineLocalDateTimeToUTCISO } from "../functions/helpers/combineDateToISO";
-import { ActivityForm } from "../types/Activity";
+
+import { useUpdateActivity, useCreateActivity } from "@features/activities/activity-editor/model/useActivitiesMutations";
+import { useCreateLocation } from "@features/activities/activity-editor/model/useLocations";
+
+import { getActivityChanges } from "../util/getActivityChanges";
+import { convertToFormData } from "../util/convertToFormData";
+import { validateActivityForm } from "../util/validateActivityForm";
+import { combineLocalDateTimeToUTCISO } from "@shared/util/combineDateToISO";
+
+import { ActivityForm, Weather, Activity } from "@entities/activities/model";
 
 type AddActivityFormProps = {
   onClose: () => void;

@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { useUpdateComment, useDeleteComment } from '../hooks/useComments';
+import { useUpdateComment, useDeleteComment } from '@features/activities/activity-comment/model/useComments';
 import { Pencil, X, Check, Trash2 } from "lucide-react";
-import { Comment } from "../types/Comment";
+import { Comment } from "@entities/activities/model";
 
 interface CommentItemProps {
   comment: Comment;

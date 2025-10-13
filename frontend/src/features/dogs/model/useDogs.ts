@@ -1,9 +1,8 @@
-
 import { useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { getDogs, updateDog as updateDogApi } from '../api/dogs';
-import { Dog } from '../types/Dog';
-import { qk } from '../api/keys';
+import { getDogs, updateDog as updateDogApi } from '@entities/dogs/api/dogs';
+import { Dog } from '@entities/dogs/model';
+import { qk } from '@shared/api/keys';
 
 export function useDogs({ enabled = true, staleTime = 30 * 60_000 } = {}) {
   const q = useQuery({

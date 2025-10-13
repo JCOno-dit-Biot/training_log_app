@@ -1,15 +1,10 @@
-import { useQuery, usePrefetchQuery, useQueryClient, useMutation } from '@tanstack/react-query';
-import { qk } from '../api/keys';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { qk } from '@shared/api/keys'
 import { 
     getActivities, 
-    getActivity,
-    postActivity as createActivityApi, 
-    deleteActivity as deleteActivityApi, 
-    updateActivity as updateActivityApi
-} from '../api/activities';
-import { Activity, ActivityFilter, PaginatedActivities } from '../types/Activity';
-import { ActivityForm } from '../types/Activity';
-import { useAuth } from '../context/AuthContext';
+} from '@entities/activities/api/activities';
+import { ActivityFilter } from '@entities/activities/model';
+import { useAuth } from '@app/providers/auth-provider';
 
 
 export function useActivitiesQuery(

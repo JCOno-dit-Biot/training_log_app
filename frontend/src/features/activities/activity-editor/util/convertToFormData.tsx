@@ -1,6 +1,4 @@
-import { Activity } from "../../types/Activity";
-import { ActivityForm } from "../../components/AddActivityForm";
-import { SelectedDog } from "../../types/Dog";
+import { ActivityForm, Activity } from '@entities/activities/model';
 
 
 export function convertToFormData(activity: Activity): ActivityForm {

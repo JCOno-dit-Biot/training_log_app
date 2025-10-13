@@ -1,5 +1,5 @@
 import React from 'react';
-import { Runner } from '../types/Runner';
+import { Runner } from '@entities/runners/model';
 
 interface RunnerCardProps {
   runner: Runner;

@@ -1,16 +1,16 @@
-import { Activity } from '../types/Activity'
+import { Activity } from '@entities/activities/model'
 import { Menu, MenuButton, MenuItems, MenuItem } from '@headlessui/react';
 import { useState, useEffect } from 'react';
 import React from 'react';
-import { useDogs } from '../hooks/useDogs';
-import { useRunners } from '../hooks/useRunners';
-import { useSports } from '../hooks/useSports';
-import { useAuth } from '../context/AuthContext';
-import { MessageCircle, MoreHorizontal, Trash2, Rocket, Send } from 'lucide-react';
-import { formatActivityDate } from '../functions/helpers/FormatDate';
-import { getRatingColor } from '../functions/helpers/GetRatingColor';
-import { useActivityComments, useAddComment, useUpdateComment, useDeleteComment } from '../hooks/useComments';
-import { CommentItem } from './CommentItem';
+import { useDogs } from '@features/dogs/model/useDogs';
+import { useRunners } from '@features/runners/model/useRunners';
+import { useSports } from '@features/sports/model/useSports';
+import { useAuth } from '@app/providers/auth-provider';
+import { MessageCircle, MoreHorizontal, Rocket, Send } from 'lucide-react';
+import { formatActivityDate } from '@/shared/util/FormatDate';
+import { getRatingColor } from '@shared/util/GetRatingColor';
+import { useActivityComments, useAddComment, useUpdateComment, useDeleteComment } from '@features/activities/activity-comment/model/useComments';
+import { CommentItem } from '../../activity-comment/ui/CommentItem';
 
 export default function ActivityCard({
   activity,

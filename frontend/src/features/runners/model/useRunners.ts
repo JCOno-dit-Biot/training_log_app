@@ -1,8 +1,8 @@
 import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { qk } from '../api/keys';
-import { Runner } from '../types/Runner';
-import { getRunners } from '../api/runners';
+import { qk } from '@shared/api/keys';
+import { Runner } from '@entities/runners/model';
+import { getRunners } from '@entities/runners/api/runners';
 
 export function useRunners({ enabled = true, staleTime = 2 * 60 * 60_000 } = {}) {
   const q = useQuery({

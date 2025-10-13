@@ -1,5 +1,5 @@
-import { ActivityForm } from "../../components/AddActivityForm";
-import { Sport } from "../../types/Sport";
+import { ActivityForm } from '@entities/activities/model';
+import { Sport } from '@entities/sports/model'
 
 const isISO = (s: string) => !Number.isNaN(Date.parse(s));
 

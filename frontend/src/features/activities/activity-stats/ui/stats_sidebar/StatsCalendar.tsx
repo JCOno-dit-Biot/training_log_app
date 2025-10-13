@@ -1,7 +1,6 @@
 import Calendar from 'react-calendar'
-import { useState } from 'react'
 import { parseISO, format } from 'date-fns'
-import { DogCalendarDay } from '../../types/DogCalendarDay'
+import { DogCalendarDay } from '@entities/activity-stats/model'
 import 'react-calendar/dist/Calendar.css'
 import './DogCalendar.css';
 

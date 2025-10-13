@@ -1,15 +1,14 @@
 import { useQuery, usePrefetchQuery, useQueryClient, useMutation } from '@tanstack/react-query';
-import { qk } from '../api/keys';
+import { qk } from '@shared/api/keys'
 import { 
-    getActivities, 
     getActivity,
     postActivity as createActivityApi, 
     deleteActivity as deleteActivityApi, 
     updateActivity as updateActivityApi
-} from '../api/activities';
-import { Activity, ActivityFilter, PaginatedActivities } from '../types/Activity';
-import { ActivityForm } from '../types/Activity';
-import { useAuth } from '../context/AuthContext';
+} from '@entities/activities/api/activities';
+import { Activity, PaginatedActivities, ActivityForm } from '@entities/activities/model';
+
+
 
 /** Helpers to touch ALL cached feed pages (any filters/offset/limit currently in cache) */
 function snapshotAllActivityPages(qc: ReturnType<typeof useQueryClient>) {

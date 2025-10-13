@@ -1,5 +1,5 @@
 import React from 'react';
-import { Lap } from '../types/Lap';
+import { Lap } from '@entities/activities/model';
 import { Trash2 } from 'lucide-react';
 
 interface LapEditorProps {

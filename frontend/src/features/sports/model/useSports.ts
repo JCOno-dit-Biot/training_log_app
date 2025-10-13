@@ -1,8 +1,8 @@
 import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { qk } from '../api/keys';
-import { getSports } from '../api/sports';
-import { Sport } from '../types/Sport';
+import { qk } from '@shared/api/keys';
+import { getSports } from '@entities/sports/api/sports';
+import { Sport } from '@entities/sports/model';
 
 export function useSports({ enabled = true, staleTime = 2 * 60_000 } = {}) {
   const q = useQuery({

@@ -1,10 +1,9 @@
 import { useEffect, useState } from 'react';
-import { getWeeklyStats } from '../api/stats/weeklyStats';
-import { getCalendarDay } from '../api/stats/dogCalendarDay';
-import { WeeklyStats } from '../types/WeeklyStats';
-import { DogCalendarDay } from '../types/DogCalendarDay';
+import { getWeeklyStats } from '@entities/activity-stats/api/weeklyStats';
+import { getCalendarDay } from '@entities/activity-stats/api/dogCalendarDay';
+import { DogCalendarDay, WeeklyStats } from '@entities/activity-stats/model';
 
-import { getFirstDayOfMonth } from '../functions/helpers/getFirstDayOfMonth';
+import { getFirstDayOfMonth } from '../util/getFirstDayOfMonth';
 
 export function useActivityStats(initialDate = new Date()) {
 

@@ -1,5 +1,5 @@
 import axios, {AxiosError, AxiosInstance, InternalAxiosRequestConfig} from 'axios';
-import { authStorage } from '../functions/auth/authStorage';
+import { authStorage } from '@app/auth/auth-storage';
 
 export const baseURL =
   import.meta.env.VITE_API_URL ||           // explicit override (e.g. http://192.168.2.31:8000)

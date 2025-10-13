@@ -1,6 +1,6 @@
- import type { Activity, PaginatedActivities } from "../../types/Activity";
+ import type { Activity, PaginatedActivities } from "@entities/activities/model";
  import { QueryClient } from '@tanstack/react-query';
- import { qk } from "../../api/keys";
+ import { qk } from "@shared/api/keys";
 
 
  export function adjustActivityCommentCount(

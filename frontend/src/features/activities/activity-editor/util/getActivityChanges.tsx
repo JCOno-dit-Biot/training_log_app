@@ -1,4 +1,4 @@
-import { ActivityForm } from "../../components/AddActivityForm";
+import { ActivityForm } from '@entities/activities/model';
 
 export function getActivityChanges(
   original: ActivityForm,

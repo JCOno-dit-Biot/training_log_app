@@ -1,9 +1,9 @@
 'use client';
-import { useActivityStats } from "../../hooks/useActivityStats"
+import { useActivityStats } from '@features/activities/activity-stats/model/useActivityStats'
 import { StatsCalendar } from "./StatsCalendar"
 import { DogStatsCard } from "./DogStatsCard"
-import { Dog } from "../../types/Dog"
-import { ActivityFilter } from "../../types/ActivityFilter";
+import { Dog } from "@entities/dogs/model"
+import { ActivityFilter } from "@entities/activities/model";
 import { format } from 'date-fns';
 //import { useGlobalCache } from "../../context/GlobalCacheContext";
 
