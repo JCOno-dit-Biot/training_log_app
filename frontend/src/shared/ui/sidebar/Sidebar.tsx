@@ -1,8 +1,8 @@
 import SidebarItem from '../sidebar/SidebarItem'
 import { useNavigate } from 'react-router-dom';
 import { Home, PawPrint, Bike, Weight, LogOut } from 'lucide-react'
-import { logout } from '../../api/auth/logout';
-import { useAuth } from '../../context/AuthContext';
+import { logout } from '@entities/auth/api/logout';
+import { useAuth } from '@app/providers/auth-provider';
 
 const tabs = [
   { path: '/kennel', label: 'My Kennel', icon: <PawPrint size={20} /> },
