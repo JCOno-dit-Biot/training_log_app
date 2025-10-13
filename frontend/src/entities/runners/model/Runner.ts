@@ -1,4 +1,4 @@
-import { Kennel } from '.Kennel'
+import { Kennel } from '@shared/types/Kennel'
 
 export interface Runner {
     id: number;
