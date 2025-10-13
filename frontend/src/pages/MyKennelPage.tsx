@@ -1,10 +1,7 @@
-import { useEffect, useState } from 'react';
-import { useDogs } from '../hooks/useDogs';
-import { useRunners } from '../hooks/useRunners';
-import { Dog } from '../types/Dog';
-import { Runner } from '../types/Runner';
-import RunnerCard from '../components/RunnerCard';
-import DogCard from '../components/DogCard';
+import { useDogs } from '@/features/dogs/model/useDogs';
+import { useRunners } from '@/features/runners/model/useRunners'
+import RunnerCard from '@features/runners/ui/RunnerCard';
+import DogCard from '@features/dogs/ui/DogCard';
 
 export default function MyKennelPage() {
   // const [runners, setRunners] = useState<Runner[]>([]);

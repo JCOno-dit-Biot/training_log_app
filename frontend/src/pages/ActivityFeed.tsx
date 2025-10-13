@@ -1,26 +1,24 @@
 import { useEffect, useState, useRef, useMemo } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { Activity, PaginatedActivities, ActivityFilter } from '../types/Activity';
+import { Activity, PaginatedActivities, ActivityFilter } from '@entities/activities/model';
 
 import { Transition } from '@headlessui/react';
 import { useClickAway } from 'react-use'; // optional for clean click-out
 ;
 
-import { useSports } from '../hooks/useSports';
-import { useDogs } from '../hooks/useDogs';
-import { useRunners } from '../hooks/useRunners';
+import { useSports } from '@features/sports/model/useSports';
+import { useDogs } from '@features/dogs/model/useDogs';
+import { useRunners } from '@features/runners/model/useRunners';
+import { useActivitiesQuery, usePrefetchActivitiesOffset } from '@features/activities/activity-feed/model/useActivities';
+import { useDeleteActivity } from '@features/activities/activity-editor/model/useActivitiesMutations';
 
-import { useActivitiesQuery, usePrefetchActivitiesOffset } from '../hooks/useActivities';
-import { useDeleteActivity } from '../hooks/useActivities';
-//import { useDeleteActivity } from '@/features/activities/mutations';
-import { qk } from '../api/keys';
 
-import ActivityFilterPanel from '../components/ActivityFilterPanel'
-import { ActivityHeader } from '../components/ActivityHeader';
-import Pagination from '../components/Pagination'
-import ActivityCard from '../components/ActivityCard';
-import { RightSidebar } from '../components/stats_sidebar/RightSideBar';
-import AddActivityForm from "../components/AddActivityForm";
+import ActivityFilterPanel from '@features/activities/activity-feed/ui/ActivityFilterPanel'
+import { ActivityHeader } from '@features/activities/activity-feed/ui/ActivityHeader'
+import Pagination from '@shared/ui/Pagination'
+import ActivityCard from '@features/activities/activity-feed/ui/ActivityCard'
+import { RightSidebar } from '@features/activities/activity-stats/ui/stats_sidebar/RightSideBar'
+import AddActivityForm from '@features/activities/activity-editor/ui/AddActivityForm'
 
 
 export default function ActivityFeed() {

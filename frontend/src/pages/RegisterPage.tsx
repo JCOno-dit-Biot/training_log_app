@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
-import { getKennels } from "../api/auth/kennels";
-import { register } from "../api/auth/register";
-import { Kennel } from "../types/Kennel";
+import { getKennels } from "@entities/auth/api/kennels";
+import { register } from '@entities/auth/api/register'
+import { Kennel } from '@shared/types/Kennel'
 import { useNavigate } from "react-router-dom";
 
 export default function Register() {
