@@ -1,5 +1,5 @@
-import axios from '@shared/api/axios';
-import { WeeklyStats } from '../../model/WeeklyStats';
+import axios from '@shared/api/axios'
+import { WeeklyStats } from '../model';
 
 
 export const getWeeklyStats = async (ts: Date): Promise<WeeklyStats[]> => {

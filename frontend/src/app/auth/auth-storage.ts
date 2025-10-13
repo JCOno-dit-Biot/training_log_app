@@ -1,4 +1,4 @@
-import { Token } from "../../types/Token";
+import { Token } from "@/entities/auth/model/Token";
 
 const ACCESS_KEY = 'access_token';
 

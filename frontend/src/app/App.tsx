@@ -1,10 +1,10 @@
 import { Routes, Route } from 'react-router-dom';
-import ActivityFeed from './pages/ActivityFeed';
-import MyKennelPage from './pages/MyKennelPage';
-import LoginPage from './pages/LoginPage';
+import ActivityFeed from '@pages/ActivityFeed';
+import MyKennelPage from '@pages/MyKennelPage';
+import LoginPage from '@pages/LoginPage';
 // import RegisterPage from './pages/RegisterPage' the registration is disabled for now
 import { RequireAuth } from '@app/auth/require-auth';
-import Layout from './components/Layout';
+import Layout from '@shared/ui/Layout'
 import { AuthProvider } from './providers/auth-provider'
 import { AfterAuthWarmup } from './auth/warmup';
 import { ReactQueryProvider } from './providers/react-query';

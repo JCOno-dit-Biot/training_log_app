@@ -1,5 +1,5 @@
-import axios from '../axios';
-import { DogCalendarDay } from '../../types/DogCalendarDay';
+import axios from '@shared/api/axios'
+import { DogCalendarDay } from '../model';
 
 
 export const getCalendarDay = async (
