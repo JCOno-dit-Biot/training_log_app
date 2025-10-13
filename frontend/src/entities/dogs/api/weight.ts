@@ -1,5 +1,5 @@
-import { WeightEntry, FetchWeightsParams } from "../types/Weight";
-import axios from './axios';
+import { WeightEntry, FetchWeightsParams } from "../model";
+import axios from '@shared/api/axios'
 
 
 export const fetchWeights = async (params: FetchWeightsParams): Promise<WeightEntry[]> => {

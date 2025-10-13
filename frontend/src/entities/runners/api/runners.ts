@@ -1,6 +1,5 @@
-// src/api/dogs.js
-import axios from './axios';
-import { Runner } from '../types/Runner'
+import axios from '@shared/api/axios'
+import { Runner } from '../model'
 
 export const getRunners = async (): Promise<Runner[]> => {
   const res = await axios.get('/runners');

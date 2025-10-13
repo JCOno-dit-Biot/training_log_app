@@ -1,5 +1,5 @@
-import axios from './axios';
-import { Comment } from '../types/Comment';
+import axios from '@shared/api/axios'
+import { Comment } from '../model'
 
 export const getComments = async (activity_id: number): Promise<Comment[]> => {
   const res = await axios.get(`/activities/${activity_id}/comments`);

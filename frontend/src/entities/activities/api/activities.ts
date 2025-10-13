@@ -1,9 +1,5 @@
-import axios from './axios';
-import { Activity, PaginatedActivities} from '../types/Activity'
-import { ActivityFilter } from '../types/ActivityFilter';
-import { Sport } from '../types/Sport';
-import { ActivityForm } from '../components/AddActivityForm';
-
+import axios from '@shared/api/axios'
+import { Activity, PaginatedActivities, ActivityFilter, ActivityForm } from '@entities/activities/model'
 
 type FetchActivitiesOptions = {
   limit: number;

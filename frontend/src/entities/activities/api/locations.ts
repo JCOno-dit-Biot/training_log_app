@@ -1,5 +1,5 @@
-import axios from './axios';
-import { Location } from '../types/Activity';
+import axios from '@shared/api/axios'
+import { Location } from '../model';
 
 export const getLocations = async (): Promise<Location[]> => {
   const res = await axios.get(`/locations`);
