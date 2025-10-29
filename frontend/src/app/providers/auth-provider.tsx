@@ -1,29 +1,13 @@
-import { createContext, useContext, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { authStorage } from '@app/auth/auth-storage';
 import { type User, validateToken } from '@shared/api/authAxios';
 import { refreshAccessToken } from '@shared/api/axios';
 import { getToken } from '@entities/auth/api/token';
 
+import { AuthContext, type AuthContextShape, type SessionStatus } from '../auth/auth-context';
+
 import { useQueryClient } from '@tanstack/react-query';
-
-type SessionStatus = 'unknown' | 'authenticated' | 'guest';
-
-type AuthContextShape = {
-  status: SessionStatus;
-  user: User | null;
-  isAuthenticated: boolean;
-  login: (email: string, password: string) => Promise<void>;
-  logout: () => void;
-};
-
-const AuthContext = createContext<AuthContextShape | null>(null);
-
-export const useAuth = () => {
-  const ctx = useContext(AuthContext);
-  if (!ctx) throw new Error('AuthProvider missing');
-  return ctx;
-};
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const qc = useQueryClient();
@@ -73,26 +57,26 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     return () => {
       cancelled = true;
     };
-  }, [qc]); // <-- NOT [status]
+  }, [qc]);
 
-  const login = async (email: string, password: string) => {
+  const login = useCallback(async (email: string, password: string) => {
     const body = new URLSearchParams({ username: email, password });
     const token = await getToken(body);
     const access = token.access_token as string | undefined;
     if (!access) throw new Error('Missing access_token');
-    if (token.access_token) authStorage.set({ access_token: access });
+    authStorage.set({ access_token: access });
 
     const me = await validateToken(access);
     setUser(me);
     setStatus('authenticated');
-  };
+  }, []);
 
-  const logout = () => {
+  const logout = useCallback(() => {
     authStorage.clear();
     setUser(null);
     setStatus('guest');
-    qc.clear(); // prevent cross-user leakage of cached server data
-  };
+    qc.clear();
+  }, [qc]);
 
   const value = useMemo<AuthContextShape>(
     () => ({
@@ -102,7 +86,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       login,
       logout,
     }),
-    [status, user],
+    [status, user, login, logout],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
