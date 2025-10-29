@@ -6,8 +6,7 @@ import { getDogs } from '@entities/dogs/api/dogs';
 import { getRunners } from '@entities/runners/api/runners';
 import { getSports } from '@entities/sports/api/sports';
 
-import { useAuth } from '../providers/auth-provider';
-
+import { useAuth } from './auth-context';
 import { useQueryClient } from '@tanstack/react-query';
 
 export function AfterAuthWarmup() {

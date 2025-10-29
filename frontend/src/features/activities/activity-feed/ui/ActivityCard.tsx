@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import React from 'react';
 import { MessageCircle, MoreHorizontal, Rocket, Send } from 'lucide-react';
 
-import { useAuth } from '@app/providers/auth-provider';
+import { useAuth } from '@app/auth/auth-context';
 import { getRatingColor } from '@shared/util/GetRatingColor';
 import type { Activity } from '@entities/activities/model';
 import {
@@ -192,9 +192,8 @@ export default function ActivityCard({
                 title="Toggle Laps"
               >
                 <Rocket
-                  className={`text-primary group-hover:text-accent h-5 w-5 cursor-pointer transition-transform duration-150 group-hover:scale-110 ${
-                    showLaps ? 'rotate-12' : ''
-                  }`}
+                  className={`text-primary group-hover:text-accent h-5 w-5 cursor-pointer transition-transform duration-150 group-hover:scale-110 ${showLaps ? 'rotate-12' : ''
+                    }`}
                 />
               </button>
             )}

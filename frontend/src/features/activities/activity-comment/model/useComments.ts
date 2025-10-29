@@ -1,4 +1,4 @@
-import { useAuth } from '@app/providers/auth-provider';
+import { useAuth } from '@app/auth/auth-context';
 import { qk } from '@shared/api/keys';
 import {
   deleteComment,

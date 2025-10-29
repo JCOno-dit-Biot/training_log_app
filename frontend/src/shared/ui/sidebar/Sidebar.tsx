@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { Bike, LogOut, PawPrint, Weight } from 'lucide-react';
 
-import { useAuth } from '@app/providers/auth-provider';
+import { useAuth } from '@app/auth/auth-context';
 
 import SidebarItem from '../sidebar/SidebarItem';
 
