@@ -1,24 +1,24 @@
-import { useQuery, usePrefetchQuery, useQueryClient, useMutation } from '@tanstack/react-query';
-import { qk } from '@shared/api/keys'
-import { 
-    getActivity,
-    postActivity as createActivityApi, 
-    deleteActivity as deleteActivityApi, 
-    updateActivity as updateActivityApi
+import { qk } from '@shared/api/keys';
+import {
+  deleteActivity as deleteActivityApi,
+  getActivity,
+  postActivity as createActivityApi,
+  updateActivity as updateActivityApi,
 } from '@entities/activities/api/activities';
-import { Activity, PaginatedActivities, ActivityForm } from '@entities/activities/model';
+import type { Activity, ActivityForm, PaginatedActivities } from '@entities/activities/model';
 
-
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 /** Helpers to touch ALL cached feed pages (any filters/offset/limit currently in cache) */
 function snapshotAllActivityPages(qc: ReturnType<typeof useQueryClient>) {
-  return qc.getQueriesData<PaginatedActivities>({ queryKey: ['activities'] })
-           .map(([key, page]) => ({ key, page }));
+  return qc
+    .getQueriesData<PaginatedActivities>({ queryKey: ['activities'] })
+    .map(([key, page]) => ({ key, page }));
 }
 
 function setAllActivityPages(
   qc: ReturnType<typeof useQueryClient>,
-  mapper: (page: PaginatedActivities) => PaginatedActivities
+  mapper: (page: PaginatedActivities) => PaginatedActivities,
 ) {
   qc.getQueriesData<PaginatedActivities>({ queryKey: ['activities'] }).forEach(([key, page]) => {
     if (!page) return;

@@ -1,8 +1,8 @@
-import { ActivityForm } from '@entities/activities/model';
+import type { ActivityForm } from '@entities/activities/model';
 
 export function getActivityChanges(
   original: ActivityForm,
-  updated: ActivityForm
+  updated: ActivityForm,
 ): Partial<ActivityForm> {
   const changes: Partial<ActivityForm> = {};
 

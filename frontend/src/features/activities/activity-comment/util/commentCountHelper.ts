@@ -1,13 +1,9 @@
- import type { Activity, PaginatedActivities } from "@entities/activities/model";
- import { QueryClient } from '@tanstack/react-query';
- import { qk } from "@shared/api/keys";
+import { qk } from '@shared/api/keys';
+import type { Activity, PaginatedActivities } from '@entities/activities/model';
 
+import type { QueryClient } from '@tanstack/react-query';
 
- export function adjustActivityCommentCount(
-  qc: QueryClient,
-  activityId: number,
-  delta: number
-) {
+export function adjustActivityCommentCount(qc: QueryClient, activityId: number, delta: number) {
   // detail
   const detail = qc.getQueryData<Activity>(qk.activity(activityId));
   if (detail) {
@@ -18,16 +14,15 @@
   }
 
   // all cached list pages
-  qc.getQueriesData<PaginatedActivities>({ queryKey: ['activities'] })
-    .forEach(([key, page]) => {
-      if (!page) return;
-      qc.setQueryData<PaginatedActivities>(key, {
-        ...page,
-        data: page.data.map(a =>
-          a.id === activityId
-            ? { ...a, comment_count: Math.max(0, (a.comment_count ?? 0) + delta) }
-            : a
-        ),
-      });
+  qc.getQueriesData<PaginatedActivities>({ queryKey: ['activities'] }).forEach(([key, page]) => {
+    if (!page) return;
+    qc.setQueryData<PaginatedActivities>(key, {
+      ...page,
+      data: page.data.map((a) =>
+        a.id === activityId
+          ? { ...a, comment_count: Math.max(0, (a.comment_count ?? 0) + delta) }
+          : a,
+      ),
     });
+  });
 }

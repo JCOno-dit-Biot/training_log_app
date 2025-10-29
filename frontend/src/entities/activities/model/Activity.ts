@@ -1,18 +1,18 @@
-import { Dog, SelectedDog} from "./Dog"
-import { Runner } from "./Runner"
-import { Weather } from "./Weather";
-import { Sport } from "./Sport";
-import { Lap } from "./Lap";
+import type { Dog, SelectedDog } from './Dog';
+import type { Lap } from './Lap';
+import type { Runner } from './Runner';
+import type { Sport } from './Sport';
+import type { Weather } from './Weather';
 
 interface DogActivityRead {
-  dog: Dog,
-  id? : number
-  rating: number
+  dog: Dog;
+  id?: number;
+  rating: number;
 }
 
 export interface Location {
-  id: number,
-  name: string
+  id: number;
+  name: string;
 }
 
 export interface Activity {
@@ -41,23 +41,23 @@ export interface PaginatedActivities {
 }
 
 export interface ActivityFilter {
-  __trigger?: string
+  __trigger?: string;
   dog_id?: number;
   runner_id?: number;
   sport_id?: number;
   start_date?: string; // ISO format
   end_date?: string;
-};
+}
 
 export interface ActivityForm {
-  timestamp: string
+  timestamp: string;
   runner_id: number | null;
   sport_id: number | null;
   dogs: SelectedDog[];
   distance: number;
   speed?: number;
   pace?: string;
-  weather: Weather
+  weather: Weather;
   workout: boolean;
   laps: Lap[];
   location_id: number | null;

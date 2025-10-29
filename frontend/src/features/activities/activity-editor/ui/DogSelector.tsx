@@ -1,8 +1,7 @@
 import React from 'react';
 import { useState } from 'react';
-import { Dog, SelectedDog } from '@entities/dogs/model';
 
-
+import type { Dog, SelectedDog } from '@entities/dogs/model';
 
 interface DogSelectorProps {
   selectedDogs: SelectedDog[];
@@ -13,39 +12,36 @@ interface DogSelectorProps {
 const DogSelector: React.FC<DogSelectorProps> = ({ selectedDogs, setSelectedDogs, dogs }) => {
   const [editingRatings, setEditingRatings] = useState<{ [dog_id: number]: string }>({});
 
-
   const handleDogToggle = (dog_id: number) => {
-    const exists = selectedDogs.find(d => d.dog_id === dog_id);
+    const exists = selectedDogs.find((d) => d.dog_id === dog_id);
     if (exists) {
-      setSelectedDogs(selectedDogs.filter(d => d.dog_id !== dog_id));
+      setSelectedDogs(selectedDogs.filter((d) => d.dog_id !== dog_id));
     } else {
       setSelectedDogs([...selectedDogs, { dog_id, rating: 10 }]);
     }
   };
 
   const handleRatingChange = (dog_id: number, rating: number) => {
-    setSelectedDogs(selectedDogs.map(d =>
-      d.dog_id === dog_id ? { ...d, rating } : d
-    ));
+    setSelectedDogs(selectedDogs.map((d) => (d.dog_id === dog_id ? { ...d, rating } : d)));
   };
   return (
     <div className="mb-4">
-      <label className="block text-gray-700 mb-2">Select Dogs</label>
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-        {[...dogs.values()].map(dog => {
-          const selected = selectedDogs.find(d => d.dog_id === dog.id);
+      <label className="mb-2 block text-gray-700">Select Dogs</label>
+      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
+        {[...dogs.values()].map((dog) => {
+          const selected = selectedDogs.find((d) => d.dog_id === dog.id);
           return (
             <div
               key={dog.id}
-              className={`p-2 border rounded cursor-pointer ${selected ? 'border-success' : 'border-gray-300'}`}
+              className={`cursor-pointer rounded border p-2 ${selected ? 'border-success' : 'border-gray-300'}`}
               onClick={() => handleDogToggle(dog.id)}
             >
               <img
                 src={`/profile_picture/dogs/${dog.image_url || 'default.png'}`}
                 alt={dog.name}
-                className="w-16 h-16 object-cover rounded-full mx-auto"
+                className="mx-auto h-16 w-16 rounded-full object-cover"
               />
-              <div className="text-center mt-1 text-sm">{dog.name}</div>
+              <div className="mt-1 text-center text-sm">{dog.name}</div>
               {selected && (
                 <input
                   type="number"
@@ -56,7 +52,7 @@ const DogSelector: React.FC<DogSelectorProps> = ({ selectedDogs, setSelectedDogs
                   onChange={(e) => {
                     const val = e.target.value;
                     if (/^\d{0,2}$/.test(val)) {
-                      setEditingRatings(prev => ({ ...prev, [dog.id]: val }));
+                      setEditingRatings((prev) => ({ ...prev, [dog.id]: val }));
                     }
                   }}
                   onBlur={() => {
@@ -65,19 +61,17 @@ const DogSelector: React.FC<DogSelectorProps> = ({ selectedDogs, setSelectedDogs
                     if (!isNaN(rating) && rating >= 0 && rating <= 10) {
                       handleRatingChange(dog.id, rating);
                     }
-                    setEditingRatings(prev => {
+                    setEditingRatings((prev) => {
                       const { [dog.id]: _, ...rest } = prev;
                       return rest;
                     });
                   }}
-                  className={`w-full mt-1 text-sm text-center border rounded appearance-none 
-                      [&::-webkit-outer-spin-button]:appearance-none 
-                      [&::-webkit-inner-spin-button]:appearance-none 
-                      [appearance:textfield] ${editingRatings[dog.id] !== undefined &&
-                      (Number(editingRatings[dog.id]) < 0 || Number(editingRatings[dog.id]) > 10)
+                  className={`mt-1 w-full [appearance:textfield] appearance-none rounded border text-center text-sm [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none ${
+                    editingRatings[dog.id] !== undefined &&
+                    (Number(editingRatings[dog.id]) < 0 || Number(editingRatings[dog.id]) > 10)
                       ? 'border-red-500'
                       : ''
-                    }`}
+                  }`}
                 />
               )}
             </div>

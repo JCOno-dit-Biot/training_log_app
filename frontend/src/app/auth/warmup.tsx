@@ -1,11 +1,14 @@
 // src/auth/AfterAuthWarmup.tsx
 import { useEffect } from 'react';
-import { useAuth } from '../providers/auth-provider';
-import { useQueryClient } from '@tanstack/react-query';
+
 import { qk } from '@shared/api/keys';
 import { getDogs } from '@entities/dogs/api/dogs';
 import { getRunners } from '@entities/runners/api/runners';
 import { getSports } from '@entities/sports/api/sports';
+
+import { useAuth } from '../providers/auth-provider';
+
+import { useQueryClient } from '@tanstack/react-query';
 
 export function AfterAuthWarmup() {
   const { isAuthenticated } = useAuth();

@@ -10,11 +10,11 @@ export default function Pagination({ total, limit, offset, onPageChange }: Pagin
   const currentPage = Math.floor(offset / limit) + 1;
 
   return (
-    <div className="flex justify-center items-center gap-4 mt-6">
+    <div className="mt-6 flex items-center justify-center gap-4">
       <button
         onClick={() => onPageChange(Math.max(offset - limit, 0))}
         disabled={offset === 0}
-        className="px-4 py-1 border rounded disabled:opacity-50"
+        className="rounded border px-4 py-1 disabled:opacity-50"
       >
         Previous
       </button>
@@ -26,7 +26,7 @@ export default function Pagination({ total, limit, offset, onPageChange }: Pagin
       <button
         onClick={() => onPageChange(offset + limit)}
         disabled={offset + limit >= total}
-        className="px-4 py-1 border rounded disabled:opacity-50"
+        className="rounded border px-4 py-1 disabled:opacity-50"
       >
         Next
       </button>

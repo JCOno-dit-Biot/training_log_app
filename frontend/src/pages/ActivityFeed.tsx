@@ -1,31 +1,30 @@
-import { useEffect, useState, useRef, useMemo } from 'react';
-import { useQueryClient } from '@tanstack/react-query';
-import { Activity, PaginatedActivities, ActivityFilter } from '@entities/activities/model';
-
-import { Transition } from '@headlessui/react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useClickAway } from 'react-use'; // optional for clean click-out
-;
 
-import { useSports } from '@features/sports/model/useSports';
+import Pagination from '@shared/ui/Pagination';
+import type { Activity, ActivityFilter, PaginatedActivities } from '@entities/activities/model';
+import { useDeleteActivity } from '@features/activities/activity-editor/model/useActivitiesMutations';
+import AddActivityForm from '@features/activities/activity-editor/ui/AddActivityForm';
+import {
+  useActivitiesQuery,
+  usePrefetchActivitiesOffset,
+} from '@features/activities/activity-feed/model/useActivities';
+import ActivityCard from '@features/activities/activity-feed/ui/ActivityCard';
+import ActivityFilterPanel from '@features/activities/activity-feed/ui/ActivityFilterPanel';
+import { ActivityHeader } from '@features/activities/activity-feed/ui/ActivityHeader';
+import { RightSidebar } from '@features/activities/activity-stats/ui/stats_sidebar/RightSideBar';
 import { useDogs } from '@features/dogs/model/useDogs';
 import { useRunners } from '@features/runners/model/useRunners';
-import { useActivitiesQuery, usePrefetchActivitiesOffset } from '@features/activities/activity-feed/model/useActivities';
-import { useDeleteActivity } from '@features/activities/activity-editor/model/useActivitiesMutations';
+import { useSports } from '@features/sports/model/useSports';
 
-
-import ActivityFilterPanel from '@features/activities/activity-feed/ui/ActivityFilterPanel'
-import { ActivityHeader } from '@features/activities/activity-feed/ui/ActivityHeader'
-import Pagination from '@shared/ui/Pagination'
-import ActivityCard from '@features/activities/activity-feed/ui/ActivityCard'
-import { RightSidebar } from '@features/activities/activity-stats/ui/stats_sidebar/RightSideBar'
-import AddActivityForm from '@features/activities/activity-editor/ui/AddActivityForm'
-
+import { Transition } from '@headlessui/react';
+import { useQueryClient } from '@tanstack/react-query';
 
 export default function ActivityFeed() {
   //const [activities, setActivities] = useState<Activity[]>([]);
   const [showModal, setShowModal] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
-  const [filters, setFilters] = useState<ActivityFilter>({}) // should we use useMemo()?
+  const [filters, setFilters] = useState<ActivityFilter>({}); // should we use useMemo()?
   const [editActivity, setEditActivity] = useState<Activity | null>(null);
   const panelRef = useRef(null);
 
@@ -86,7 +85,7 @@ export default function ActivityFeed() {
     if ((filters as any).__trigger === 'calendar') {
       setOffset(0); // go to first page for a new date range
       // strip the trigger so it doesn't persist
-      setFilters(prev => {
+      setFilters((prev) => {
         const { __trigger, ...rest } = prev as any;
         return rest;
       });
@@ -116,11 +115,11 @@ export default function ActivityFeed() {
   const handleDelete = async (activity_id: number) => {
     // Optimistic remove handled in the mutation hook; this will also tidy caches
     deleteActivity(activity_id);
-  }
+  };
 
   return (
-    <section className="flex relative">
-      <main className="flex-1 pr-[345px] space-y-4 relative">
+    <section className="relative flex">
+      <main className="relative flex-1 space-y-4 pr-[345px]">
         <ActivityHeader
           onOpenCreate={() => setShowModal(true)}
           onOpenFilter={() => setShowFilters((v) => !v)}
@@ -137,7 +136,7 @@ export default function ActivityFeed() {
           >
             <div
               ref={panelRef}
-              className="absolute right-0 top-full mt-2 w-72 p-4 bg-white border border-stone rounded-lg shadow-lg z-10"
+              className="border-stone absolute top-full right-0 z-10 mt-2 w-72 rounded-lg border bg-white p-4 shadow-lg"
             >
               <ActivityFilterPanel
                 filters={filters}
@@ -160,7 +159,8 @@ export default function ActivityFeed() {
             activity={activity}
             onDelete={handleDelete}
             onSuccess={reloadActivities}
-            onEdit={openEditModal} />
+            onEdit={openEditModal}
+          />
         ))}
 
         <Pagination
@@ -170,14 +170,14 @@ export default function ActivityFeed() {
           onPageChange={(newOffset) => setOffset(newOffset)}
         />
 
-
-
-
         {showModal && (
-          <div className="fixed inset-0 bg-primary/80 flex items-center justify-center z-50">
-            <div className="bg-white p-6 rounded-md max-w-xl max-h-[95vh] w-full overflow-y-auto p-6 relative">
+          <div className="bg-primary/80 fixed inset-0 z-50 flex items-center justify-center">
+            <div className="relative max-h-[95vh] w-full max-w-xl overflow-y-auto rounded-md bg-white p-6">
               <button
-                onClick={() => { setShowModal(false); setEditActivity(null); }}
+                onClick={() => {
+                  setShowModal(false);
+                  setEditActivity(null);
+                }}
                 className="absolute top-2 right-2 text-gray-600 hover:text-black"
               >
                 ✖
@@ -188,16 +188,13 @@ export default function ActivityFeed() {
                 onClose={() => {
                   setEditActivity(null);
                   setShowModal(false);
-                }} />
+                }}
+              />
             </div>
           </div>
         )}
       </main>
-      <RightSidebar
-        dogs={dogs}
-        filters={filters}
-        setFilters={setFilters} />
-    </section >
-
+      <RightSidebar dogs={dogs} filters={filters} setFilters={setFilters} />
+    </section>
   );
 }

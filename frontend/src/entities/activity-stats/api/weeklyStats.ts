@@ -1,9 +1,9 @@
-import axios from '@shared/api/axios'
-import { WeeklyStats } from '../model';
+import axios from '@shared/api/axios';
 
+import type { WeeklyStats } from '../model';
 
 export const getWeeklyStats = async (ts: Date): Promise<WeeklyStats[]> => {
-  console.log('requesting stats')
+  console.log('requesting stats');
   const res = await axios.get(`/analytic/weekly-stats?ts=${ts.toISOString()}`);
   return res.data;
-};  
+};

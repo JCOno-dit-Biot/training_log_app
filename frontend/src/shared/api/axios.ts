@@ -1,10 +1,11 @@
-import axios, {AxiosError, AxiosInstance, InternalAxiosRequestConfig} from 'axios';
+import type { AxiosError, InternalAxiosRequestConfig } from 'axios';
+import axios from 'axios';
+
 import { authStorage } from '@app/auth/auth-storage';
 
 export const baseURL =
-  import.meta.env.VITE_API_URL ||           // explicit override (e.g. http://192.168.2.31:8000)
-  (import.meta.env.PROD ? "/api" : "http://localhost:8000"); // prod: via Nginx proxy; dev: local
-
+  import.meta.env.VITE_API_URL || // explicit override (e.g. http://192.168.2.31:8000)
+  (import.meta.env.PROD ? '/api' : 'http://localhost:8000'); // prod: via Nginx proxy; dev: local
 
 const api = axios.create({
   baseURL,
@@ -19,7 +20,7 @@ api.interceptors.request.use((config: InternalAxiosRequestConfig) => {
   if (access_token) {
     config.headers = config.headers ?? {};
     (config.headers as any).Authorization = `Bearer ${access_token}`;
-  } 
+  }
   return config;
 });
 
@@ -28,10 +29,8 @@ export async function refreshAccessToken(expiredToken: string): Promise<string |
   try {
     const res = await axios.post(
       `${import.meta.env.VITE_AUTH_API_URL || 'http://localhost:8001/auth'}/refresh-token`,
-          null,
-          { withCredentials: true ,
-            headers: {Authorization: `Bearer ${expiredToken}`}
-          }
+      null,
+      { withCredentials: true, headers: { Authorization: `Bearer ${expiredToken}` } },
     );
     const newAccess = res.data?.access_token as string | undefined;
     if (newAccess) authStorage.set({ access_token: newAccess });
@@ -46,9 +45,9 @@ let isRefreshing = false;
 let queue: Array<(token: string | null) => void> = [];
 
 api.interceptors.response.use(
-  r => r,
+  (r) => r,
   async (error: AxiosError) => {
-    const expiredToken = authStorage.get()
+    const expiredToken = authStorage.get();
     const original = error.config as InternalAxiosRequestConfig & { _retry?: boolean };
     if (!original || original._retry) throw error;
 
@@ -59,12 +58,12 @@ api.interceptors.response.use(
         isRefreshing = true;
         const newToken = await refreshAccessToken(expiredToken.access_token);
         isRefreshing = false;
-        queue.forEach(cb => cb(newToken));
+        queue.forEach((cb) => cb(newToken));
         queue = [];
         if (!newToken) throw error; // refresh failed
       } else {
         // Wait for the ongoing refresh
-        const token = await new Promise<string | null>(resolve => queue.push(resolve));
+        const token = await new Promise<string | null>((resolve) => queue.push(resolve));
         if (!token) throw error;
       }
 
@@ -76,7 +75,7 @@ api.interceptors.response.use(
     }
 
     throw error;
-  }
+  },
 );
 
 export default api;
@@ -158,9 +157,6 @@ export default api;
 //       console.error('Server error:', error);
 //     }
 
-
 //     return Promise.reject(error);
 //   }
 // );
-
-

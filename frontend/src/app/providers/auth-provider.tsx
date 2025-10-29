@@ -1,8 +1,10 @@
-import { createContext, useContext, useEffect, useState, useMemo } from 'react';
-import { authStorage } from '@app/auth/auth-storage'
-import { validateToken, type User } from '@shared/api/authAxios';
+import { createContext, useContext, useEffect, useMemo, useState } from 'react';
+
+import { authStorage } from '@app/auth/auth-storage';
+import { type User, validateToken } from '@shared/api/authAxios';
 import { refreshAccessToken } from '@shared/api/axios';
 import { getToken } from '@entities/auth/api/token';
+
 import { useQueryClient } from '@tanstack/react-query';
 
 type SessionStatus = 'unknown' | 'authenticated' | 'guest';
@@ -45,7 +47,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       try {
         me = await validateToken(access_token);
       } catch {
-        const newTok = await refreshAccessToken(access_token)
+        const newTok = await refreshAccessToken(access_token);
         if (newTok) {
           try {
             me = await validateToken(newTok);
@@ -75,7 +77,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const login = async (email: string, password: string) => {
     const body = new URLSearchParams({ username: email, password });
-    const token = await getToken(body)
+    const token = await getToken(body);
     const access = token.access_token as string | undefined;
     if (!access) throw new Error('Missing access_token');
     if (token.access_token) authStorage.set({ access_token: access });
@@ -99,9 +101,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       isAuthenticated: status === 'authenticated',
       login,
       logout,
-    }
-  ),
-    [status, user]
+    }),
+    [status, user],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

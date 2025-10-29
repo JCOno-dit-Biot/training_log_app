@@ -1,8 +1,9 @@
-import SidebarItem from '../sidebar/SidebarItem'
 import { useNavigate } from 'react-router-dom';
-import { Home, PawPrint, Bike, Weight, LogOut } from 'lucide-react'
-import { logout } from '@entities/auth/api/logout';
+import { Bike, LogOut, PawPrint, Weight } from 'lucide-react';
+
 import { useAuth } from '@app/providers/auth-provider';
+
+import SidebarItem from '../sidebar/SidebarItem';
 
 const tabs = [
   { path: '/kennel', label: 'My Kennel', icon: <PawPrint size={20} /> },
@@ -11,23 +12,22 @@ const tabs = [
 ];
 
 export default function Sidebar() {
+  const navigate = useNavigate();
 
-  const navigate = useNavigate()
-
-  const { isAuthenticated, logout } = useAuth()
+  const { logout } = useAuth();
 
   const handleLogout = async () => {
     try {
-      logout()// backend clears refresh cookie
+      logout(); // backend clears refresh cookie
     } catch (err) {
       console.error('Logout error:', err); // optional toast here
     }
-   
+
     navigate('/');
-  }
+  };
   return (
-  <div className="h-screen w-50 bg-primary text-cream fixed top-0 left-0 flex flex-col p-0">
-      <h1 className="text-l font-bold mb-6">Kennel App</h1>
+    <div className="bg-primary text-cream fixed top-0 left-0 flex h-screen w-50 flex-col p-0">
+      <h1 className="text-l mb-6 font-bold">Kennel App</h1>
       <nav className="flex flex-col space-y-1">
         {tabs.map((tab) => (
           <SidebarItem key={tab.path} to={tab.path} label={tab.label} icon={tab.icon} />
@@ -35,13 +35,12 @@ export default function Sidebar() {
       </nav>
 
       <button
-        onClick={ handleLogout }
-        className="flex absolute bottom-4 items-center gap-3 px-4 py-3 w-full text-cream hover:bg-secondary hover:text-charcoal rounded transition"
+        onClick={handleLogout}
+        className="text-cream hover:bg-secondary hover:text-charcoal absolute bottom-4 flex w-full items-center gap-3 rounded px-4 py-3 transition"
       >
         <LogOut size={20} />
         Logout
       </button>
-      
     </div>
   );
 }

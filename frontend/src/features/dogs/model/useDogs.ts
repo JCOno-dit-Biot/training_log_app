@@ -1,8 +1,10 @@
 import { useMemo } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { getDogs, updateDog as updateDogApi } from '@entities/dogs/api/dogs';
-import { Dog } from '@entities/dogs/model';
+
 import { qk } from '@shared/api/keys';
+import { getDogs, updateDog as updateDogApi } from '@entities/dogs/api/dogs';
+import type { Dog } from '@entities/dogs/model';
+
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 export function useDogs({ enabled = true, staleTime = 30 * 60_000 } = {}) {
   const q = useQuery({
@@ -10,15 +12,12 @@ export function useDogs({ enabled = true, staleTime = 30 * 60_000 } = {}) {
     queryFn: getDogs,
     enabled,
     staleTime,
-    gcTime: 2 * 60 *60_000,
+    gcTime: 2 * 60 * 60_000,
     refetchOnMount: false,
-    placeholderData: (prev) => prev
+    placeholderData: (prev) => prev,
   });
 
-  const byId = useMemo(
-    () => new Map<number, Dog>((q.data ?? []).map(d => [d.id, d])),
-    [q.data]
-  );
+  const byId = useMemo(() => new Map<number, Dog>((q.data ?? []).map((d) => [d.id, d])), [q.data]);
 
   return { ...q, list: q.data ?? [], byId };
 }
@@ -37,7 +36,10 @@ export function useUpdateDog({ revalidate = true }: { revalidate?: boolean } = {
 
       // optimistic patch for list
       if (prevList) {
-        qc.setQueryData<Dog[]>(qk.dogs(), prevList.map((d) => (d.id === id ? { ...d, ...diff } : d)));
+        qc.setQueryData<Dog[]>(
+          qk.dogs(),
+          prevList.map((d) => (d.id === id ? { ...d, ...diff } : d)),
+        );
       }
       // optimistic patch for detail
       if (prevDetail) {
@@ -57,6 +59,6 @@ export function useUpdateDog({ revalidate = true }: { revalidate?: boolean } = {
         qc.invalidateQueries({ queryKey: qk.dogs(), refetchType: 'active' });
         qc.invalidateQueries({ queryKey: qk.dog(vars.id) });
       }
-    }
+    },
   });
 }

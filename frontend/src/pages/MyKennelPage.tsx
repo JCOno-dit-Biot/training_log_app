@@ -1,7 +1,7 @@
-import { useDogs } from '@/features/dogs/model/useDogs';
-import { useRunners } from '@/features/runners/model/useRunners'
-import RunnerCard from '@features/runners/ui/RunnerCard';
 import DogCard from '@features/dogs/ui/DogCard';
+import RunnerCard from '@features/runners/ui/RunnerCard';
+import { useDogs } from '@/features/dogs/model/useDogs';
+import { useRunners } from '@/features/runners/model/useRunners';
 
 export default function MyKennelPage() {
   // const [runners, setRunners] = useState<Runner[]>([]);
@@ -16,17 +16,22 @@ export default function MyKennelPage() {
   const { list: runners } = useRunners();
 
   const sortedDogs = [...dogs].sort(
-    (a, b) => new Date(a.date_of_birth).getTime() - new Date(b.date_of_birth).getTime()
+    (a, b) => new Date(a.date_of_birth).getTime() - new Date(b.date_of_birth).getTime(),
   );
   return (
-    <div className="space-y-20 max-w-full">
+    <div className="max-w-full space-y-20">
       {/* Runners Section */}
-      <section className='w-full max-w-full mt-4'>
-        <h2 className="text-2xl text-centered font-bold mb-4 p-1 text-cream bg-primary rounded">Runners</h2>
-        <div className='overflow-x-auto max-w-full scroll-snap-x scroll-smooth'>
-          <div className="flex gap-3 pb-2 snap-x snap-mandatory">
+      <section className="mt-4 w-full max-w-full">
+        <h2 className="text-centered text-cream bg-primary mb-4 rounded p-1 text-2xl font-bold">
+          Runners
+        </h2>
+        <div className="scroll-snap-x max-w-full overflow-x-auto scroll-smooth">
+          <div className="flex snap-x snap-mandatory gap-3 pb-2">
             {runners.map((runner) => (
-              <div key={runner.id} className="flex-shrink-0 snap-start w-[80%] sm:w-[50%] md:w-[33%] lg:w-[25%]">
+              <div
+                key={runner.id}
+                className="w-[80%] flex-shrink-0 snap-start sm:w-[50%] md:w-[33%] lg:w-[25%]"
+              >
                 <RunnerCard key={runner.id} runner={runner} />
               </div>
             ))}
@@ -35,12 +40,15 @@ export default function MyKennelPage() {
       </section>
 
       {/* Dogs Section */}
-      <section className='w-full max-w-full'>
-        <h2 className="text-2xl font-bold mb-4 p-1 text-cream bg-primary rounded">Dogs</h2>
-        <div className='overflow-x-auto max-w-full scroll-snap-x scroll-smooth'>
-          <div className="flex gap-3 pb-2 snap-x snap-mandatory">
-            {sortedDogs.map(dog => (
-              <div key={dog.id} className="flex-shrink-0 snap-start w-[80%] sm:w-[50%] md:w-[33%] lg:w-[25%]">
+      <section className="w-full max-w-full">
+        <h2 className="text-cream bg-primary mb-4 rounded p-1 text-2xl font-bold">Dogs</h2>
+        <div className="scroll-snap-x max-w-full overflow-x-auto scroll-smooth">
+          <div className="flex snap-x snap-mandatory gap-3 pb-2">
+            {sortedDogs.map((dog) => (
+              <div
+                key={dog.id}
+                className="w-[80%] flex-shrink-0 snap-start sm:w-[50%] md:w-[33%] lg:w-[25%]"
+              >
                 <DogCard dog={dog} />
               </div>
             ))}

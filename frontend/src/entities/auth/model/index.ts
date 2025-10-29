@@ -1,1 +1,1 @@
-export type { Token } from './Token'
+export type { Token } from './Token';

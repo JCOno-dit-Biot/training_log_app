@@ -1,18 +1,20 @@
-import Calendar from 'react-calendar'
-import { parseISO, format } from 'date-fns'
-import { DogCalendarDay } from '@entities/activity-stats/model'
-import 'react-calendar/dist/Calendar.css'
+import Calendar from 'react-calendar';
+import { format, parseISO } from 'date-fns';
+
+import type { DogCalendarDay } from '@entities/activity-stats/model';
+
+import 'react-calendar/dist/Calendar.css';
 import './DogCalendar.css';
 
 type Props = {
-  data: DogCalendarDay[]
-  onDayClick?: (date: Date) => void
-  dogColors: Map<number, string>
-  selectedDate: Date
-  onDateChange: (date: Date) => void
-  visibleMonth: Date
-  onMonthChange: (month: Date) => void
-}
+  data: DogCalendarDay[];
+  onDayClick?: (date: Date) => void;
+  dogColors: Map<number, string>;
+  selectedDate: Date;
+  onDateChange: (date: Date) => void;
+  visibleMonth: Date;
+  onMonthChange: (month: Date) => void;
+};
 
 export function StatsCalendar({
   data,
@@ -25,23 +27,20 @@ export function StatsCalendar({
 }: Props) {
   //const activeDates = new Set(data.map(d => d.date)) // 'YYYY-MM-DD'
 
-
-  const activeMap = new Map<string, number[]>()
+  const activeMap = new Map<string, number[]>();
   data?.forEach(({ date, dog_ids }) => {
-    const iso = format(parseISO(date), 'yyyy-MM-dd')  // normalize
-    activeMap.set(iso, dog_ids)
-  })
+    const iso = format(parseISO(date), 'yyyy-MM-dd'); // normalize
+    activeMap.set(iso, dog_ids);
+  });
 
-  const tileClassName = ({ date, view }: { date: Date, view: string }) => {
-    if (view !== 'month') return ''
-    const iso = format(date, 'yyyy-MM-dd')
-    return activeMap.has(iso)
-      ? 'circled_day'
-      : ''
-  }
+  const tileClassName = ({ date, view }: { date: Date; view: string }) => {
+    if (view !== 'month') return '';
+    const iso = format(date, 'yyyy-MM-dd');
+    return activeMap.has(iso) ? 'circled_day' : '';
+  };
 
   return (
-    <div className="rounded-lg p-2 bg-white shadow-sm mb-4">
+    <div className="mb-4 rounded-lg bg-white p-2 shadow-sm">
       <Calendar
         calendarType="iso8601"
         value={selectedDate}
@@ -66,7 +65,7 @@ export function StatsCalendar({
 
           const iso = format(date, 'yyyy-MM-dd');
           const dogs = activeMap.get(iso);
-          
+
           if (!dogs) return null;
 
           const visibleDots = dogs.slice(0, 2);
@@ -78,7 +77,7 @@ export function StatsCalendar({
               {dogs.length === 1 && (
                 <span
                   className={`dog-dot centered`}
-                  style={{ backgroundColor: dogColors.get(dogs[0]) ?? "#9ca3af" }}
+                  style={{ backgroundColor: dogColors.get(dogs[0]) ?? '#9ca3af' }}
                 />
               )}
               {dogs.length > 1 && (
@@ -87,10 +86,10 @@ export function StatsCalendar({
                     <span
                       key={id}
                       className={`dog-dot`}
-                      style={{ backgroundColor: dogColors.get(id) ?? "#9ca3af" }}
+                      style={{ backgroundColor: dogColors.get(id) ?? '#9ca3af' }}
                     />
-                  ))}{extra && <span className="dog-count">+</span>}
-                  
+                  ))}
+                  {extra && <span className="dog-count">+</span>}
                 </div>
               )}
             </div>
@@ -98,5 +97,5 @@ export function StatsCalendar({
         }}
       />
     </div>
-  )
+  );
 }

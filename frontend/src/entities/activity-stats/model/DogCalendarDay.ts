@@ -1,4 +1,4 @@
 export interface DogCalendarDay {
-    date: Date;
-    dog_ids: number[];
+  date: Date;
+  dog_ids: number[];
 }

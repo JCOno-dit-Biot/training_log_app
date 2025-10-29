@@ -1,1 +1,1 @@
-export type { Sport } from './Sport'
+export type { Sport } from './Sport';

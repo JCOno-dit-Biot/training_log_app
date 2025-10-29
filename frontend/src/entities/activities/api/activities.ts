@@ -1,15 +1,22 @@
-import axios from '@shared/api/axios'
-import { Activity, PaginatedActivities, ActivityFilter, ActivityForm } from '@entities/activities/model'
+import axios from '@shared/api/axios';
+import type {
+  Activity,
+  ActivityFilter,
+  ActivityForm,
+  PaginatedActivities,
+} from '@entities/activities/model';
 
 type FetchActivitiesOptions = {
   limit: number;
   offset: number;
-  filters?: ActivityFilter; 
+  filters?: ActivityFilter;
 };
 
-
-export const getActivities = async ({ limit = 10, offset = 0, filters = {} }:  FetchActivitiesOptions): Promise<PaginatedActivities> => {
-
+export const getActivities = async ({
+  limit = 10,
+  offset = 0,
+  filters = {},
+}: FetchActivitiesOptions): Promise<PaginatedActivities> => {
   const params = new URLSearchParams();
 
   params.append('limit', String(limit));
@@ -24,7 +31,7 @@ export const getActivities = async ({ limit = 10, offset = 0, filters = {} }:  F
   const d = res.data;
 
   return {
-    data: d.data ?? d.items ?? d.results ?? [],  // be tolerant
+    data: d.data ?? d.items ?? d.results ?? [], // be tolerant
     total_count: d.total_count,
     limit: d.limit ?? limit,
     offset: d.offset ?? offset,
@@ -34,25 +41,28 @@ export const getActivities = async ({ limit = 10, offset = 0, filters = {} }:  F
 };
 
 export const getActivity = async (activity_id: number): Promise<Activity> => {
-  const res = await axios.get(`/activities/${activity_id}`)
-  return res.data
-}
+  const res = await axios.get(`/activities/${activity_id}`);
+  return res.data;
+};
 
-export const postActivity = async (formData: ActivityForm) : Promise<number> => {
+export const postActivity = async (formData: ActivityForm): Promise<number> => {
   const payload = {
-    ...formData
-  }
-  console.log(payload)
+    ...formData,
+  };
+  console.log(payload);
   const response = await axios.post('/activities', payload);
-  return response.data; 
-}
+  return response.data;
+};
 
 export const deleteActivity = async (activity_id: number): Promise<{ success: boolean }> => {
   const response = await axios.delete(`/activities/${activity_id}`);
   return response.data;
-}
+};
 
-export const updateActivity = async (id: number, changes: Partial<ActivityForm>): Promise<{ success: boolean }> => {
+export const updateActivity = async (
+  id: number,
+  changes: Partial<ActivityForm>,
+): Promise<{ success: boolean }> => {
   const response = await axios.put(`/activities/${id}`, changes);
   return response.data;
-}
+};

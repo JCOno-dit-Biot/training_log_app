@@ -1,18 +1,17 @@
-import Sidebar from './sidebar/Sidebar';
 import React from 'react';
+
+import Sidebar from './sidebar/Sidebar';
 
 export default function Layout({ children }: { children: React.JSX.Element }) {
   return (
     <>
       {/* Sidebar: fixed column on the left */}
-      <div className="hidden md:block fixed inset-y-0 left-0 w-[13rem] z-10">
+      <div className="fixed inset-y-0 left-0 z-10 hidden w-[13rem] md:block">
         <Sidebar />
       </div>
 
       {/* Main: pad for the sidebar, no width calc, no vertical overflow */}
-      <main className="min-h-screen md:pl-[13rem] px-4 bg-gray-50">
-        {children}
-      </main>
+      <main className="min-h-screen bg-gray-50 px-4 md:pl-[13rem]">{children}</main>
     </>
   );
 }

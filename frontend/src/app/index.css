@@ -1,5 +1,4 @@
-@import "tailwindcss";
-
+@import 'tailwindcss';
 
 :root {
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
@@ -9,7 +8,7 @@
   color-scheme: light dark;
   color: rgba(255, 255, 255, 0.87);
   background-color: #242424;
-       
+
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -32,7 +31,7 @@ a {
   /* text-decoration: inherit; */
 }
 a:hover {
-  color: #1B1B1B;
+  color: #1b1b1b;
 }
 
 body {
@@ -48,18 +47,17 @@ h1 {
   line-height: 1.1;
 }
 
-
 @theme {
-  --color-primary: #2D4A26; 
-  --color-secondary: #A5BDA2; 
+  --color-primary: #2d4a26;
+  --color-secondary: #a5bda2;
 
-  --color-charcoal: #1B1B1B; 
-  --color-cream: #F5F2EA;   
-  --color-stone: #8C8C8C;    
+  --color-charcoal: #1b1b1b;
+  --color-cream: #f5f2ea;
+  --color-stone: #8c8c8c;
 
-  --color-success: #5D9B4B;
-  --color-warning: #E7B343;
-  --color-error: #C94C4C;
+  --color-success: #5d9b4b;
+  --color-warning: #e7b343;
+  --color-error: #c94c4c;
 }
 
 @media (prefers-color-scheme: light) {
@@ -70,7 +68,7 @@ h1 {
   /* a:hover {
     color: #747bff;
   } */
-  button:not([class*="bg-"]) {
+  button:not([class*='bg-']) {
     background-color: #f9f9f9;
   }
 }

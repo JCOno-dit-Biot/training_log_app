@@ -1,13 +1,13 @@
-import { useEffect, useMemo, useRef, useState } from "react";
-import { Location } from "@entities/activities/model";
+import { useEffect, useMemo, useRef, useState } from 'react';
 
+import type { Location } from '@entities/activities/model';
 
 type Props = {
   locations: Location[];
-  value: number | null;                  // selected location_id
+  value: number | null; // selected location_id
   onChange: (id: number | null) => void; // emit id when selected
   placeholder?: string;
-  allowCreateOption?: boolean;           // optional: show "Add new"
+  allowCreateOption?: boolean; // optional: show "Add new"
   onCreateNew?: (name: string) => Promise<boolean>;
   disabled?: boolean;
 };
@@ -16,26 +16,26 @@ export default function LocationAutocomplete({
   locations,
   value,
   onChange,
-  placeholder = "Search a location…",
+  placeholder = 'Search a location…',
   allowCreateOption = false,
   onCreateNew,
 }: Props) {
   const [open, setOpen] = useState(false);
-  const [query, setQuery] = useState("");
+  const [query, setQuery] = useState('');
   const [highlight, setHighlight] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
 
   // resolve current selected name for display
   const selected = useMemo(
-    () => (value != null ? locations.find(l => l.id === value) ?? null : null),
-    [value, locations]
+    () => (value != null ? (locations.find((l) => l.id === value) ?? null) : null),
+    [value, locations],
   );
 
   const filtered = useMemo(() => {
     const q = (query || '').trim().toLowerCase();
     const safe = (locations ?? []).filter((l): l is Location => !!l && typeof l.name === 'string');
-    const base = q ? safe.filter(l => l.name.toLowerCase().includes(q)) : safe;
+    const base = q ? safe.filter((l) => l.name.toLowerCase().includes(q)) : safe;
     return base.slice(0, 5);
   }, [locations, query]);
 
@@ -55,8 +55,8 @@ export default function LocationAutocomplete({
         setOpen(false);
       }
     }
-    document.addEventListener("mousedown", onDocClick);
-    return () => document.removeEventListener("mousedown", onDocClick);
+    document.addEventListener('mousedown', onDocClick);
+    return () => document.removeEventListener('mousedown', onDocClick);
   }, []);
 
   function commitSelection(loc: Location) {
@@ -66,19 +66,19 @@ export default function LocationAutocomplete({
   }
 
   function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
-    if (!open && (e.key === "ArrowDown" || e.key === "Enter")) {
+    if (!open && (e.key === 'ArrowDown' || e.key === 'Enter')) {
       setOpen(true);
       return;
     }
     if (!open) return;
 
-    if (e.key === "ArrowDown") {
+    if (e.key === 'ArrowDown') {
       e.preventDefault();
-      setHighlight(h => Math.min(h + 1, filtered.length - 1 + (allowCreateOption ? 1 : 0)));
-    } else if (e.key === "ArrowUp") {
+      setHighlight((h) => Math.min(h + 1, filtered.length - 1 + (allowCreateOption ? 1 : 0)));
+    } else if (e.key === 'ArrowUp') {
       e.preventDefault();
-      setHighlight(h => Math.max(h - 1, 0));
-    } else if (e.key === "Enter") {
+      setHighlight((h) => Math.max(h - 1, 0));
+    } else if (e.key === 'Enter') {
       e.preventDefault();
       // Enter on create?
       if (allowCreateOption && highlight === filtered.length) {
@@ -87,7 +87,7 @@ export default function LocationAutocomplete({
       }
       const loc = filtered[highlight];
       if (loc) commitSelection(loc);
-    } else if (e.key === "Escape") {
+    } else if (e.key === 'Escape') {
       setOpen(false);
     }
   }
@@ -95,7 +95,7 @@ export default function LocationAutocomplete({
   useEffect(() => {
     // when controlled value changes from outside, sync input
     if (selected && !open) setQuery(selected.name);
-    if (value == null && !open && query && !selected) setQuery("");
+    if (value == null && !open && query && !selected) setQuery('');
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value, selected?.name]);
 
@@ -115,7 +115,7 @@ export default function LocationAutocomplete({
       <input
         ref={inputRef}
         type="text"
-        className="w-full border rounded p-2"
+        className="w-full rounded border p-2"
         placeholder={placeholder}
         value={query}
         onFocus={() => setOpen(true)}
@@ -139,9 +139,12 @@ export default function LocationAutocomplete({
           {filtered.map((loc, idx) => (
             <div
               key={loc.id}
-              onMouseDown={(e) => { e.preventDefault(); commitSelection(loc); }}
+              onMouseDown={(e) => {
+                e.preventDefault();
+                commitSelection(loc);
+              }}
               onMouseEnter={() => setHighlight(idx)}
-              className={`px-3 py-2 capitalize cursor-pointer ${idx === highlight ? "bg-gray-100" : ""}`}
+              className={`cursor-pointer px-3 py-2 capitalize ${idx === highlight ? 'bg-gray-100' : ''}`}
               role="option"
               aria-selected={value === loc.id}
             >
@@ -155,9 +158,9 @@ export default function LocationAutocomplete({
                 handleCreateClick();
               }}
               onMouseEnter={() => setHighlight(filtered.length)}
-              className={`px-3 py-2 cursor-pointer border-t ${highlight === filtered.length ? "bg-gray-100" : ""}`}
+              className={`cursor-pointer border-t px-3 py-2 ${highlight === filtered.length ? 'bg-gray-100' : ''}`}
             >
-              {query.trim() ? `➕ Add "${query.trim()}"` : "➕ Add new location"}
+              {query.trim() ? `➕ Add "${query.trim()}"` : '➕ Add new location'}
             </div>
           )}
         </div>

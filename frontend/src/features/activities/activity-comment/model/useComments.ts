@@ -1,9 +1,16 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { qk } from '@shared/api/keys'
-import { getComments, postComment, deleteComment, editComment } from '@entities/activities/api/comment';
-import { Comment } from '@entities/activities/model';
 import { useAuth } from '@app/providers/auth-provider';
+import { qk } from '@shared/api/keys';
+import {
+  deleteComment,
+  editComment,
+  getComments,
+  postComment,
+} from '@entities/activities/api/comment';
+import type { Comment } from '@entities/activities/model';
+
 import { adjustActivityCommentCount } from '../util/commentCountHelper';
+
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 export function useActivityComments(activityId: number, enabled: boolean) {
   const { isAuthenticated } = useAuth();
@@ -14,15 +21,19 @@ export function useActivityComments(activityId: number, enabled: boolean) {
     staleTime: 5 * 60_000,
     refetchOnMount: false,
   });
-  return { ...q, list: q.data ?? []}
+  return { ...q, list: q.data ?? [] };
 }
-
 
 export function useAddComment() {
   const qc = useQueryClient();
 
   // variables: { activityId, username, text }
-  return useMutation<{ id: number }, unknown, { activityId: number; username: string | null; text: string }, { prev?: Comment[]; tempId: number; activityId: number }>({
+  return useMutation<
+    { id: number },
+    unknown,
+    { activityId: number; username: string | null; text: string },
+    { prev?: Comment[]; tempId: number; activityId: number }
+  >({
     mutationFn: ({ activityId, username, text }) =>
       postComment({ activity_id: activityId, username, comment: text } as Comment),
 
@@ -40,7 +51,10 @@ export function useAddComment() {
         created_at: new Date().toISOString(),
       };
 
-      qc.setQueryData<Comment[]>(qk.activityComments(activityId), (old = []) => [...old, optimistic]);
+      qc.setQueryData<Comment[]>(qk.activityComments(activityId), (old = []) => [
+        ...old,
+        optimistic,
+      ]);
 
       // bump counts
       adjustActivityCommentCount(qc, activityId, +1);
@@ -59,7 +73,7 @@ export function useAddComment() {
     onSuccess: ({ id }, _vars, ctx) => {
       if (!ctx) return;
       qc.setQueryData<Comment[]>(qk.activityComments(ctx.activityId), (old = []) =>
-        old.map(c => (c.id === ctx.tempId ? { ...c, id } : c))
+        old.map((c) => (c.id === ctx.tempId ? { ...c, id } : c)),
       );
       // no count change here (we already bumped in onMutate)
     },
@@ -69,20 +83,28 @@ export function useAddComment() {
 export function useUpdateComment() {
   const qc = useQueryClient();
 
-  return useMutation<{ success: boolean }, unknown, { activityId: number; id: number; text: string; username?: string | null }, { prev?: Comment[]; activityId: number }>({
+  return useMutation<
+    { success: boolean },
+    unknown,
+    { activityId: number; id: number; text: string; username?: string | null },
+    { prev?: Comment[]; activityId: number }
+  >({
     mutationFn: ({ activityId, id, text, username }) =>
-      editComment(
-        activityId,
+      editComment(activityId, id, {
         id,
-        { id, activity_id: activityId, username: username ?? null, comment: text } as Comment
-      ),
+        activity_id: activityId,
+        username: username ?? null,
+        comment: text,
+      } as Comment),
 
     onMutate: async ({ activityId, id, text }) => {
       await qc.cancelQueries({ queryKey: qk.activityComments(activityId) });
       const prev = qc.getQueryData<Comment[]>(qk.activityComments(activityId));
 
       qc.setQueryData<Comment[]>(qk.activityComments(activityId), (old = []) =>
-        old.map(c => (c.id === id ? { ...c, comment: text, updated_at: new Date().toISOString() } : c))
+        old.map((c) =>
+          c.id === id ? { ...c, comment: text, updated_at: new Date().toISOString() } : c,
+        ),
       );
 
       return { prev, activityId };
@@ -97,7 +119,12 @@ export function useUpdateComment() {
 export function useDeleteComment() {
   const qc = useQueryClient();
 
-  return useMutation<{ success: boolean }, unknown, { activityId: number; id: number }, { prev?: Comment[]; activityId: number }>({
+  return useMutation<
+    { success: boolean },
+    unknown,
+    { activityId: number; id: number },
+    { prev?: Comment[]; activityId: number }
+  >({
     mutationFn: ({ activityId, id }) => deleteComment(activityId, id),
 
     onMutate: async ({ activityId, id }) => {
@@ -105,7 +132,7 @@ export function useDeleteComment() {
       const prev = qc.getQueryData<Comment[]>(qk.activityComments(activityId));
 
       qc.setQueryData<Comment[]>(qk.activityComments(activityId), (old = []) =>
-        old.filter(c => c.id !== id)
+        old.filter((c) => c.id !== id),
       );
       adjustActivityCommentCount(qc, activityId, -1);
 
@@ -117,6 +144,5 @@ export function useDeleteComment() {
       if (ctx.prev) qc.setQueryData(qk.activityComments(ctx.activityId), ctx.prev);
       adjustActivityCommentCount(qc, ctx.activityId, +1);
     },
-
   });
 }

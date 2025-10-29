@@ -12,7 +12,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0;         /* Remove vertical padding */
+  padding: 0; /* Remove vertical padding */
   margin-bottom: 0px; /* Tighter space under month */
   height: 36px;
   font-size: 16px;
@@ -30,7 +30,7 @@
 }
 
 .react-calendar__navigation__arrow {
-  font-size: 30px;        /* Increase arrow size */
+  font-size: 30px; /* Increase arrow size */
   width: 32px;
   height: 32px;
   line-height: 32px;
@@ -139,8 +139,8 @@
   gap: 2px;
   z-index: 1;
   pointer-events: none;
-  
-  transform: translate(+50%)
+
+  transform: translate(+50%);
 }
 
 .dog-dot {

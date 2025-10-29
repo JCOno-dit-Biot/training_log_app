@@ -1,2 +1,1 @@
-export type { Runner } from './Runner'
-
+export type { Runner } from './Runner';
