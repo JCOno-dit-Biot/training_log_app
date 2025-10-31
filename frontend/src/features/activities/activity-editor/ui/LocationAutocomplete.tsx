@@ -102,7 +102,7 @@ export default function LocationAutocomplete({
   async function handleCreateClick() {
     if (!onCreateNew) return;
     try {
-      const res = await onCreateNew(query);
+      await onCreateNew(query);
       // res?.ok === true → success or 409 handled (auto-selected)
     } finally {
       // close either way so the user sees the banner

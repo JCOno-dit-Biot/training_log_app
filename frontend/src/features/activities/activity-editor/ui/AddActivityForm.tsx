@@ -30,7 +30,7 @@ type AddActivityFormProps = {
 export default function AddActivityForm({ onClose, onSuccess, initialData }: AddActivityFormProps) {
   const formRef = useRef<HTMLFormElement>(null);
 
-  const [error, setError] = useState<string | null>(null);
+  const [_error, setError] = useState<string | null>(null);
   const isEdit = !!initialData;
 
   // form validator
@@ -47,22 +47,22 @@ export default function AddActivityForm({ onClose, onSuccess, initialData }: Add
     initialData
       ? convertToFormData(initialData)
       : {
-          timestamp: new Date().toISOString(),
-          runner_id: null,
-          sport_id: null,
-          dogs: [],
-          location_id: null,
-          distance: 0,
-          speed: undefined,
-          pace: '',
-          weather: {
-            temperature: 0,
-            humidity: 0,
-            condition: '',
-          },
-          workout: false,
-          laps: [],
+        timestamp: new Date().toISOString(),
+        runner_id: null,
+        sport_id: null,
+        dogs: [],
+        location_id: null,
+        distance: 0,
+        speed: undefined,
+        pace: '',
+        weather: {
+          temperature: 0,
+          humidity: 0,
+          condition: '',
         },
+        workout: false,
+        laps: [],
+      },
   );
 
   // inside your component
@@ -431,13 +431,12 @@ export default function AddActivityForm({ onClose, onSuccess, initialData }: Add
       </div>
       {banner && (
         <div
-          className={`mt-2 rounded px-3 py-2 text-sm ${
-            banner.type === 'success'
+          className={`mt-2 rounded px-3 py-2 text-sm ${banner.type === 'success'
               ? 'bg-green-100 text-green-800'
               : banner.type === 'info'
                 ? 'bg-blue-100 text-blue-800'
                 : 'bg-red-100 text-red-800'
-          }`}
+            }`}
         >
           {banner.msg}
         </div>

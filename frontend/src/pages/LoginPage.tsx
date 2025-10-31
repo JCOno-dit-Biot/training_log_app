@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
-import { useAuth } from '@app/providers/auth-provider';
+import { useAuth } from '@app/auth/auth-context';
 
 export default function LoginPage() {
   const [username, setUsername] = useState('');
@@ -32,7 +32,7 @@ export default function LoginPage() {
     try {
       await login(username, password); // AuthProvider sets tokens+user+status
       // navigation happens via the effect when status flips to authenticated
-    } catch (_err: any) {
+    } catch {
       // Keep it generic; optionally parse err.response?.data
       setError('Invalid credentials or network error.');
     } finally {

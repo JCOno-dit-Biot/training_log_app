@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useClickAway } from 'react-use'; // optional for clean click-out
 
 import Pagination from '@shared/ui/Pagination';
-import type { Activity, ActivityFilter, PaginatedActivities } from '@entities/activities/model';
+import type { Activity, ActivityFilter } from '@entities/activities/model';
 import { useDeleteActivity } from '@features/activities/activity-editor/model/useActivitiesMutations';
 import AddActivityForm from '@features/activities/activity-editor/ui/AddActivityForm';
 import {
@@ -28,15 +28,6 @@ export default function ActivityFeed() {
   const [editActivity, setEditActivity] = useState<Activity | null>(null);
   const panelRef = useRef(null);
 
-  const [pagination, setPagination] = useState<PaginatedActivities>({
-    data: [],
-    total_count: 0,
-    limit: 10,
-    offset: 0,
-    next: null,
-    previous: null,
-  });
-
   //set defaults for pagination
   const limit = 10;
   const [offset, setOffset] = useState<number>(0);
@@ -55,10 +46,7 @@ export default function ActivityFeed() {
   const {
     items: activities,
     page,
-    hasPrev,
     hasNext,
-    isLoading,
-    isFetching,
   } = useActivitiesQuery({ limit, offset, filters: filtersForQuery });
 
   // Prefetch the next page on hover/focus (optional UX sugar)
