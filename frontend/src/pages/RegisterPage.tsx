@@ -1,11 +1,11 @@
-import { useEffect, useState } from "react";
-import { getKennels } from "../api/auth/kennels";
-import { register } from "../api/auth/register";
-import { Kennel } from "../types/Kennel";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+
+import type { Kennel } from '@shared/types/Kennel';
+import { getKennels } from '@entities/auth/api/kennels';
+import { register } from '@entities/auth/api/register';
 
 export default function Register() {
-
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [kennels, setKennels] = useState<Kennel[]>([]);
@@ -13,19 +13,19 @@ export default function Register() {
   const [filteredKennels, setFilteredKennels] = useState<Kennel[]>([]);
   const [addNewMode, setAddNewMode] = useState(false);
   const [newKennelName, setNewKennelName] = useState('');
-  const [success, setSuccess] = useState(false)
+  const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
   useEffect(() => {
     getKennels()
-      .then(res => setKennels(res))
+      .then((res) => setKennels(res))
       .catch(() => setKennels([]));
   }, []);
 
   useEffect(() => {
-    const filtered = kennels.filter(k =>
-      k.name.toLowerCase().includes(kennelQuery.toLowerCase())
+    const filtered = kennels.filter((k) =>
+      k.name.toLowerCase().includes(kennelQuery.toLowerCase()),
     );
     setFilteredKennels(filtered);
   }, [kennelQuery, kennels]);
@@ -37,7 +37,7 @@ export default function Register() {
 
   const onRegister = async (e: React.FocusEvent) => {
     e.preventDefault();
-    setError('')
+    setError('');
 
     const kennel_name = addNewMode ? newKennelName : kennelQuery;
 
@@ -51,7 +51,6 @@ export default function Register() {
     formData.append('password', password);
     formData.append('kennel_name', kennel_name);
 
-
     try {
       const res = await register(formData);
 
@@ -64,18 +63,17 @@ export default function Register() {
     } catch (err: any) {
       setError(err.response?.data?.detail || 'Registration failed');
     }
-
   };
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100 p-4">
-      <div className="bg-white p-6 rounded-lg shadow-md w-full max-w-md">
-        <h2 className="text-2xl font-bold mb-4 text-center">Register</h2>
+    <div className="flex min-h-screen items-center justify-center bg-gray-100 p-4">
+      <div className="w-full max-w-md rounded-lg bg-white p-6 shadow-md">
+        <h2 className="mb-4 text-center text-2xl font-bold">Register</h2>
 
         <form onSubmit={onRegister} className="space-y-4">
           <input
             type="text"
             placeholder="Username"
-            className="w-full p-2 border rounded"
+            className="w-full rounded border p-2"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
             required
@@ -84,7 +82,7 @@ export default function Register() {
           <input
             type="password"
             placeholder="Password"
-            className="w-full p-2 border rounded"
+            className="w-full rounded border p-2"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
@@ -96,16 +94,16 @@ export default function Register() {
               <input
                 type="text"
                 placeholder="Search kennel"
-                className="w-full p-2 border rounded"
+                className="w-full rounded border p-2"
                 value={kennelQuery}
                 onChange={(e) => setKennelQuery(e.target.value)}
               />
               {kennelQuery && (
-                <ul className="absolute z-10 bg-white border w-full mt-1 rounded shadow text-sm max-h-40 overflow-y-auto">
+                <ul className="absolute z-10 mt-1 max-h-40 w-full overflow-y-auto rounded border bg-white text-sm shadow">
                   {filteredKennels.map((kennel) => (
                     <li
                       key={kennel.name}
-                      className="px-3 py-2 hover:bg-blue-100 cursor-pointer"
+                      className="cursor-pointer px-3 py-2 hover:bg-blue-100"
                       onClick={() => handleSelectKennel(kennel.name)}
                     >
                       {kennel.name}
@@ -113,7 +111,7 @@ export default function Register() {
                   ))}
                   {filteredKennels.length === 0 && (
                     <li
-                      className="px-3 py-2 text-blue-600 cursor-pointer hover:underline"
+                      className="cursor-pointer px-3 py-2 text-blue-600 hover:underline"
                       onClick={() => setAddNewMode(true)}
                     >
                       ➕ Add new kennel
@@ -129,31 +127,33 @@ export default function Register() {
             <input
               type="text"
               placeholder="New kennel name"
-              className="w-full p-2 border rounded"
+              className="w-full rounded border p-2"
               value={newKennelName}
               onChange={(e) => setNewKennelName(e.target.value)}
               required
             />
           )}
 
-          {error && <p className="text-red-500 text-sm">{error}</p>}
+          {error && <p className="text-sm text-red-500">{error}</p>}
 
           <button
             type="submit"
-            className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700"
+            className="w-full rounded bg-blue-600 py-2 text-white hover:bg-blue-700"
           >
             Register
           </button>
         </form>
         {success && (
-          <div className="mt-4 p-4 bg-green-100 border border-green-400 text-green-700 rounded">
+          <div className="mt-4 rounded border border-green-400 bg-green-100 p-4 text-green-700">
             Account created successfully! Redirecting to login in 5 seconds...
           </div>
         )}
 
         <p className="mt-4 text-center text-sm">
           Already have an account?{' '}
-          <a href="/" className="text-blue-600 hover:underline">Log in</a>
+          <a href="/" className="text-blue-600 hover:underline">
+            Log in
+          </a>
         </p>
       </div>
     </div>

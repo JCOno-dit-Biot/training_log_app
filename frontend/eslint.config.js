@@ -1,33 +1,102 @@
-import js from '@eslint/js'
-import globals from 'globals'
-import reactHooks from 'eslint-plugin-react-hooks'
-import reactRefresh from 'eslint-plugin-react-refresh'
+// eslint.config.js
+import eslintConfigPrettier from 'eslint-config-prettier';
+import importPlugin from 'eslint-plugin-import';
+import jsxA11y from 'eslint-plugin-jsx-a11y';
+import react from 'eslint-plugin-react';
+import reactHooks from 'eslint-plugin-react-hooks';
+import reactRefresh from 'eslint-plugin-react-refresh';
+import simpleImportSort from 'eslint-plugin-simple-import-sort';
+import unusedImports from 'eslint-plugin-unused-imports';
+import globals from 'globals';
+import tseslint from 'typescript-eslint';
 
-export default [
-  { ignores: ['dist'] },
+import js from '@eslint/js';
+
+export default tseslint.config(
+  // 1) Ignores
+  { ignores: ['dist', 'node_modules', 'coverage'] },
+
+  // 2) Main ruleset for JS/TS/JSX/TSX
   {
-    files: ['**/*.{js,jsx}'],
+    files: ['**/*.{ts,tsx,js,jsx}'],
     languageOptions: {
-      ecmaVersion: 2020,
+      ecmaVersion: 'latest',
+      sourceType: 'module',
       globals: globals.browser,
+      // Use the TS parser for both TS and JS files (works fine without "project")
+      parser: tseslint.parser,
       parserOptions: {
-        ecmaVersion: 'latest',
         ecmaFeatures: { jsx: true },
-        sourceType: 'module',
+        // For type-aware rules later, add: project: ['./tsconfig.json']
       },
     },
     plugins: {
+      '@typescript-eslint': tseslint.plugin,
+      react,
       'react-hooks': reactHooks,
+      'jsx-a11y': jsxA11y,
+      import: importPlugin,
+      'simple-import-sort': simpleImportSort,
       'react-refresh': reactRefresh,
+      'unused-imports': unusedImports
+    },
+    settings: {
+      react: { version: 'detect' },
+      // Make ESLint understand your TS path aliases (e.g. @/*)
+      'import/resolver': {
+        typescript: { project: './tsconfig.json' },
+      },
     },
     rules: {
+      // Base recommended
       ...js.configs.recommended.rules,
+      ...tseslint.configs.recommended.rules,
       ...reactHooks.configs.recommended.rules,
-      'no-unused-vars': ['error', { varsIgnorePattern: '^[A-Z_]' }],
-      'react-refresh/only-export-components': [
+
+      // React modern defaults
+      'react/react-in-jsx-scope': 'off',
+      'react/prop-types': 'off',
+
+      // Import hygiene
+      'import/no-unresolved': 'error',
+      'simple-import-sort/imports': [
         'warn',
-        { allowConstantExport: true },
+        {
+          groups: [
+            ['^node:', '^react', '^[a-z]'], // node/external
+            ['^@app/', '^@shared/', '^@entities/', '^@features/', '^@widgets/', '^@pages/', '^@/'], // aliases
+            ['^\\.\\.(?!/?$)', '^\\./(?=.*/)(?!/?$)', '^\\./?$'], // parent/relative
+            ['^\\u0000'], // side effects
+          ],
+        },
       ],
+      'simple-import-sort/exports': 'warn',
+
+      // React Fast Refresh
+      'react-refresh/only-export-components': ['warn', { allowConstantExport: true }],
+
+      // TS niceties
+      'unused-imports/no-unused-imports': 'error',
+      'no-unused-vars': 'off', // disable base rule for TS
+      'unused-imports/no-unused-vars': 'off',
+      // turn unused variables into a warning but ignore those starting with _
+      '@typescript-eslint/no-unused-vars': [
+        'warn',
+        { argsIgnorePattern: '^_', varsIgnorePattern: '^_', ignoreRestSiblings: true }
+      ],
+      '@typescript-eslint/consistent-type-imports': ['warn', { prefer: 'type-imports' }],
+      'no-undef': 'off', // TS handles this; core rule is wrong for TS files
     },
   },
-]
+
+  // 3) TSX-specific tweaks (optional)
+  {
+    files: ['**/*.tsx'],
+    rules: {
+      'react/display-name': 'off',
+    },
+  },
+
+  // 4) Turn off rules that conflict with Prettier formatting
+  eslintConfigPrettier,
+);
