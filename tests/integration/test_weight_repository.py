@@ -1,6 +1,6 @@
 from src.models.dog import Dog
 from src.models.kennel import Kennel
-from src.models.dog_weight import DogWeightEntry
+from src.models.dog_weight import DogWeightEntry, DogWeightIn
 from src.models.common import WeightQueryFilter
 import pytest
 from src.repositories.weight_repository import weight_repository
@@ -39,14 +39,14 @@ def test_get_by_id(weight_repo):
 
 def test_create(weight_repo,test_dog):
     today = date.today()
-    weight_entry = DogWeightEntry(
+    weight_entry = DogWeightIn(
         date = today,
         weight = 40.5,
-        dog = test_dog
+        dog_id = 1
     )
-    weight_repo.create(weight_entry)
+    weight_repo.create(weight_entry, weight_entry.dog_id)
     with weight_repo._connection.cursor() as cur:
-        cur.execute("""SELECT * FROM weight_entries WHERE date = %s AND dog_id = %s;""", (today, test_dog.id,))
+        cur.execute("""SELECT * FROM weight_entries WHERE date = %s AND dog_id = %s;""", (today, weight_entry.dog_id,))
         entry = cur.fetchall()
     assert len(entry) == 1
     assert entry[0][1]==1

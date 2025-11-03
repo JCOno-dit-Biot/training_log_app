@@ -4,7 +4,7 @@ from fastapi import FastAPI, Request, Depends
 from fastapi.testclient import TestClient
 from src.api.weight_controller import router as weight_router
 from src.repositories.weight_repository import weight_repository
-from src.models.dog_weight import DogWeightEntry, DogWeightUpdate
+from src.models.dog_weight import DogWeightEntry, DogWeightUpdate, DogWeightIn
 from src.models.common import WeightQueryFilter
 from datetime import date
 
@@ -60,9 +60,10 @@ def test_get_weight_called(test_app, mock_repo):
 def test_create_weight_entry(test_app, mock_repo, dog_fixture):
     client = TestClient(test_app)
 
-    dog_weight_entry = DogWeightEntry(date= date(2025,1,1),
-                       dog = dog_fixture,
-                       weight = 20.1)
+    dog_weight_entry = DogWeightIn(
+        date= date(2025,1,1),
+        weight = 20.1
+    )
     payload = dog_weight_entry.model_dump_json()
     response = client.post(url="/dogs/2/weights", data = payload)
     assert response.status_code == 200
