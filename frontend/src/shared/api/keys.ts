@@ -1,4 +1,6 @@
 import type { ActivityFilter } from '@entities/activities/model';
+import { serializeKey } from '@/entities/dogs/api/weight';
+import type { FetchWeightsParams } from '@/entities/dogs/model';
 
 // define keys for useQuery
 export const qk = {
@@ -17,4 +19,5 @@ export const qk = {
   activity: (id: number) => ['activity', id] as const,
   // Comments per activity
   activityComments: (activityId: number) => ['activity', activityId, 'comments'] as const,
+  weights: (p: FetchWeightsParams) => ['weights', serializeKey(p)] as const,
 };

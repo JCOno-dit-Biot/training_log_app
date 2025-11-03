@@ -2,6 +2,20 @@ import axios from '@shared/api/axios';
 
 import type { FetchWeightsParams, WeightEntry } from '../model';
 
+export function normalizeParams(p: FetchWeightsParams) {
+  const out: Record<string, string | number> = {};
+  if (p.dogId != null) out.dog_id = p.dogId; // map UI->API
+  if (p.start_date) out.start_date = p.start_date;
+  if (p.end_date) out.end_date = p.end_date;
+  return out;
+}
+
+// Stable, canonical string for cache keys
+export function serializeKey(p: FetchWeightsParams) {
+  const n = normalizeParams(p);
+  return Object.keys(n).sort().map(k => `${k}:${(n as any)[k]}`).join('|');
+}
+
 export const fetchWeights = async (params: FetchWeightsParams): Promise<WeightEntry[]> => {
   const search = new URLSearchParams();
   if (params.dogId) {
