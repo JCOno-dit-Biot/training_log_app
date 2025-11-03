@@ -1,7 +1,7 @@
 from fastapi import Depends, APIRouter, Request, HTTPException
 from fastapi_utils.cbv import cbv
 from src.repositories.weight_repository import weight_repository
-from src.models.dog_weight import DogWeightEntry, DogWeightUpdate
+from src.models.dog_weight import DogWeightEntry, DogWeightUpdate, DogWeightIn
 from src.deps import (
     get_weight_repo
 )
@@ -20,7 +20,7 @@ class WeightController:
         return self.repo.get_all(kennel_id, filters)
 
     @router.post("/dogs/{dog_id}/weights")
-    def add_weight_entry(self, dog_id: int, weight_entry: DogWeightEntry):
+    def add_weight_entry(self, dog_id: int, weight_entry: DogWeightIn):
         return self.repo.create(weight_entry, dog_id)
 
     @router.put("/dogs/weights/{weight_id}")

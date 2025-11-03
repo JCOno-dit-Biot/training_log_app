@@ -1,4 +1,4 @@
-from src.models import Dog, Kennel, DogWeightEntry, WeightQueryFilter
+from src.models import Dog, Kennel, DogWeightEntry, WeightQueryFilter, DogWeightIn
 from datetime import date
 from typing import List
 from src.repositories.abstract_repository import abstract_repository
@@ -90,11 +90,11 @@ class weight_repository(abstract_repository):
     def get_by_name(self, name):
         return super().get_by_name(name)
     
-    def create(self, weigth_entry: DogWeightEntry) -> int:
+    def create(self, weigth_entry: DogWeightIn, dog_id: int) -> int:
         with self._connection.cursor(cursor_factory= RealDictCursor) as cur:
             try:
                 cur.execute("""INSERT INTO weight_entries (dog_id, date, weight) VALUES (%s, %s, %s) RETURNING id;""",
-                            (weigth_entry.dog.id, weigth_entry.date, weigth_entry.weight) )
+                            (dog_id, weigth_entry.date, weigth_entry.weight) )
                 entry_id = cur.fetchone()['id']
                 self._connection.commit()
             except Exception as e:
