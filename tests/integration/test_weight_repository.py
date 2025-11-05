@@ -27,6 +27,23 @@ def test_get_all(weight_repo, test_dog):
     assert len(weight_entries) == 4
     assert all(x.dog.name in ('Milou', "Fido") for x in weight_entries)
 
+def test_get_all_with_time_filter(weight_repo, test_dog):
+    filters = WeightQueryFilter(
+        start_date=date(2025,1,3)
+    )
+    weight_entries = weight_repo.get_all(test_dog.kennel.id, filters)
+    print(weight_entries)
+    assert len(weight_entries) == 3
+    assert all(x.dog.name in ('Milou', "Fido") for x in weight_entries)
+
+def test_get_all_with_dog_filter(weight_repo, test_dog):
+    filters = WeightQueryFilter(
+       dog_id=2
+    )
+    weight_entries = weight_repo.get_all(test_dog.kennel.id, filters)
+    assert len(weight_entries) == 1
+    assert all(x.dog.name == "Fido" for x in weight_entries)
+
 def test_get_count(weight_repo, test_dog):
     count = weight_repo.get_total_count(test_dog.kennel.id, filters=WeightQueryFilter(dog_id = 1))
     assert count == 3
