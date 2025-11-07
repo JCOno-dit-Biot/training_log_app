@@ -1,7 +1,6 @@
 // components/AddActivityForm.tsx
 import { useEffect, useRef, useState } from 'react';
 
-import { combineLocalDateTimeToUTCISO } from '@shared/util/combineDateToISO';
 import type { Activity, ActivityForm, Weather } from '@entities/activities/model';
 import {
   useCreateActivity,
@@ -12,6 +11,7 @@ import { useCreateLocation } from '@features/activities/activity-editor/model/us
 import { useDogs } from '@features/dogs/model/useDogs';
 import { useRunners } from '@features/runners/model/useRunners';
 import { useSports } from '@features/sports/model/useSports';
+import { combineLocalDateTimeToUTCISO } from '@/shared/util/dates';
 
 import { convertToFormData } from '../util/convertToFormData';
 import { getActivityChanges } from '../util/getActivityChanges';
@@ -432,10 +432,10 @@ export default function AddActivityForm({ onClose, onSuccess, initialData }: Add
       {banner && (
         <div
           className={`mt-2 rounded px-3 py-2 text-sm ${banner.type === 'success'
-              ? 'bg-green-100 text-green-800'
-              : banner.type === 'info'
-                ? 'bg-blue-100 text-blue-800'
-                : 'bg-red-100 text-red-800'
+            ? 'bg-green-100 text-green-800'
+            : banner.type === 'info'
+              ? 'bg-blue-100 text-blue-800'
+              : 'bg-red-100 text-red-800'
             }`}
         >
           {banner.msg}
