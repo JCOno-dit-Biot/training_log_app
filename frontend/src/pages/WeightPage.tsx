@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import type { FetchWeightsParams } from '@/entities/dogs/model';
 import { useDogs } from '@/features/dogs/model/useDogs';
@@ -7,10 +7,17 @@ import { AddWeight } from '@/features/weights/ui/AddWeight';
 //import { WeightChart } from '@/features/weights/WeightChart';
 
 export default function WeightsPage() {
-    const [dogId, setDogId] = useState<number>(0);
+    const [dogId, setDogId] = useState<number | undefined>();
     const [preset, setPreset] = useState<'30d' | '90d' | 'ytd' | 'all'>('90d');
 
     const { list: dogs } = useDogs();
+
+    // When dogs are loaded, default to first one
+    useEffect(() => {
+        if (!dogId && dogs?.length) {
+            setDogId(dogs[0].id);
+        }
+    }, [dogs, dogId]);
 
     const range = useMemo(() => {
         const today = new Date();
@@ -60,7 +67,7 @@ export default function WeightsPage() {
                             <button
                                 key={k}
                                 onClick={() => setPreset(k)}
-                                className={`px-3 py-2 rounded-xl border ${preset === k ? 'bg-gray-100' : ''}`}
+                                className={`px-3 py-2 rounded-xl border ${preset === k ? 'bg-gray-200' : ''}`}
                             >
                                 {k.toUpperCase()}
                             </button>
