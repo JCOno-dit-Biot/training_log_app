@@ -1,23 +1,25 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 
 import type { FetchWeightsParams } from '@/entities/dogs/model';
 import { useDogs } from '@/features/dogs/model/useDogs';
 import { useWeights } from '@/features/weights/model/useDogWeights';
 import { AddWeight } from '@/features/weights/ui/AddWeight';
-//import { WeightChart } from '@/features/weights/WeightChart';
+import { WeightsMultiChart } from '@/features/weights/ui/WeightChart';
 
+type Unit = 'kg' | 'lb'
 export default function WeightsPage() {
     const [dogId, setDogId] = useState<number | undefined>();
     const [preset, setPreset] = useState<'30d' | '90d' | 'ytd' | 'all'>('90d');
+    const [unit, setUnit] = useState<Unit>('lb');
 
     const { list: dogs } = useDogs();
 
     // When dogs are loaded, default to first one
-    useEffect(() => {
-        if (!dogId && dogs?.length) {
-            setDogId(dogs[0].id);
-        }
-    }, [dogs, dogId]);
+    // useEffect(() => {
+    //     if (!dogId && dogs?.length) {
+    //         setDogId(dogs[0].id);
+    //     }
+    // }, [dogs, dogId]);
 
     const range = useMemo(() => {
         const today = new Date();
@@ -44,6 +46,7 @@ export default function WeightsPage() {
     }), [dogId, range]);
 
     const { data = [], isLoading } = useWeights(params);
+    console.log(data)
 
     return (
         <div className="max-w-5xl mx-auto p-4 flex flex-col gap-4">
@@ -79,12 +82,16 @@ export default function WeightsPage() {
             {/* Quick add */}
             <AddWeight dogId={dogId} listParams={params} />
 
-            {/* Chart
-      {isLoading ? (
-        <div className="rounded-2xl border p-4 text-sm text-gray-500">Loading…</div>
-      ) : (
-        <WeightChart entries={data} />
-      )} */}
+            {isLoading ? (
+                <div className="rounded-2xl border p-4 text-sm text-gray-500">Loading…</div>
+            ) : (
+                <WeightsMultiChart
+                    entries={data}
+                    unit={unit}
+                    onUnitChange={setUnit}
+                    dogs={dogs}
+                />
+            )}
         </div>
     );
 }
