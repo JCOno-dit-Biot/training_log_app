@@ -25,7 +25,7 @@ def test_dog():
 def test_get_all(weight_repo, test_dog):
     weight_entries = weight_repo.get_all(test_dog.kennel.id, filters=WeightQueryFilter())
     assert len(weight_entries) == 4
-    assert all(x.dog.name in ('Milou', "Fido") for x in weight_entries)
+    assert all(x.dog.name in ('Milou', "Fido", "Idefix") for x in weight_entries)
 
 def test_get_all_with_time_filter(weight_repo, test_dog):
     filters = WeightQueryFilter(
@@ -47,6 +47,17 @@ def test_get_all_with_dog_filter(weight_repo, test_dog):
 def test_get_count(weight_repo, test_dog):
     count = weight_repo.get_total_count(test_dog.kennel.id, filters=WeightQueryFilter(dog_id = 1))
     assert count == 3
+
+def test_get_latest(weight_repo):
+    latest_weights = weight_repo.get_latest(2)
+    print(latest_weights)
+    assert len(latest_weights) == 2
+    assert latest_weights[0].dog_id == 1
+    assert latest_weights[0].weight_change == pytest.approx(-1.4)
+    assert latest_weights[0].latest_update == date(2025,3,5)
+    assert latest_weights[1].dog_id == 2
+    assert latest_weights[1].weight_change is None
+    assert latest_weights[1].latest_update == date(2025,1,3)
 
 def test_get_by_id(weight_repo):
     entry = weight_repo.get_by_id(4)

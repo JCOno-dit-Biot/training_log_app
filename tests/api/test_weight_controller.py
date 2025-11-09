@@ -4,7 +4,7 @@ from fastapi import FastAPI, Request, Depends
 from fastapi.testclient import TestClient
 from src.api.weight_controller import router as weight_router
 from src.repositories.weight_repository import weight_repository
-from src.models.dog_weight import DogWeightEntry, DogWeightUpdate, DogWeightIn
+from src.models.dog_weight import DogWeightEntry, DogWeightUpdate, DogWeightIn, DogWeightLatest
 from src.models.common import WeightQueryFilter
 from datetime import date
 
@@ -22,6 +22,14 @@ def mock_repo(dog_fixture):
         DogWeightEntry(date= date(2025,3,1),
                        dog = dog_fixture,
                        weight = 19.9),
+    ]
+    mock.get_latest.return_value = [
+        DogWeightLatest(
+            dog_id = 1,
+            latest_update=date.today(),
+            latest_weight = 20.1,
+            weight_change=0.5
+        )
     ]
     mock.create.return_value = 10
 
@@ -55,6 +63,15 @@ def test_get_weight_called(test_app, mock_repo):
     assert DogWeightEntry(**response.json()[0]).dog.name == "Milou"
     mock_repo.get_all.assert_called_once()
     mock_repo.get_all.assert_called_with(1, WeightQueryFilter())
+
+def test_get_latest_called(test_app, mock_repo):
+    client = TestClient(test_app)
+
+    response = client.get("/dogs/latest")
+    assert response.status_code == 200
+    assert DogWeightLatest(**response.json()[0]).dog_id == 1
+    mock_repo.get_latest.assert_called_once()
+    mock_repo.get_latest.assert_called_with(1)
 
 
 def test_create_weight_entry(test_app, mock_repo, dog_fixture):
