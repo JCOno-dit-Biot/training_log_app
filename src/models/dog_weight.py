@@ -28,3 +28,9 @@ class DogWeightIn(BaseModel):
 class DogWeightUpdate(BaseModel):
     weight: Optional[float] = None
     date: Optional[datetime.date] = None
+
+class DogWeightLatest(BaseModel):
+    dog_id: int
+    latest_weight: float
+    latest_update: datetime.date
+    weight_change: Optional[float] = None # account for possible nulls (only 1 weight entry in db)
