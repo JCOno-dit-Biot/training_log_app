@@ -19,7 +19,7 @@ class WeightController:
         kennel_id= request.state.kennel_id
         return self.repo.get_all(kennel_id, filters)
     
-    @router.get("/dogs/latest", response_model=list[DogWeightLatest])
+    @router.get("/dogs/weights/latest", response_model=list[DogWeightLatest])
     def get_latest_weights(self, request: Request):
         kennel_id= request.state.kennel_id
         return self.repo.get_latest(kennel_id)

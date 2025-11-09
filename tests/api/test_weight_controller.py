@@ -67,7 +67,7 @@ def test_get_weight_called(test_app, mock_repo):
 def test_get_latest_called(test_app, mock_repo):
     client = TestClient(test_app)
 
-    response = client.get("/dogs/latest")
+    response = client.get("/dogs/weights/latest")
     assert response.status_code == 200
     assert DogWeightLatest(**response.json()[0]).dog_id == 1
     mock_repo.get_latest.assert_called_once()
