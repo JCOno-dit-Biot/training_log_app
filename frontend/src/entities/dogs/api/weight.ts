@@ -1,6 +1,6 @@
 import axios from '@shared/api/axios';
 
-import type { FetchWeightsParams, WeightEntry } from '../model';
+import type { FetchWeightsParams, LatestWeight, WeightEntry } from '../model';
 
 export function normalizeParams(p: FetchWeightsParams) {
   const out: Record<string, string | number> = {};
@@ -26,6 +26,11 @@ export const fetchWeights = async (params: FetchWeightsParams): Promise<WeightEn
   const res = await axios.get(`/dogs/weights?${search.toString()}`);
   return res.data?.data ?? res.data ?? [];
 };
+
+export async function fetchLatest(): Promise<LatestWeight[]> {
+  const res = await axios.get('/dogs/weights/latest');
+  return res.data?.data ?? res.data ?? [];
+}
 
 export const createWeight = async (entry: Omit<WeightEntry, 'id'>): Promise<WeightEntry> => {
   const res = await axios.post(`/dogs/${entry.dog_id}/weights`, entry);

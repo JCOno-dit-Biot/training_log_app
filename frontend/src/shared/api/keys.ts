@@ -20,4 +20,5 @@ export const qk = {
   // Comments per activity
   activityComments: (activityId: number) => ['activity', activityId, 'comments'] as const,
   weights: (p: FetchWeightsParams) => ['weights', serializeKey(p)] as const,
+  latestWeights: ['weights', 'latest', 'all'] as const,
 };

@@ -4,6 +4,20 @@ export function toYMD(d: Date): string {
     return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 }
 
+export function formatMonthDay(d: string | Date): string {
+    let localDate: Date;
+
+    if (typeof d === 'string') {
+        // Safe parse: treat "YYYY-MM-DD" as local, not UTC
+        const [year, month, day] = d.split('-').map(Number);
+        localDate = new Date(year, month - 1, day);
+    } else {
+        localDate = d;
+    }
+
+    const fmt = new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric' });
+    return fmt.format(localDate);
+}
 
 export function combineLocalDateTimeToUTCISO(dateStr?: string, timeStr?: string): string | null {
     if (!dateStr || !timeStr) return null;

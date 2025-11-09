@@ -14,3 +14,10 @@ export type WeightEntry = {
   age?: number;
   dog?: Dog; // optional expanded
 };
+
+export type LatestWeight = {
+  dog_id: number;
+  latest_weight: number;
+  weight_change: number | null;    // change vs previous, may be null if only one entry
+  latest_update: string;         //'yyyy-MM-dd' – we’ll format it for display
+};
