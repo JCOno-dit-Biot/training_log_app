@@ -103,6 +103,7 @@ export default function WeightsPage() {
                         entries={data}
                         unit={unit}
                         dogs={sortedDogs}
+                        preset={preset}
                     />
                 )}
             </div>
