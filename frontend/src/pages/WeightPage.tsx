@@ -60,7 +60,7 @@ export default function WeightsPage() {
 
             {/* Row 2: controls + chart */}
             <div className="rounded-2xl border border-gray-300 shadow-md p-4">
-                <div className="flex flex-wrap gap-3 items-end mb-3">
+                <div className="flex flex-wrap justify-between gap-3 items-end mb-3">
                     <div>
                         <label className="text-sm block mb-1">Dog</label>
                         <select
@@ -102,7 +102,6 @@ export default function WeightsPage() {
                     <WeightsMultiChart
                         entries={data}
                         unit={unit}
-                        onUnitChange={setUnit}
                         dogs={sortedDogs}
                     />
                 )}

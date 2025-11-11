@@ -1,16 +1,10 @@
 import { useMemo, useState } from 'react';
-import { Brush, CartesianGrid, Legend, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import { Brush, CartesianGrid, Label, Legend, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 
 import type { Dog } from '@/entities/dogs/model';
 import type { WeightEntry } from '@/entities/dogs/model/Weight';
 
 import { convertWeight } from '../util/convertUnit';
-
-
-
-const PALETTE = [
-    '#2563eb', '#16a34a', '#dc2626', '#a855f7', '#f59e0b', '#0ea5e9', '#ef4444', '#22c55e'
-];
 
 type Unit = 'kg' | 'lb';
 
@@ -68,12 +62,10 @@ function pivotWide(entries: WeightEntry[], unit: Unit, dogs: Dog[]) {
 export function WeightsMultiChart({
     entries,
     unit,
-    onUnitChange,
     dogs,
 }: {
     entries: WeightEntry[];
     unit: Unit;
-    onUnitChange: (u: Unit) => void;
     dogs: Dog[];
 }) {
     // equally spaced x-axis: use category axis with label (no date math)
@@ -86,19 +78,8 @@ export function WeightsMultiChart({
     }
 
     return (
-        <div className="rounded-2xl border p-4">
-            <div className="flex items-center justify-between mb-2">
-                <div className="text-lg font-semibold">Weights over time</div>
-                <div className="flex items-center gap-2 text-sm">
-                    <span>Unit:</span>
-                    <button
-                        className={`px-3 py-1 rounded-xl border ${unit === 'kg' ? 'bg-gray-100' : ''}`}
-                        onClick={() => onUnitChange('kg')}
-                    >kg</button>
-                    <button
-                        className={`px-3 py-1 rounded-xl border ${unit === 'lb' ? 'bg-gray-100' : ''}`}
-                        onClick={() => onUnitChange('lb')}
-                    >lb</button>
+        <div className="rounded-2xl p-4 overflow-hidden">
+            {/* <div className="flex items-center justify-between mb-2">
                     <button
                         className="ml-3 px-3 py-1 rounded-xl border"
                         onClick={() => setBrushRange({})}
@@ -107,32 +88,51 @@ export function WeightsMultiChart({
                         Reset
                     </button>
                 </div>
-            </div>
+            </div> */}
 
-            <div className="h-80">
+            <div className="w-full h-[300px]">
                 <ResponsiveContainer>
-                    <LineChart data={rows}>
+                    <LineChart data={rows} margin={{ top: 10, right: 30, bottom: 10, left: 20 }}>
                         <CartesianGrid strokeDasharray="3 3" />
                         {/* category axis → equally spaced labels */}
                         <XAxis dataKey="label" />
-                        <YAxis
-                            label={{ value: `Weight (${unit})`, angle: -90, position: 'insideLeft' }}
-                        />
+                        <YAxis>
+                            {/* Properly centered vertical label */}
+                            <Label
+                                value={`Weight (${unit})`}
+                                angle={-90}
+                                position="insideLeft"
+                                offset={10}                 // nudge away from axis
+                                style={{ textAnchor: 'middle' }}
+                            />
+                        </YAxis>
                         <Tooltip
                             formatter={(value: any) => [`${value} ${unit}`, 'Weight']}
                             labelFormatter={(label) => label}
                         />
-                        <Legend />
-                        {dogsMeta.map(dog => (
+                        <Legend
+                            layout="vertical"
+                            verticalAlign="middle"
+                            align="right"
+                            wrapperStyle={{
+                                right: 0,                  // anchor to the right padding
+                                top: '50%',
+                                transform: 'translateY(-50%)',
+                                width: 90,               // matches margin.right to avoid overlap
+                            }}
+                            iconType="circle"
+                        />
+                        {dogsMeta.map(d => (
                             <Line
-                                key={dog.id}
+                                key={d.id}
                                 type="monotone"
-                                dataKey={dog.key}
-                                name={dog.name}
-                                stroke={dog.color}
-                                connectNulls
-                                dot={false}
+                                dataKey={d.key}
+                                name={d.name}
+                                stroke={d.color}
                                 strokeWidth={2}
+                                dot={{ r: 3 }}      // show data points
+                                activeDot={{ r: 5 }} // highlight hovered point
+                                connectNulls          // skip gaps gracefully
                                 isAnimationActive={false}
                             />
                         ))}
@@ -144,8 +144,8 @@ export function WeightsMultiChart({
                             onChange={(r: any) => setBrushRange({ startIndex: r?.startIndex, endIndex: r?.endIndex })}
                         />
                     </LineChart>
-                </ResponsiveContainer>
-            </div>
-        </div>
+                </ResponsiveContainer >
+            </div >
+        </div >
     );
 }
