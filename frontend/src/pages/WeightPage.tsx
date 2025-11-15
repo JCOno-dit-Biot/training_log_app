@@ -6,6 +6,7 @@ import { useLatestAll } from '@/features/weights/model/useDogWeightLatest';
 import { useWeights } from '@/features/weights/model/useDogWeights';
 import { LatestGrid } from '@/features/weights/ui/LatestGrid';
 import { WeightsMultiChart } from '@/features/weights/ui/WeightChart';
+import { Spinner } from '@/shared/ui/Spinner';
 
 type Unit = 'kg' | 'lb'
 
@@ -16,13 +17,6 @@ export default function WeightsPage() {
 
     const { list: dogs } = useDogs();
     const { data: latest = [] } = useLatestAll();
-
-    // When dogs are loaded, default to first one
-    // useEffect(() => {
-    //     if (!dogId && dogs?.length) {
-    //         setDogId(dogs[0].id);
-    //     }
-    // }, [dogs, dogId]);
 
     const sortedDogs = [...dogs].sort(
         (a, b) => new Date(a.date_of_birth).getTime() - new Date(b.date_of_birth).getTime(),
@@ -59,14 +53,17 @@ export default function WeightsPage() {
             <LatestGrid latest={latest} dogs={sortedDogs} unit={unit} />
 
             {/* Row 2: controls + chart */}
-            <div className="rounded-2xl border border-gray-300 shadow-md p-4">
+            <div className="rounded-2xl border border-gray-300 shadow-md p-4 h-[440px] min-h-[440px]">
                 <div className="flex flex-wrap justify-between gap-3 items-end mb-3">
                     <div>
                         <label className="text-sm block mb-1">Dog</label>
                         <select
                             className="border rounded-xl px-3 py-2"
-                            value={dogId === 'all' ? 'all' : String(dogId)}
-                            onChange={e => setDogId(e.target.value === 'all' ? 'all' : Number(e.target.value))}
+                            value={dogId ?? 'all'}
+                            onChange={(e) => {
+                                const v = e.target.value;
+                                setDogId(v === 'all' ? undefined : Number(v));
+                            }}
                         >
                             <option value="all">All dogs</option>
                             {sortedDogs.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
@@ -97,7 +94,12 @@ export default function WeightsPage() {
 
 
                 {isLoading ? (
-                    <div className="rounded-2xl border p-4 text-sm text-gray-500">Loading…</div>
+                    <Spinner
+                        center
+                        text="Loading weights..."
+                        size={32}
+                        className="h-[330px] min-h-[330px]"
+                    />
                 ) : (
                     <WeightsMultiChart
                         entries={data}
@@ -107,6 +109,6 @@ export default function WeightsPage() {
                     />
                 )}
             </div>
-        </div>
+        </div >
     );
 }

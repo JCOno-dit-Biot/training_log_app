@@ -89,7 +89,7 @@ export default function DogCard({ dog }: DogCardProps) {
   }
 
   return (
-    <div className="relative flex h-40 w-full flex-col justify-between rounded-xl border border-gray-300 bg-white p-4 shadow-md sm:w-64">
+    <div className="relative flex h-40 w-full flex-col justify-between rounded-xl border  p-4 shadow-md sm:w-64">
       {/* Top-left: name and breed */}
       <div className="text-left">
         <div className="flex gap-2">

@@ -1,4 +1,5 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { RotateCcw } from 'lucide-react';
 import { CartesianGrid, Label, Legend, Line, LineChart, ReferenceArea, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 
 import type { Dog } from '@/entities/dogs/model';
@@ -33,11 +34,14 @@ function pivotWide(entries: WeightEntry[], unit: Unit, dogs: Dog[]) {
     // rows with numeric idx and string label
     const rows = dates.map((label, idx) => ({ idx, label } as Record<string, number | string>));
 
-    // quick lookup
+    // map date to an index
     const indexOf = new Map(dates.map((d, i) => [d, i]));
+
     const labelByIdx = new Map(rows.map(r => [r.idx as number, r.label as string]));
 
+
     const dogIds: number[] = [];
+    // TODO: check is seen is strictly necessary
     const seen = new Set<number>();
 
     for (const e of entries) {
@@ -50,9 +54,11 @@ function pivotWide(entries: WeightEntry[], unit: Unit, dogs: Dog[]) {
         if (i == null) continue;
 
         const v = convertWeight(e.weight, 'kg', unit);
+        // build a wide table: each date is linked to dog "columns"
         (rows[i] as any)[`dog_${dogId}`] = Number(v.toFixed(2));
     }
 
+    // create some metadata from the dogs for lables, dp colours etc
     const dogsMeta = dogIds.map((id) => ({
         id,
         key: `dog_${id}`,
@@ -78,8 +84,43 @@ export function WeightsMultiChart({
     const [left, setLeft] = useState<number | null>(null);
     const [right, setRight] = useState<number | null>(null);
     const [xDomain, setXDomain] = useState<[number, number] | null>(null);
+    const [selecting, setSelecting] = useState(false);
 
     const { rows, dogsMeta, labelByIdx } = useMemo(() => pivotWide(entries, unit, dogs), [entries, unit, dogs]);
+
+    // Clear zoom anytime the preset changes (go back to preset domain)
+    useEffect(() => { setXDomain(null); }, [preset]);
+
+    // ensure we restore userSelect on cancel/leave
+    useEffect(() => {
+        return () => { document.body.style.userSelect = ''; };
+    }, []);
+
+
+    const onDown = (e: any) => {
+        if (e && e.activeLabel != null) {
+            setLeft(e.activeLabel as number);
+            setSelecting(true);
+            document.body.style.userSelect = 'none'; // disable selection globally
+        }
+    };
+
+    const onMove = (e: any) => {
+        if (left != null && e && e.activeLabel != null) setRight(e.activeLabel as number);
+    };
+
+    const finishDrag = () => {
+        if (left != null && right != null) commitZoom(left, right);
+        setSelecting(false);
+        document.body.style.userSelect = ''; // re-enable selection
+    };
+
+    const cancelDrag = () => {
+        setLeft(null);
+        setRight(null);
+        setSelecting(false);
+        document.body.style.userSelect = '';
+    };
 
     const resetSelection = () => { setLeft(null); setRight(null); };
     const commitZoom = (l: number, r: number) => {
@@ -89,29 +130,27 @@ export function WeightsMultiChart({
         resetSelection();
     };
 
-    if (!rows.length) {
-        return <div className="rounded-2xl border p-4 text-sm text-gray-500">No data to show.</div>;
-    }
+    const resetZoom = () => setXDomain(null);
 
     return (
-        <div className="rounded-2xl p-4 overflow-hidden">
-            {/* <div className="flex items-center justify-between mb-2">
-                    <button
-                        className="ml-3 px-3 py-1 rounded-xl border"
-                        onClick={() => setBrushRange({})}
-                        title="Reset zoom"
-                    >
-                        Reset
-                    </button>
-                </div>
-            </div> */}
+        <div className={`relative rounded-2xl p-4 overflow-hidden ${selecting ? 'select-none cursor-col-resize' : ''}`}>
+            {/* Reset icon positioned over the chart */}
+            <button
+                className="absolute right-20 top-4 z-10 rounded-full border w-9 h-9 flex items-center justify-center bg-white/80 hover:bg-white"
+                onClick={resetZoom}
+                title="Reset zoom"
+            >
+                <RotateCcw size={18} />
+            </button>
+
 
             <div className="w-full h-[300px]">
                 <ResponsiveContainer>
                     <LineChart data={rows} margin={{ top: 10, right: 30, bottom: 10, left: 20 }}
-                        onMouseDown={(e: any) => { if (e && e.activeLabel != null) setLeft(e.activeLabel as number); }}
-                        onMouseMove={(e: any) => { if (left != null && e && e.activeLabel != null) setRight(e.activeLabel as number); }}
-                        onMouseUp={() => { if (left != null && right != null) commitZoom(left, right); }}
+                        onMouseDown={onDown}
+                        onMouseMove={onMove}
+                        onMouseUp={finishDrag}
+                        onMouseLeave={cancelDrag}
                     >
                         <CartesianGrid strokeDasharray="3 3" />
                         {/* category axis → equally spaced labels */}
@@ -126,12 +165,12 @@ export function WeightsMultiChart({
                             }}
                         />
                         <YAxis>
-                            {/* Properly centered vertical label */}
+                            {/* center vertical label */}
                             <Label
                                 value={`Weight (${unit})`}
                                 angle={-90}
                                 position="insideLeft"
-                                offset={10}                 // nudge away from axis
+                                offset={10}
                                 style={{ textAnchor: 'middle' }}
                             />
                         </YAxis>
@@ -165,7 +204,7 @@ export function WeightsMultiChart({
                                 strokeWidth={2}
                                 dot={{ r: 3 }}      // show data points
                                 activeDot={{ r: 5 }} // highlight hovered point
-                                connectNulls          // skip gaps gracefully
+                                connectNulls
                                 isAnimationActive={false}
                             />
                         ))}
@@ -175,6 +214,8 @@ export function WeightsMultiChart({
                                 x1={left}
                                 x2={right}
                                 strokeOpacity={0.3}
+                                fill="grey"
+                                fillOpacity={0.5}
                             />
                         )}
                     </LineChart>
