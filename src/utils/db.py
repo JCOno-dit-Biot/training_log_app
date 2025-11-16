@@ -16,19 +16,17 @@ def get_connection() -> psycopg2.extensions.connection:
 def build_conditions(filters: WeightQueryFilter | ActivityQueryFilters):
     conditions = []
     values = []
-
-    if filters.start_date:
-        conditions.append("a.timestamp >= %s")
-        values.append(filters.start_date)
-
-    if filters.end_date:
-        conditions.append("a.timestamp <= %s")
-        values.append(filters.end_date)
-
+    
     if isinstance(filters, WeightQueryFilter):
         if filters.dog_id:
             conditions.append("w.dog_id = %s")
             values.append(filters.dog_id)
+        if filters.start_date:
+            conditions.append(f"w.date >= %s")
+            values.append(filters.start_date)
+        if filters.end_date:
+            conditions.append(f"w.date <= %s")
+            values.append(filters.end_date)
 
     if isinstance(filters, ActivityQueryFilters):
         if filters.sport_id:
@@ -51,6 +49,14 @@ def build_conditions(filters: WeightQueryFilter | ActivityQueryFilters):
         if filters.location:
             conditions.append("a.location ILIKE %s")
             values.append(f"%{filters.location}%") 
+
+        if filters.start_date:
+            conditions.append("a.timestamp >= %s")
+            values.append(filters.start_date)
+
+        if filters.end_date:
+            conditions.append("a.timestamp <= %s")
+            values.append(filters.end_date)
 
     where_clause = " AND ".join(conditions) if conditions else "TRUE"
     return where_clause, values
