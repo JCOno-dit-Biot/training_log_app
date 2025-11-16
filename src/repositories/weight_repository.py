@@ -1,4 +1,4 @@
-from src.models import Dog, Kennel, DogWeightEntry, WeightQueryFilter
+from src.models import Dog, Kennel, DogWeightEntry, WeightQueryFilter, DogWeightIn, DogWeightLatest
 from datetime import date
 from typing import List
 from src.repositories.abstract_repository import abstract_repository
@@ -60,6 +60,30 @@ class weight_repository(abstract_repository):
                     parse_weight_from_row(row)
                 )
         return weight_entries
+    
+    def get_latest(self, kennel_id: int):
+        with self._connection.cursor(cursor_factory= RealDictCursor) as cur:
+            query = f"""
+                    WITH RankedEntries AS (
+                        SELECT w.id, w.dog_id, w.date, w.weight,
+                        w.weight - LAG(w.weight) OVER (PARTITION BY w.dog_id ORDER BY w.date) as weight_change,
+                        ROW_NUMBER() OVER (PARTITION BY w.dog_id ORDER BY date DESC) as rn
+                    FROM 
+                        weight_entries w
+                    JOIN 
+                        dogs d ON d.id = w.dog_id
+                    JOIN 
+                        kennels ON d.kennel_id = kennels.id
+                    WHERE 
+                        d.kennel_id = %s 
+                    )
+                    SELECT dog_id, date as latest_update, weight as latest_weight, weight_change
+                    FROM RankedEntries
+                    WHERE rn = 1
+                """
+            cur.execute(query, (kennel_id,))
+            rows = cur.fetchall()
+            return [DogWeightLatest(**row) for row in rows]
 
     def get_total_count(self, kennel_id, filters):
         where_clause, values = build_conditions(filters)
@@ -90,11 +114,11 @@ class weight_repository(abstract_repository):
     def get_by_name(self, name):
         return super().get_by_name(name)
     
-    def create(self, weigth_entry: DogWeightEntry) -> int:
+    def create(self, weigth_entry: DogWeightIn, dog_id: int) -> int:
         with self._connection.cursor(cursor_factory= RealDictCursor) as cur:
             try:
                 cur.execute("""INSERT INTO weight_entries (dog_id, date, weight) VALUES (%s, %s, %s) RETURNING id;""",
-                            (weigth_entry.dog.id, weigth_entry.date, weigth_entry.weight) )
+                            (dog_id, weigth_entry.date, weigth_entry.weight) )
                 entry_id = cur.fetchone()['id']
                 self._connection.commit()
             except Exception as e:

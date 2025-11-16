@@ -6,6 +6,7 @@ import Layout from '@shared/ui/Layout';
 import ActivityFeed from '@pages/ActivityFeed';
 import LoginPage from '@pages/LoginPage';
 import MyKennelPage from '@pages/MyKennelPage';
+import WeightsPage from '@/pages/WeightPage';
 
 import { AfterAuthWarmup } from './auth/warmup';
 import { AuthProvider } from './providers/auth-provider';
@@ -40,7 +41,8 @@ export default function App() {
                   </Layout>
                 }
               />
-              {/* <Route path="/weight" element={<WeightPage />} />  */}
+              <Route path="/weight" element={<Layout><WeightsPage />
+              </Layout>} />
             </Route>
           </Routes>
         </AuthProvider>

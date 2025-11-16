@@ -7,7 +7,7 @@ export function RequireAuth() {
   const loc = useLocation();
 
   if (status === 'unknown') return <div />; // or a splash screen
-  if (status === 'guest') return <Navigate to="/login" replace state={{ from: loc }} />;
+  if (status === 'guest') return <Navigate to="/" replace state={{ from: loc }} />;
 
   return <Outlet />;
 }

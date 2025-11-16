@@ -26,10 +26,10 @@ def activity_query_filter():
 # Define the tests
 def test_build_conditions_with_weight_filter(weight_query_filter):
     clause, values = build_conditions(weight_query_filter)
-    assert "a.timestamp >= %s" in clause
-    assert "a.timestamp <= %s" in clause
+    assert "w.date >= %s" in clause
+    assert "w.date <= %s" in clause
     assert "w.dog_id = %s" in clause
-    assert values == [date(2025, 1, 1), date(2025, 1, 30), 2]
+    assert values == [2, date(2025, 1, 1), date(2025, 1, 30)]
 
 def test_build_conditions_with_activity_filter(activity_query_filter):
     clause, values = build_conditions(activity_query_filter)
@@ -41,11 +41,11 @@ def test_build_conditions_with_activity_filter(activity_query_filter):
     assert "a.workout = %s" in clause
     assert "a.location ILIKE %s" in clause
     assert values == [
-        date(2025, 1, 1),
-        date(2025, 1, 30),
         2,
         1,
         False,
         1,
-        "%Park%"
+        "%Park%",
+        date(2025, 1, 1),
+        date(2025, 1, 30)
     ]
