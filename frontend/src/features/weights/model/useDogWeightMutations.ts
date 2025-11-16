@@ -4,6 +4,11 @@ import { qk } from "@/shared/api/keys";
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
+type CreateWeightVars = {
+    input: Omit<WeightEntry, 'id'>;
+    listParams?: FetchWeightsParams;
+};
+
 // Check if the new entry belongs to a specific list based on filters
 function fitsList(entry: Omit<WeightEntry, 'id'>, p?: FetchWeightsParams) {
     if (!p) return true;
@@ -22,45 +27,35 @@ function insertSorted(list: WeightEntry[], item: WeightEntry) {
     return out;
 }
 
-export function useCreateWeight(listParams?: FetchWeightsParams) {
+export function useCreateWeight() {
     const qc = useQueryClient();
     return useMutation({
-        mutationFn: (input: Omit<WeightEntry, 'id'>) => createWeight(input),
+        mutationFn: ({ input }: CreateWeightVars) => createWeight(input),
 
-        onMutate: async (input) => {
-            let tempId: number | undefined
+        onMutate: async ({ input, listParams }) => {
             const key = listParams ? qk.weights(listParams) : undefined;
-            if (!key) return { key: undefined, prev: undefined };
+            if (!key) return { key: undefined, prev: undefined as WeightEntry[] | undefined };
 
             await qc.cancelQueries({ queryKey: key });
             const prev = qc.getQueryData<WeightEntry[]>(key) ?? [];
 
             // Optimistically add only if the entry fits current filters
             if (fitsList(input, listParams)) {
-                const tempId = -Date.now();
-                const temp: WeightEntry = { ...input, id: tempId };
+                const temp: WeightEntry = { ...input, id: -Date.now() };
                 qc.setQueryData<WeightEntry[]>(key, insertSorted(prev, temp));
-                return { key, prev };
             }
 
-            return { key, prev, tempId };
+            // We only need prev + key; the temp row will be blown away by invalidation
+            return { key, prev };
         },
 
         onError: (_err, _vars, ctx) => {
-            if (ctx?.key) qc.setQueryData(ctx.key, ctx.prev);
+            if (ctx?.key) qc.setQueryData<WeightEntry[]>(ctx.key, ctx.prev);
         },
 
-        onSuccess: (res, input, ctx) => {
-            // Replace temp id with the real one
-            if (ctx?.key && ctx.tempId != null) {
-                qc.setQueryData<WeightEntry[]>(ctx.key, (old = []) =>
-                    old.map(e => (e.id === ctx.tempId ? { ...e, id: res.id } : e))
-                );
-            }
-        },
-
-        onSettled: () => {
-            if (listParams) qc.invalidateQueries({ queryKey: qk.weights(listParams) });
+        onSettled: (_res, _err) => {
+            // invalidate all weight keys to make sure it gets refetched (graph + latest data)
+            qc.invalidateQueries({ queryKey: ['weights'] });
         },
     });
 }

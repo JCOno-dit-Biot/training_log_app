@@ -2,7 +2,7 @@
 import { useMemo, useState } from 'react';
 import { Plus } from 'lucide-react';
 
-import type { LatestWeight } from '@/entities/dogs/model';
+import type { FetchWeightsParams, LatestWeight } from '@/entities/dogs/model';
 import type { Dog } from '@/entities/dogs/model';
 import { formatMonthDay } from '@/shared/util/dates';
 
@@ -16,10 +16,12 @@ export function LatestGrid({
     latest,
     dogs,
     unit,
+    params
 }: {
     latest: LatestWeight[];
     dogs: Dog[];
     unit: Unit;
+    params: FetchWeightsParams;
 }) {
     const [openForDog, setOpenForDog] = useState<number | null>(null);
     const byDog = useMemo(() => new Map(latest.map(l => [l.dog_id, l])), [latest]);
@@ -78,6 +80,8 @@ export function LatestGrid({
             <AddWeightModal
                 open={openForDog != null}
                 dogId={openForDog ?? 0}
+                unit={unit}
+                params={params}
                 onClose={() => setOpenForDog(null)}
             />
         </>

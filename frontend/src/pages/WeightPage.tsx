@@ -50,7 +50,7 @@ export default function WeightsPage() {
     return (
         <div className="max-w-7xl mx-auto p-4 space-y-4">
             {/* Row 1: cards */}
-            <LatestGrid latest={latest} dogs={sortedDogs} unit={unit} />
+            <LatestGrid latest={latest} dogs={sortedDogs} unit={unit} params={params} />
 
             {/* Row 2: controls + chart */}
             <div className="rounded-2xl border border-gray-300 shadow-md p-4 h-[440px] min-h-[440px]">

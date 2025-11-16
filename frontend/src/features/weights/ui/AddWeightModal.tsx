@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 
+import type { FetchWeightsParams } from '@/entities/dogs/model';
 import { toYMD } from '@/shared/util/dates';
 
 import { useCreateWeight } from '../model/useDogWeightMutations';
@@ -10,18 +11,22 @@ type Unit = 'kg' | 'lb';
 export function AddWeightModal({
     open,
     dogId,
+    unit,
+    params,
     onClose
 
 }: {
     open: boolean;
     dogId: number;
+    unit: Unit;
+    params: FetchWeightsParams
     onClose: () => void;
 }) {
-    const [unit, setUnit] = useState<Unit>('lb');
+    //const [unit, setUnit] = useState<Unit>('lb');
     const [value, setValue] = useState<string>('');
     const [date, setDate] = useState<string>(toYMD(new Date())); // yyyy-MM-dd
 
-    const { mutate, isPending } = useCreateWeight({ dogId });
+    const { mutate, isPending } = useCreateWeight();
 
     const placeholder = unit === 'kg' ? 'e.g. 24.3' : 'e.g. 53.5';
     //const toKg = (n: number) => (unit === 'kg' ? n : n / 2.2046226218);
@@ -32,21 +37,30 @@ export function AddWeightModal({
     }, [dogId, value, date]);
 
     function onSubmit() {
-        const num = Number(value);
         if (disabled) return;
-        const iso = new Date(date).toISOString();
 
-        mutate({
-            dog_id: dogId,
-            date: date,
-            weight: Number(convertWeight(num, unit, "kg").toFixed(3))
-        },
-            { onSuccess: onClose }
+        const num = Number(value);
+        const weightKg = Number(
+            convertWeight(num, unit, "kg").toFixed(3)
         );
 
+        mutate({
+            input: {
+                dog_id: dogId,
+                date: date,          // or `date` depending on your API
+                weight: weightKg,
+            },
+            listParams: params,
+        },
+            {
+                onSuccess: () => {
+                    onClose();
+                    setValue('');
+                    setDate(toYMD(new Date()));
+                }
+            },
 
-        setValue('');
-        setDate(toYMD(new Date()));
+        );
     }
 
     if (!open) return null;
@@ -59,16 +73,15 @@ export function AddWeightModal({
                     <button className="text-sm bg-white" onClick={onClose}>Close</button>
                 </div>
 
-                <div className="flex items-center gap-2 mb-3">
-                    <span className="text-sm">Unit:</span>
-                    <button className={`px-3 py-1 rounded-xl border ${unit === 'kg' ? 'bg-gray-200' : ''}`} onClick={() => setUnit('kg')}>kg</button>
-                    <button className={`px-3 py-1 rounded-xl border ${unit === 'lb' ? 'bg-gray-200' : ''}`} onClick={() => setUnit('lb')}>lb</button>
-                </div>
-
                 <div className="flex flex-col gap-3">
                     <div>
                         <label className="text-sm block mb-1">Weight ({unit})</label>
-                        <input className="w-full border rounded-xl px-3 py-2" inputMode="decimal" value={value} onChange={e => setValue(e.target.value)} />
+                        <input
+                            className="w-full border rounded-xl px-3 py-2"
+                            inputMode="decimal"
+                            placeholder={placeholder}
+                            value={value}
+                            onChange={e => setValue(e.target.value)} />
                     </div>
                     <div>
                         <label className="text-sm block mb-1">Date</label>
