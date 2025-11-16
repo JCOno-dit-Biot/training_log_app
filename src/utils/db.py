@@ -24,7 +24,6 @@ def build_conditions(filters: WeightQueryFilter | ActivityQueryFilters):
         if filters.start_date:
             conditions.append(f"w.date >= %s")
             values.append(filters.start_date)
-
         if filters.end_date:
             conditions.append(f"w.date <= %s")
             values.append(filters.end_date)
