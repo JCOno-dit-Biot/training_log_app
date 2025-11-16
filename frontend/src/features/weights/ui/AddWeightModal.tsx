@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 import type { FetchWeightsParams } from '@/entities/dogs/model';
 import { toYMD } from '@/shared/util/dates';
@@ -22,14 +22,34 @@ export function AddWeightModal({
     params: FetchWeightsParams
     onClose: () => void;
 }) {
-    //const [unit, setUnit] = useState<Unit>('lb');
+
     const [value, setValue] = useState<string>('');
     const [date, setDate] = useState<string>(toYMD(new Date())); // yyyy-MM-dd
+
+    const ref = useRef<HTMLDivElement>(null);
 
     const { mutate, isPending } = useCreateWeight();
 
     const placeholder = unit === 'kg' ? 'e.g. 24.3' : 'e.g. 53.5';
-    //const toKg = (n: number) => (unit === 'kg' ? n : n / 2.2046226218);
+
+    useEffect(() => {
+        function handleClick(e: MouseEvent) {
+            if (!ref.current) return;
+
+            // if click is outside the modal
+            if (!ref.current.contains(e.target as Node)) {
+                onClose();
+            }
+        }
+
+        if (open) {
+            document.addEventListener("mousedown", handleClick);
+        }
+
+        return () => {
+            document.removeEventListener("mousedown", handleClick);
+        };
+    }, [open, onClose]);
 
     const disabled = useMemo(() => {
         const num = Number(value);
@@ -67,7 +87,7 @@ export function AddWeightModal({
 
     return (
         <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50">
-            <div className="bg-white rounded-2xl w-full max-w-md p-4 shadow-xl">
+            <div ref={ref} className="bg-white rounded-2xl w-full max-w-md p-4 shadow-xl">
                 <div className="flex items-center justify-between mb-3">
                     <div className="text-lg font-semibold">Add weight</div>
                     <button className="text-sm bg-white" onClick={onClose}>Close</button>
