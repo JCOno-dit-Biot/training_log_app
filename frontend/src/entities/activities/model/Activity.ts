@@ -1,8 +1,9 @@
-import type { Dog, SelectedDog } from './Dog';
+import type { Dog, SelectedDog } from '@entities/dogs/model';
+import type { Runner } from '@entities/runners/model';
+import type { Sport } from '@entities/sports/model';
+
 import type { Lap } from './Lap';
-import type { Runner } from './Runner';
-import type { Sport } from './Sport';
-import type { Weather } from './Weather';
+import type { Weather, WeatherForm } from './Weather';
 
 interface DogActivityRead {
   dog: Dog;
@@ -57,8 +58,23 @@ export interface ActivityForm {
   distance: number;
   speed?: number;
   pace?: string;
+  weather: WeatherForm;
+  workout: boolean;
+  laps: Lap[];
+  location_id: number | null;
+}
+
+export interface ActivityPayload {
+  timestamp: string;
+  runner_id: number | null;
+  sport_id: number | null;
+  dogs: SelectedDog[];
+  distance: number;
+  speed?: number;
+  pace?: string;
   weather: Weather;
   workout: boolean;
   laps: Lap[];
   location_id: number | null;
 }
+

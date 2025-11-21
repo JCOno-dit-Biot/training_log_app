@@ -12,6 +12,8 @@ export function validateActivityForm(
   // timestamp required & valid
   if (!formData.timestamp || !isISO(formData.timestamp)) {
     errs.timestamp = 'Please pick a valid date and time.';
+  } else if (new Date(formData.timestamp) > new Date()) {
+    errs.timestamp = 'Date cannot be in the future.';
   }
 
   // required selects
@@ -62,19 +64,18 @@ export function validateActivityForm(
   }
 
   // weather checks – optional fields, but if provided must be sane
-  // humidity is stored as 0..1; the input shows percentage
-  if (formData.weather?.humidity != null && !Number.isNaN(formData.weather.humidity)) {
-    if (formData.weather.humidity < 0 || formData.weather.humidity > 1) {
-      errs.humidity = 'Humidity must be between 0–100%.';
-    }
+  // humidity must be between 0 and 100, the conversion to decimal is done on submit
+
+  const humidityNum = formData.weather.humidity.trim() === "" ? null : Number(formData.weather.humidity);
+
+  if (humidityNum != null && (humidityNum < 0 || humidityNum > 100)) {
+    errs.humidity = 'Humidity must be between 0–100%.';
   }
 
+  const tempNum = formData.weather.temperature.trim() === '' ? null : Number(formData.weather.temperature);
   // temperature sanity (tweak range to your sport context)
-  if (formData.weather?.temperature != null && !Number.isNaN(formData.weather.temperature)) {
-    const t = formData.weather.temperature;
-    if (t < -40 || t > 60) {
-      errs.temperature = 'Temperature looks unreasonable (try −40 to 60°C).';
-    }
+  if (tempNum != null && (tempNum < -40 || tempNum > 60)) {
+    errs.temperature = 'Temperature looks unreasonable (try −40 to 60°C).';
   }
 
   return errs;

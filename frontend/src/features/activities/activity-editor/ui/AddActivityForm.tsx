@@ -15,6 +15,7 @@ import { combineLocalDateTimeToUTCISO } from '@/shared/util/dates';
 
 import { convertToFormData } from '../util/convertToFormData';
 import { getActivityChanges } from '../util/getActivityChanges';
+import { toPayload } from '../util/toPayload';
 import { validateActivityForm } from '../util/validateActivityForm';
 
 import DogSelector from './DogSelector';
@@ -56,8 +57,8 @@ export default function AddActivityForm({ onClose, onSuccess, initialData }: Add
         speed: undefined,
         pace: '',
         weather: {
-          temperature: 0,
-          humidity: 0,
+          temperature: '',
+          humidity: '',
           condition: '',
         },
         workout: false,
@@ -112,8 +113,8 @@ export default function AddActivityForm({ onClose, onSuccess, initialData }: Add
         speed: undefined,
         pace: '',
         weather: {
-          temperature: 0,
-          humidity: 0,
+          temperature: '',
+          humidity: '',
           condition: '',
         },
         workout: false,
@@ -167,13 +168,11 @@ export default function AddActivityForm({ onClose, onSuccess, initialData }: Add
   };
 
   const handleWeatherChange = (field: keyof Weather, value: any) => {
-    const parsedValue = field === 'humidity' ? parseFloat(value) / 100 : value;
-
     setFormData((prev) => ({
       ...prev,
       weather: {
         ...prev.weather,
-        [field]: parsedValue,
+        [field]: value,
       },
     }));
   };
@@ -195,9 +194,12 @@ export default function AddActivityForm({ onClose, onSuccess, initialData }: Add
       if (isEdit && initialData) {
         const original = convertToFormData(initialData);
         const diff = getActivityChanges(original, formData); // what your API expects
+
         await updateMutation.mutateAsync({ id: initialData.id, diff });
       } else {
-        await createMutation.mutateAsync(formData); // returns id inside hook, warms detail, invalidates feed
+        const payload = toPayload(formData)
+        console.log(payload)
+        await createMutation.mutateAsync(payload); // returns id inside hook, warms detail, invalidates feed
       }
       onSuccess?.();
       onClose(); // close the modal or reset form as needed
@@ -249,12 +251,12 @@ export default function AddActivityForm({ onClose, onSuccess, initialData }: Add
             aria-describedby={fieldErrors.timestamp ? 'timestamp-error' : undefined}
           />
         </div>
-        {fieldErrors.timestamp && (
-          <p id="timestamp-error" className="mt-1 text-sm text-red-600">
-            {fieldErrors.timestamp}
-          </p>
-        )}
       </div>
+      {fieldErrors.timestamp && (
+        <p id="timestamp-error" className="mt-1 text-sm text-red-600">
+          {fieldErrors.timestamp}
+        </p>
+      )}
 
       <div className="mb-2">
         {/* Sport selection dropdown */}
@@ -459,10 +461,9 @@ export default function AddActivityForm({ onClose, onSuccess, initialData }: Add
           <input
             id="temperature"
             type="number"
-            step="1"
             className={`w-full rounded border p-2 ${fieldErrors.temperature ? 'border-red-500' : ''}`}
             value={formData.weather?.temperature ?? ''}
-            onChange={(e) => handleWeatherChange('temperature', parseFloat(e.target.value))}
+            onChange={(e) => handleWeatherChange('temperature', e.target.value)}
             aria-invalid={!!fieldErrors.temperature}
             aria-describedby={fieldErrors.temperature ? 'temperature-error' : undefined}
           />
@@ -480,9 +481,9 @@ export default function AddActivityForm({ onClose, onSuccess, initialData }: Add
             step="1"
             className={`w-full rounded border p-2 ${fieldErrors.humidity ? 'border-red-500' : ''}`}
             value={
-              formData.weather.humidity != null ? (formData.weather.humidity * 100).toFixed(0) : ''
+              formData.weather?.humidity ?? ''
             }
-            onChange={(e) => handleWeatherChange('humidity', parseFloat(e.target.value))}
+            onChange={(e) => handleWeatherChange('humidity', e.target.value)}
             aria-invalid={!!fieldErrors.humidity}
             aria-describedby={fieldErrors.humidity ? 'humidity-error' : undefined}
           />

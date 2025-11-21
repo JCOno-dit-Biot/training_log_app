@@ -13,8 +13,8 @@ export function convertToFormData(activity: Activity): ActivityForm {
     speed: activity.speed,
     pace: activity.pace,
     weather: {
-      temperature: activity.weather.temperature,
-      humidity: activity.weather.humidity,
+      temperature: activity.weather.temperature === null ? '' : String(activity.weather.temperature),
+      humidity: activity.weather.humidity === null ? '' : String(activity.weather.humidity * 100),
       condition: activity.weather.condition,
     },
     location_id: activity.location.id,
