@@ -51,10 +51,43 @@ export function AddWeightModal({
         };
     }, [open, onClose]);
 
-    const disabled = useMemo(() => {
-        const num = Number(value);
-        return !dogId || !Number.isFinite(num) || num <= 0 || !date;
-    }, [dogId, value, date]);
+    const { invalidWeight, invalidDate, disabled } = useMemo(() => {
+        const info = {
+            invalidWeight: false,
+            invalidDate: false,
+            disabled: false,
+        };
+
+        if (!dogId) {
+            info.disabled = true;
+            return info;
+        }
+
+        // weight
+        const raw = Number(value);
+        if (!Number.isFinite(raw) || raw <= 0) {
+            info.invalidWeight = true;
+        }
+
+        const weightLbs = unit === "kg"
+            ? convertWeight(raw, "kg", "lb")
+            : raw;
+
+        if (weightLbs <= 0 || weightLbs > 200) {
+            info.invalidWeight = true;
+        }
+
+        // date
+        const today = toYMD(new Date());
+        if (!date || date > today) {
+            info.invalidDate = true;
+        }
+
+        info.disabled = info.invalidWeight || info.invalidDate;
+
+        return info;
+    }, [dogId, value, date, unit]);
+
 
     function onSubmit() {
         if (disabled) return;
@@ -97,16 +130,18 @@ export function AddWeightModal({
                     <div>
                         <label className="text-sm block mb-1">Weight ({unit})</label>
                         <input
-                            className="w-full border rounded-xl px-3 py-2"
+                            className={`w-full border ${invalidWeight && value ? 'border-red-500' : ''} rounded-xl px-3 py-2`}
                             inputMode="decimal"
                             placeholder={placeholder}
                             value={value}
                             onChange={e => setValue(e.target.value)} />
                     </div>
+                    {invalidWeight && value && <p className="text-xs text-red-600">Weight must be between 0–200 lb.</p>}
                     <div>
                         <label className="text-sm block mb-1">Date</label>
-                        <input type="date" className="w-full border rounded-xl px-3 py-2" value={date} onChange={e => setDate(e.target.value)} />
+                        <input type="date" className={`w-full border ${invalidDate ? 'border-red-500' : ''} rounded-xl px-3 py-2`} value={date} onChange={e => setDate(e.target.value)} />
                     </div>
+                    {invalidDate && <p className="text-xs text-red-600">Date cannot be in the future.</p>}
                     <button className="rounded-2xl px-4 py-2 shadow border disabled:opacity-50" disabled={isPending || disabled} onClick={onSubmit}>
                         Save
                     </button>
