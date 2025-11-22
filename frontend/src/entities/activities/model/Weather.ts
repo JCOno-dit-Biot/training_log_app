@@ -1,8 +1,8 @@
 export interface WeatherForm {
   id?: number;
-  temperature: string | null;
-  humidity: string | null;
-  condition: string | null;
+  temperature: string;
+  humidity: string;
+  condition: string;
 }
 
 export interface Weather {

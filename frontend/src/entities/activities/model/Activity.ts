@@ -28,7 +28,7 @@ export interface Activity {
   location: Location;
   workout: boolean;
   laps: Lap[];
-  weather: Weather;
+  weather?: Weather;
   comment_count: number;
 }
 
@@ -74,7 +74,7 @@ export interface ActivityPayload {
   distance: number;
   speed?: number;
   pace?: string;
-  weather: Weather;
+  weather: Weather | null;
   workout: boolean;
   laps: Lap[];
   location_id: number | null;

@@ -1,7 +1,8 @@
 // components/AddActivityForm.tsx
 import { useEffect, useRef, useState } from 'react';
 
-import type { Activity, ActivityForm, Weather } from '@entities/activities/model';
+import type { Activity, ActivityForm } from '@entities/activities/model';
+import type { WeatherForm } from '@entities/activities/model';
 import {
   useCreateActivity,
   useUpdateActivity,
@@ -167,7 +168,10 @@ export default function AddActivityForm({ onClose, onSuccess, initialData }: Add
     }
   };
 
-  const handleWeatherChange = (field: keyof Weather, value: any) => {
+  const handleWeatherChange = <K extends keyof WeatherForm>(
+    field: K,
+    value: WeatherForm[K],
+  ) => {
     setFormData((prev) => ({
       ...prev,
       weather: {
@@ -195,6 +199,7 @@ export default function AddActivityForm({ onClose, onSuccess, initialData }: Add
         const original = activityToPayload(initialData);
         const updatedPayload = toPayload(formData);
         const diff = getActivityChanges(original, updatedPayload); // what your API expects
+        console.log(diff)
         await updateMutation.mutateAsync({ id: initialData.id, diff });
       } else {
         const payload = toPayload(formData)
