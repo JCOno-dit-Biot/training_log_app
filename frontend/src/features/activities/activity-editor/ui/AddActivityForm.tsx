@@ -13,7 +13,7 @@ import { useRunners } from '@features/runners/model/useRunners';
 import { useSports } from '@features/sports/model/useSports';
 import { combineLocalDateTimeToUTCISO } from '@/shared/util/dates';
 
-import { convertToFormData } from '../util/convertToFormData';
+import { activityToPayload, convertToFormData } from '../util/convertToFormData';
 import { getActivityChanges } from '../util/getActivityChanges';
 import { toPayload } from '../util/toPayload';
 import { validateActivityForm } from '../util/validateActivityForm';
@@ -192,13 +192,12 @@ export default function AddActivityForm({ onClose, onSuccess, initialData }: Add
     setValidationMsg(null);
     try {
       if (isEdit && initialData) {
-        const original = convertToFormData(initialData);
-        const diff = getActivityChanges(original, formData); // what your API expects
-
+        const original = activityToPayload(initialData);
+        const updatedPayload = toPayload(formData);
+        const diff = getActivityChanges(original, updatedPayload); // what your API expects
         await updateMutation.mutateAsync({ id: initialData.id, diff });
       } else {
         const payload = toPayload(formData)
-        console.log(payload)
         await createMutation.mutateAsync(payload); // returns id inside hook, warms detail, invalidates feed
       }
       onSuccess?.();

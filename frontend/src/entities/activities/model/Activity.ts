@@ -64,6 +64,8 @@ export interface ActivityForm {
   location_id: number | null;
 }
 
+// Only difference is the weather has temperature and humidity as number
+// otherwise lead to 422 from backend
 export interface ActivityPayload {
   timestamp: string;
   runner_id: number | null;
