@@ -29,6 +29,8 @@ type AddActivityFormProps = {
   initialData?: Activity;
 };
 
+const pad2 = (n: number) => n.toString().padStart(2, '0');
+
 export default function AddActivityForm({ onClose, onSuccess, initialData }: AddActivityFormProps) {
   const formRef = useRef<HTMLFormElement>(null);
 
@@ -84,11 +86,20 @@ export default function AddActivityForm({ onClose, onSuccess, initialData }: Add
 
   // Initialize from existing timestamp (or now) and keep in sync if formData changes elsewhere
   useEffect(() => {
-    const ts = formData.timestamp ? new Date(formData.timestamp) : new Date();
-    if (Number.isFinite(ts.getTime())) {
-      setDateStr(ts.toISOString().slice(0, 10)); // YYYY-MM-DD
-      setTimeStr(ts.toLocaleTimeString('en-GB', { hour12: false }).slice(0, 5)); // HH:mm
-    }
+    const base = formData.timestamp ? new Date(formData.timestamp) : new Date();
+    if (!Number.isFinite(base.getTime())) return;
+
+    const y = base.getFullYear();
+    const m = base.getMonth() + 1;
+    const d = base.getDate();
+    const hh = base.getHours();
+    const mm = base.getMinutes();
+
+    const newDateStr = `${y}-${pad2(m)}-${pad2(d)}`; // local YYYY-MM-DD
+    const newTimeStr = `${pad2(hh)}:${pad2(mm)}`;    // local HH:mm
+
+    setDateStr(newDateStr);
+    setTimeStr(newTimeStr);
   }, [formData.timestamp]);
 
   // Recompute formData.timestamp only when both strings are complete/valid
