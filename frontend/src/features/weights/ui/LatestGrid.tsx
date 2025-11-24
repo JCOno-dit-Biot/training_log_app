@@ -1,6 +1,6 @@
 // src/features/weights/LatestGrid.tsx
 import { useMemo, useState } from 'react';
-import { Plus } from 'lucide-react';
+import { Pencil, Plus } from 'lucide-react';
 
 import type { FetchWeightsParams, LatestWeight } from '@/entities/dogs/model';
 import type { Dog } from '@/entities/dogs/model';
@@ -8,7 +8,7 @@ import { formatMonthDay } from '@/shared/util/dates';
 
 import { convertWeight } from '../util/convertUnit'
 
-import { AddWeightModal } from './AddWeightModal';
+import { AddWeightModal, EditWeightModal } from './WeightModal';
 
 type Unit = 'kg' | 'lb';
 
@@ -24,28 +24,37 @@ export function LatestGrid({
     params: FetchWeightsParams;
 }) {
     const [openForDog, setOpenForDog] = useState<number | null>(null);
+    const [editing, setEditing] = useState<LatestWeight | null>(null);
+
     const byDog = useMemo(() => new Map(latest.map(l => [l.dog_id, l])), [latest]);
 
     return (
         <>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
                 {dogs.map(d => {
-                    const l = byDog.get(d.id);
-                    const val = l ? (unit === 'kg' ? l.latest_weight : convertWeight(l.latest_weight, 'kg', unit)) : null;
-                    const delta = l?.weight_change ?? null;
+                    const lw = latest.find(l => l.dog_id === d.id) || null;
+                    const val = lw ? (unit === 'kg' ? lw.latest_weight : convertWeight(lw.latest_weight, 'kg', unit)) : null;
+                    const delta = lw?.weight_change ?? null;
                     const deltaDisplay = delta == null ? null : (unit === 'kg' ? delta : convertWeight(delta, 'kg', unit));
                     const sign = deltaDisplay != null && deltaDisplay > 0 ? '▲' : deltaDisplay != null && deltaDisplay < 0 ? '▼' : '';
                     return (
                         <div key={d.id} className=" relative rounded-xl border border-gray-300 bg-white p-3 shadow-md items-center gap-1">
-
-
-                            <button
-                                className="absolute top-1 right-1 rounded-full w-10 h-10 flex items-center justify-center hover:bg-gray-50"
-                                onClick={() => setOpenForDog(d.id)}
-                                title="Add weight"
-                            >
-                                <Plus size={20} strokeWidth={2} />
-                            </button>
+                            <div className=" absolute top-1 right-1 flex gap-1 items-center">
+                                <button
+                                    className="rounded-full w-8 h-8 flex items-center justify-center hover:bg-gray-50"
+                                    onClick={() => setEditing(lw)}
+                                    title="Edit latest weight"
+                                >
+                                    <Pencil size={18} strokeWidth={2} />
+                                </button>
+                                <button
+                                    className="rounded-full w-10 h-10 flex items-center justify-center hover:bg-gray-50"
+                                    onClick={() => setOpenForDog(d.id)}
+                                    title="Add weight"
+                                >
+                                    <Plus size={20} strokeWidth={2} />
+                                </button>
+                            </div>
 
                             <div className="mt-2 flex items-center gap-8">
                                 <img
@@ -70,20 +79,32 @@ export function LatestGrid({
                                     )}
                                 </div>
                                 <div className="text-xs text-gray-500">
-                                    {l?.latest_update ? `Updated ${formatMonthDay(l.latest_update)}` : '—'}
+                                    {lw?.latest_update ? `Updated ${formatMonthDay(lw.latest_update)}` : '—'}
                                 </div>
                             </div>
                         </div>
                     );
                 })}
             </div>
-            <AddWeightModal
-                open={openForDog != null}
-                dogId={openForDog ?? 0}
-                unit={unit}
-                params={params}
-                onClose={() => setOpenForDog(null)}
-            />
+            {openForDog !== null && (
+                <AddWeightModal
+                    open={openForDog !== null}
+                    dogId={openForDog}
+                    unit={unit}
+                    params={params}
+                    onClose={() => setOpenForDog(null)}
+                />
+            )}
+
+            {/* Edit modal */}
+            {editing && (
+                <EditWeightModal
+                    open={!!editing}
+                    entry={editing}
+                    unit={unit}
+                    onClose={() => setEditing(null)}
+                />
+            )}
         </>
     );
 }

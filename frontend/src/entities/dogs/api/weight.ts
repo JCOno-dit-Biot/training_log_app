@@ -1,6 +1,8 @@
 import axios from '@shared/api/axios';
 
-import type { FetchWeightsParams, LatestWeight, WeightEntry } from '../model';
+import type { FetchWeightsParams, LatestWeight, WeightEntry, WeightPatch } from '../model';
+
+
 
 export function normalizeParams(p: FetchWeightsParams) {
   const out: Record<string, string | number> = {};
@@ -39,7 +41,7 @@ export const createWeight = async (entry: Omit<WeightEntry, 'id'>): Promise<Weig
 
 export const updateWeight = async (
   id: number,
-  changes: Partial<WeightEntry>,
+  changes: WeightPatch,
 ): Promise<WeightEntry> => {
   const res = await axios.put(`/dogs/weights/${id}`, changes);
   return res.data?.data ?? res.data;
