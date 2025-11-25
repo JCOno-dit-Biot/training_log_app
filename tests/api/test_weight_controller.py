@@ -25,6 +25,7 @@ def mock_repo(dog_fixture):
     ]
     mock.get_latest.return_value = [
         DogWeightLatest(
+            id=123,
             dog_id = 1,
             latest_update=date.today(),
             latest_weight = 20.1,
@@ -70,6 +71,7 @@ def test_get_latest_called(test_app, mock_repo):
     response = client.get("/dogs/weights/latest")
     assert response.status_code == 200
     assert DogWeightLatest(**response.json()[0]).dog_id == 1
+    assert DogWeightLatest(**response.json()[0]).id == 123
     mock_repo.get_latest.assert_called_once()
     mock_repo.get_latest.assert_called_with(1)
 

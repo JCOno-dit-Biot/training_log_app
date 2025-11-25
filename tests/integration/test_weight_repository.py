@@ -52,9 +52,11 @@ def test_get_latest(weight_repo):
     latest_weights = weight_repo.get_latest(2)
     print(latest_weights)
     assert len(latest_weights) == 2
+    assert latest_weights[0].id == 3
     assert latest_weights[0].dog_id == 1
     assert latest_weights[0].weight_change == pytest.approx(-1.4)
     assert latest_weights[0].latest_update == date(2025,3,5)
+    assert latest_weights[1].id == 4
     assert latest_weights[1].dog_id == 2
     assert latest_weights[1].weight_change is None
     assert latest_weights[1].latest_update == date(2025,1,3)
