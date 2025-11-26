@@ -1,8 +1,9 @@
-import type { Dog, SelectedDog } from './Dog';
+import type { Dog, SelectedDog } from '@entities/dogs/model';
+import type { Runner } from '@entities/runners/model';
+import type { Sport } from '@entities/sports/model';
+
 import type { Lap } from './Lap';
-import type { Runner } from './Runner';
-import type { Sport } from './Sport';
-import type { Weather } from './Weather';
+import type { Weather, WeatherForm } from './Weather';
 
 interface DogActivityRead {
   dog: Dog;
@@ -27,7 +28,7 @@ export interface Activity {
   location: Location;
   workout: boolean;
   laps: Lap[];
-  weather: Weather;
+  weather?: Weather;
   comment_count: number;
 }
 
@@ -57,8 +58,25 @@ export interface ActivityForm {
   distance: number;
   speed?: number;
   pace?: string;
-  weather: Weather;
+  weather: WeatherForm;
   workout: boolean;
   laps: Lap[];
   location_id: number | null;
 }
+
+// Only difference is the weather has temperature and humidity as number
+// otherwise lead to 422 from backend
+export interface ActivityPayload {
+  timestamp: string;
+  runner_id: number | null;
+  sport_id: number | null;
+  dogs: SelectedDog[];
+  distance: number;
+  speed?: number;
+  pace?: string;
+  weather: Weather | null;
+  workout: boolean;
+  laps: Lap[];
+  location_id: number | null;
+}
+

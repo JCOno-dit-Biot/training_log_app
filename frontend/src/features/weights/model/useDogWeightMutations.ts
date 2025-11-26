@@ -1,5 +1,5 @@
-import { createWeight } from "@/entities/dogs/api/weight";
-import type { FetchWeightsParams, WeightEntry } from "@/entities/dogs/model";
+import { createWeight, updateWeight } from "@/entities/dogs/api/weight";
+import type { FetchWeightsParams, WeightEntry, WeightPatch } from "@/entities/dogs/model";
 import { qk } from "@/shared/api/keys";
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -7,6 +7,11 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 type CreateWeightVars = {
     input: Omit<WeightEntry, 'id'>;
     listParams?: FetchWeightsParams;
+};
+
+type UpdateWeightVars = {
+    id: number;
+    patch: WeightPatch;
 };
 
 // Check if the new entry belongs to a specific list based on filters
@@ -56,6 +61,19 @@ export function useCreateWeight() {
         onSettled: (_res, _err) => {
             // invalidate all weight keys to make sure it gets refetched (graph + latest data)
             qc.invalidateQueries({ queryKey: ['weights'] });
+        },
+    });
+}
+
+export function useUpdateWeight() {
+    const qc = useQueryClient();
+
+    return useMutation({
+        mutationFn: ({ id, patch }: UpdateWeightVars) => updateWeight(id, patch),
+
+        onSuccess: () => {
+            // Refresh graph + latest grid
+            qc.invalidateQueries({ queryKey: ["weights"] });
         },
     });
 }

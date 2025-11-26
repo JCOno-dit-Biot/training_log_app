@@ -15,7 +15,10 @@ export type WeightEntry = {
   dog?: Dog; // optional expanded
 };
 
+export type WeightPatch = Partial<Pick<WeightEntry, "date" | "weight">>;
+
 export type LatestWeight = {
+  id: number;
   dog_id: number;
   latest_weight: number;
   weight_change: number | null;    // change vs previous, may be null if only one entry

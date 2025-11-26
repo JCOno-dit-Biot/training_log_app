@@ -5,7 +5,7 @@ import {
   postActivity as createActivityApi,
   updateActivity as updateActivityApi,
 } from '@entities/activities/api/activities';
-import type { Activity, ActivityForm, PaginatedActivities } from '@entities/activities/model';
+import type { Activity, ActivityPayload, PaginatedActivities } from '@entities/activities/model';
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
@@ -30,7 +30,7 @@ function setAllActivityPages(
 export function useCreateActivity() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (payload: ActivityForm) => createActivityApi(payload) as Promise<number>,
+    mutationFn: (payload: ActivityPayload) => createActivityApi(payload) as Promise<number>,
     onSuccess: async (id: number) => {
       // Hydrate detail cache so if you navigate to it the data is instant
       try {

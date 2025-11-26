@@ -1,7 +1,8 @@
 // components/AddActivityForm.tsx
 import { useEffect, useRef, useState } from 'react';
 
-import type { Activity, ActivityForm, Weather } from '@entities/activities/model';
+import type { Activity, ActivityForm } from '@entities/activities/model';
+import type { WeatherForm } from '@entities/activities/model';
 import {
   useCreateActivity,
   useUpdateActivity,
@@ -13,8 +14,9 @@ import { useRunners } from '@features/runners/model/useRunners';
 import { useSports } from '@features/sports/model/useSports';
 import { combineLocalDateTimeToUTCISO } from '@/shared/util/dates';
 
-import { convertToFormData } from '../util/convertToFormData';
+import { activityToPayload, convertToFormData } from '../util/convertToFormData';
 import { getActivityChanges } from '../util/getActivityChanges';
+import { toPayload } from '../util/toPayload';
 import { validateActivityForm } from '../util/validateActivityForm';
 
 import DogSelector from './DogSelector';
@@ -26,6 +28,8 @@ type AddActivityFormProps = {
   onSuccess?: () => void;
   initialData?: Activity;
 };
+
+const pad2 = (n: number) => n.toString().padStart(2, '0');
 
 export default function AddActivityForm({ onClose, onSuccess, initialData }: AddActivityFormProps) {
   const formRef = useRef<HTMLFormElement>(null);
@@ -56,8 +60,8 @@ export default function AddActivityForm({ onClose, onSuccess, initialData }: Add
         speed: undefined,
         pace: '',
         weather: {
-          temperature: 0,
-          humidity: 0,
+          temperature: '',
+          humidity: '',
           condition: '',
         },
         workout: false,
@@ -82,11 +86,20 @@ export default function AddActivityForm({ onClose, onSuccess, initialData }: Add
 
   // Initialize from existing timestamp (or now) and keep in sync if formData changes elsewhere
   useEffect(() => {
-    const ts = formData.timestamp ? new Date(formData.timestamp) : new Date();
-    if (Number.isFinite(ts.getTime())) {
-      setDateStr(ts.toISOString().slice(0, 10)); // YYYY-MM-DD
-      setTimeStr(ts.toLocaleTimeString('en-GB', { hour12: false }).slice(0, 5)); // HH:mm
-    }
+    const base = formData.timestamp ? new Date(formData.timestamp) : new Date();
+    if (!Number.isFinite(base.getTime())) return;
+
+    const y = base.getFullYear();
+    const m = base.getMonth() + 1;
+    const d = base.getDate();
+    const hh = base.getHours();
+    const mm = base.getMinutes();
+
+    const newDateStr = `${y}-${pad2(m)}-${pad2(d)}`; // local YYYY-MM-DD
+    const newTimeStr = `${pad2(hh)}:${pad2(mm)}`;    // local HH:mm
+
+    setDateStr(newDateStr);
+    setTimeStr(newTimeStr);
   }, [formData.timestamp]);
 
   // Recompute formData.timestamp only when both strings are complete/valid
@@ -112,8 +125,8 @@ export default function AddActivityForm({ onClose, onSuccess, initialData }: Add
         speed: undefined,
         pace: '',
         weather: {
-          temperature: 0,
-          humidity: 0,
+          temperature: '',
+          humidity: '',
           condition: '',
         },
         workout: false,
@@ -166,14 +179,15 @@ export default function AddActivityForm({ onClose, onSuccess, initialData }: Add
     }
   };
 
-  const handleWeatherChange = (field: keyof Weather, value: any) => {
-    const parsedValue = field === 'humidity' ? parseFloat(value) / 100 : value;
-
+  const handleWeatherChange = <K extends keyof WeatherForm>(
+    field: K,
+    value: WeatherForm[K],
+  ) => {
     setFormData((prev) => ({
       ...prev,
       weather: {
         ...prev.weather,
-        [field]: parsedValue,
+        [field]: value,
       },
     }));
   };
@@ -193,11 +207,14 @@ export default function AddActivityForm({ onClose, onSuccess, initialData }: Add
     setValidationMsg(null);
     try {
       if (isEdit && initialData) {
-        const original = convertToFormData(initialData);
-        const diff = getActivityChanges(original, formData); // what your API expects
+        const original = activityToPayload(initialData);
+        const updatedPayload = toPayload(formData);
+        const diff = getActivityChanges(original, updatedPayload); // what your API expects
+        console.log(diff)
         await updateMutation.mutateAsync({ id: initialData.id, diff });
       } else {
-        await createMutation.mutateAsync(formData); // returns id inside hook, warms detail, invalidates feed
+        const payload = toPayload(formData)
+        await createMutation.mutateAsync(payload); // returns id inside hook, warms detail, invalidates feed
       }
       onSuccess?.();
       onClose(); // close the modal or reset form as needed
@@ -249,12 +266,12 @@ export default function AddActivityForm({ onClose, onSuccess, initialData }: Add
             aria-describedby={fieldErrors.timestamp ? 'timestamp-error' : undefined}
           />
         </div>
-        {fieldErrors.timestamp && (
-          <p id="timestamp-error" className="mt-1 text-sm text-red-600">
-            {fieldErrors.timestamp}
-          </p>
-        )}
       </div>
+      {fieldErrors.timestamp && (
+        <p id="timestamp-error" className="mt-1 text-sm text-red-600">
+          {fieldErrors.timestamp}
+        </p>
+      )}
 
       <div className="mb-2">
         {/* Sport selection dropdown */}
@@ -459,10 +476,9 @@ export default function AddActivityForm({ onClose, onSuccess, initialData }: Add
           <input
             id="temperature"
             type="number"
-            step="1"
             className={`w-full rounded border p-2 ${fieldErrors.temperature ? 'border-red-500' : ''}`}
             value={formData.weather?.temperature ?? ''}
-            onChange={(e) => handleWeatherChange('temperature', parseFloat(e.target.value))}
+            onChange={(e) => handleWeatherChange('temperature', e.target.value)}
             aria-invalid={!!fieldErrors.temperature}
             aria-describedby={fieldErrors.temperature ? 'temperature-error' : undefined}
           />
@@ -480,9 +496,9 @@ export default function AddActivityForm({ onClose, onSuccess, initialData }: Add
             step="1"
             className={`w-full rounded border p-2 ${fieldErrors.humidity ? 'border-red-500' : ''}`}
             value={
-              formData.weather.humidity != null ? (formData.weather.humidity * 100).toFixed(0) : ''
+              formData.weather?.humidity ?? ''
             }
-            onChange={(e) => handleWeatherChange('humidity', parseFloat(e.target.value))}
+            onChange={(e) => handleWeatherChange('humidity', e.target.value)}
             aria-invalid={!!fieldErrors.humidity}
             aria-describedby={fieldErrors.humidity ? 'humidity-error' : undefined}
           />
