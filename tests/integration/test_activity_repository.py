@@ -162,6 +162,22 @@ def test_update_weather(activity_repo):
         assert result["humidity"] == 0.4
         assert result["condition"] == "Sunny"
 
+def test_upsert_weather_on_activity_without(activity_repo):
+    fields = {
+        "weather": {
+            "temperature": 18.0,
+            "humidity": 63.0/100,
+            "condition": ""
+        }
+    }
+    activity_repo.update(3, fields)
+
+    with activity_repo._connection.cursor(cursor_factory=RealDictCursor) as cur:
+        cur.execute("SELECT temperature, humidity, condition FROM weather_entries WHERE activity_id = 3")
+        result = cur.fetchone()
+        assert result["temperature"] == 18.0
+        assert result["humidity"] == 0.63
+        assert result["condition"] == ""
 
 def test_update_dogs(activity_repo):
     fields = {
@@ -203,4 +219,15 @@ def test_update_invalid_id(activity_repo):
     with activity_repo._connection.cursor(cursor_factory=RealDictCursor) as cur:
         cur.execute("SELECT COUNT(*) FROM activities WHERE id = 99999")
         assert cur.fetchone()["count"] == 0
+
+def update_activity_remove_weather_entry(activity_repo):
+    fields = {
+        "weather": None
+    }
+    activity_repo.update(3, fields)
+
+    with activity_repo._connection.cursor(cursor_factory=RealDictCursor) as cur:
+        cur.execute("SELECT temperature, humidity, condition FROM weather_entries WHERE activity_id = 3")
+        result = cur.fetchone()
+        assert result is None
 

@@ -230,7 +230,10 @@ class activity_repository(abstract_repository):
     def update(self, activity_id: int, fields: dict):
 
         laps = fields.pop("laps", None)
-        weather_dict = fields.pop("weather", None)
+        # keep a copy of weather
+        _weather_sentinel = object()
+        weather_value = fields.pop("weather", _weather_sentinel)
+
         dogs = fields.pop("dogs", None)
         pace = fields.pop("pace", None) # pace is not directly saved in the db
 
@@ -265,16 +268,28 @@ class activity_repository(abstract_repository):
                         """, (lap.lap_time_delta, lap.lap_distance, lap.speed, activity_id, lap.lap_number))
 
                 # Weather update
-                if weather_dict:
-                    weather= Weather(**weather_dict)
-                    cur.execute("""
-                        UPDATE weather_entries
-                        SET temperature = %s,
-                            humidity = %s,
-                            condition = %s
-                        WHERE activity_id = %s
-                    """, (weather.temperature, weather.humidity, weather.condition, activity_id))
-
+                if weather_value is not _weather_sentinel:
+                    if weather_value is None:
+                        # explicit "weather: null" → delete existing weather row
+                        cur.execute(
+                            "DELETE FROM weather_entries WHERE activity_id = %s",
+                            (activity_id,),
+                        )
+                    else:
+                        # weather object → upsert
+                        weather = Weather(**weather_value)
+                        cur.execute(
+                            """
+                            INSERT INTO weather_entries (activity_id, temperature, humidity, condition)
+                            VALUES (%s, %s, %s, %s)
+                            ON CONFLICT (activity_id)
+                            DO UPDATE SET
+                                temperature = EXCLUDED.temperature,
+                                humidity = EXCLUDED.humidity,
+                                condition = EXCLUDED.condition
+                            """,
+                            (activity_id, weather.temperature, weather.humidity, weather.condition),
+                        )
                 # Dogs update — e.g., clear and re-insert
                 if dogs:
                     

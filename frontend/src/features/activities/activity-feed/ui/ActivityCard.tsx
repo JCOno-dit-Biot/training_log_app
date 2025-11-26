@@ -105,6 +105,23 @@ export default function ActivityCard({
     );
   });
 
+  function formatWeather(weather: Activity["weather"]) {
+    if (!weather) return "--"; // no weather at all
+
+    const { temperature, humidity, condition } = weather;
+
+    const tempText =
+      temperature == null ? "--°C" : `${temperature}°C`;
+
+    const humidityText =
+      humidity == null ? "--%" : `${Math.round(humidity * 100)}%`;
+
+    const conditionText =
+      !condition ? "--" : condition;
+
+    return `${tempText}, ${humidityText}, ${conditionText}`;
+  }
+
   return (
     <div className="border-stone flex flex-col gap-1 rounded-2xl border bg-white p-4 shadow-md">
       {/* Top-right: Edit/Delete menu */}
@@ -172,10 +189,7 @@ export default function ActivityCard({
         {/* Weather */}
         <div className="min-w-[140px] text-right">
           <div className="text-stone text-xs tracking-wide uppercase">Weather</div>
-          <div>
-            {activity.weather.temperature}°C, {activity.weather.humidity * 100}%,{' '}
-            {activity.weather.condition}
-          </div>
+          <div>{formatWeather(activity.weather)}</div>
         </div>
       </div>
 

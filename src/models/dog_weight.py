@@ -30,6 +30,7 @@ class DogWeightUpdate(BaseModel):
     date: Optional[datetime.date] = None
 
 class DogWeightLatest(BaseModel):
+    id: int
     dog_id: int
     latest_weight: float
     latest_update: datetime.date

@@ -2,7 +2,7 @@ import axios from '@shared/api/axios';
 import type {
   Activity,
   ActivityFilter,
-  ActivityForm,
+  ActivityPayload,
   PaginatedActivities,
 } from '@entities/activities/model';
 
@@ -45,7 +45,7 @@ export const getActivity = async (activity_id: number): Promise<Activity> => {
   return res.data;
 };
 
-export const postActivity = async (formData: ActivityForm): Promise<number> => {
+export const postActivity = async (formData: ActivityPayload): Promise<number> => {
   const payload = {
     ...formData,
   };
@@ -61,7 +61,7 @@ export const deleteActivity = async (activity_id: number): Promise<{ success: bo
 
 export const updateActivity = async (
   id: number,
-  changes: Partial<ActivityForm>,
+  changes: Partial<ActivityPayload>,
 ): Promise<{ success: boolean }> => {
   const response = await axios.put(`/activities/${id}`, changes);
   return response.data;
