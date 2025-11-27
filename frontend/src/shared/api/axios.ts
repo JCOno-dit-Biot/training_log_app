@@ -3,6 +3,8 @@ import axios from 'axios';
 
 import { authStorage } from '@app/auth/auth-storage';
 
+import { AUTH_BASE } from './authAxios';
+
 export const baseURL =
   import.meta.env.VITE_API_URL || // explicit override (e.g. http://192.168.2.31:8000)
   (import.meta.env.PROD ? '/api' : 'http://localhost:8000'); // prod: via Nginx proxy; dev: local
@@ -28,7 +30,7 @@ export async function refreshAccessToken(expiredToken: string): Promise<string |
   // Adjust endpoint & payload to your API
   try {
     const res = await axios.post(
-      `${import.meta.env.VITE_AUTH_API_URL || 'http://localhost:8001/auth'}/refresh-token`,
+      `${AUTH_BASE}/refresh-token`,
       null,
       { withCredentials: true, headers: { Authorization: `Bearer ${expiredToken}` } },
     );
