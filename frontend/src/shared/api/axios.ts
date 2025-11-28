@@ -3,7 +3,9 @@ import axios from 'axios';
 
 import { authStorage } from '@app/auth/auth-storage';
 
-import { AUTH_BASE } from './authAxios';
+import { authAxios } from './authAxios';
+
+//import { AUTH_BASE } from './authAxios';
 
 export const baseURL =
   import.meta.env.VITE_API_URL || // explicit override (e.g. http://192.168.2.31:8000)
@@ -29,8 +31,8 @@ api.interceptors.request.use((config: InternalAxiosRequestConfig) => {
 export async function refreshAccessToken(expiredToken: string): Promise<string | null> {
   // Adjust endpoint & payload to your API
   try {
-    const res = await axios.post(
-      `${AUTH_BASE}/refresh-token`,
+    const res = await authAxios.post(
+      `/refresh-token`,
       null,
       { withCredentials: true, headers: { Authorization: `Bearer ${expiredToken}` } },
     );
