@@ -1,6 +1,13 @@
+export interface WeatherForm {
+  id?: number;
+  temperature: string;
+  humidity: string;
+  condition: string;
+}
+
 export interface Weather {
   id?: number;
-  temperature: number;
-  humidity: number;
-  condition: string;
+  temperature: number | null;
+  humidity: number | null;
+  condition: string | null;
 }

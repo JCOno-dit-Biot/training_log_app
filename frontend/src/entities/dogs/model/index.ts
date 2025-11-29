@@ -1,2 +1,2 @@
 export type { Dog, SelectedDog } from './Dog';
-export type { FetchWeightsParams, LatestWeight, WeightEntry } from './Weight';
+export type { FetchWeightsParams, LatestWeight, WeightEntry, WeightPatch } from './Weight';

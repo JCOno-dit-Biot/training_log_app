@@ -77,7 +77,7 @@ class weight_repository(abstract_repository):
                     WHERE 
                         d.kennel_id = %s 
                     )
-                    SELECT dog_id, date as latest_update, weight as latest_weight, weight_change
+                    SELECT id, dog_id, date as latest_update, weight as latest_weight, weight_change
                     FROM RankedEntries
                     WHERE rn = 1
                 """

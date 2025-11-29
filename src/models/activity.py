@@ -20,27 +20,27 @@ class Activity(BaseModel):
     workout: bool = False
     dogs: List["ActivityDogs"]
     weather: Optional[Weather] = Field(None, description="Weather entry for the training")
-    laps: Optional[List["ActivityLaps"]] = Field([], description="list of laps with pace or speed")
+    laps: Optional[List["ActivityLaps"]] = Field(default_factory=list, description="list of laps with pace or speed")
     speed: Optional[float] = Field(None, description="Speed in km per hours")
     pace: Optional[str] = Field(None, description="Pace in min per km")
     comment_count: Optional[int] = Field(None, description="number of comment for an activity")
 
     @model_validator(mode="after")
-    def ensure_at_least_one_metric(cls, values):
-        if values.speed is None and values.pace is None:
+    def ensure_at_least_one_metric(self):
+        if self.speed is None and self.pace is None:
             raise ValueError(f"At least one of 'speed' or 'pace' must be provided the activity")
         
         # calculate pace from speed if not provided
-        if values.speed and values.pace is None:
-            values.pace = ch.calculate_pace_from_speed(values.speed)
+        if self.speed and self.pace is None:
+            self.pace = ch.calculate_pace_from_speed(self.speed)
 
-        if values.pace and values.speed is None:
-            values.speed = ch.calculate_speed_from_pace(values.pace)
+        if self.pace and self.speed is None:
+            self.speed = ch.calculate_speed_from_pace(self.pace)
 
         # Ensure at least one lap is provided if workout is set to true
-        if values.workout and (values.laps is None or len(values.laps) == 0):
+        if self.workout and (self.laps is None or len(self.laps) == 0):
             raise ValueError(f"Laps cannot be None or an empty list if Workout is set to True")
-        return values
+        return self
 
     
 class ActivityLaps(BaseModel):
