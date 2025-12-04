@@ -3,11 +3,11 @@ from fastapi.requests import Request
 from fastapi_utils.cbv import cbv
 from typing import List
 from src.repositories.analytics_repository import analytics_repository
-from src.models.analytics.dog_calendar_day import DogCalendarDay
-from src.models.analytics.weekly_stats import WeeklyStats
+from src.models.analytics import WeeklyStats, DogCalendarDay, AnalyticSummary
+from src.models import Filter
 from src.deps import get_analytics_repo
 from src.utils.calculation_helpers import get_month_range
-from datetime import datetime
+from datetime import datetime, date
 router = APIRouter()
 
 @cbv(router)
@@ -27,7 +27,7 @@ class AnalyticsController:
         kennel_id = request.state.kennel_id
         return self.repo.get_weekly_stats(kennel_id, ts)
 
-
+    #does this need the kennel id?
     @router.get("/dog-calendar", response_model=List[DogCalendarDay])
     def dog_calendar_route(
         self,
@@ -39,3 +39,12 @@ class AnalyticsController:
         """
         start_date, end_date = get_month_range(year, month)
         return self.repo.get_dog_running_per_day(start_date, end_date)
+    
+    @router.get("/summary", response_model=AnalyticSummary)
+    def summary_all_dogs(
+        self,
+        request: Request,
+        filters: Filter = Depends()
+    ):  
+        kennel_id = request.state.kennel_id
+        return self.repo.get_analytic_summary_per_dog(filters, kennel_id)

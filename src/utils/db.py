@@ -60,3 +60,18 @@ def build_conditions(filters: WeightQueryFilter | ActivityQueryFilters):
 
     where_clause = " AND ".join(conditions) if conditions else "TRUE"
     return where_clause, values
+
+def build_time_window_clause(filters: Filter, table_key: str, table_column: str):
+    conditions = []
+    values = []
+
+    if filters.start_date:
+            conditions.append(f"{table_key}.{table_column} >= %s")
+            values.append(filters.start_date)
+
+    if filters.end_date:
+        conditions.append(f"{table_key}.{table_column} >= %s")
+        values.append(filters.end_date)
+
+    where_clause = " AND ".join(conditions) if conditions else "TRUE"
+    return where_clause, values

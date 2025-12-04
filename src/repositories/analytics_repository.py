@@ -1,9 +1,11 @@
 from typing import List, Optional
 from datetime import datetime, timedelta, timezone
 from psycopg2.extras import RealDictCursor
-from src.models.analytics.weekly_stats import WeeklyStats
-from src.models.analytics.dog_calendar_day import DogCalendarDay
-from src.parsers.analytic_parser import parse_weekly_stats, parse_dog_calendar
+from src.models.analytics import WeeklyStats, AnalyticSummary, DogCalendarDay
+from src.models import Filter
+from src.parsers.analytic_parser import parse_weekly_stats, parse_dog_calendar, parse_summary_from_rows
+from src.utils.db import build_time_window_clause
+from src.utils.calculation_helpers import get_number_weeks
 from datetime import datetime
 
 class analytics_repository():
@@ -98,3 +100,49 @@ class analytics_repository():
             rows = cur.fetchall()
 
         return parse_dog_calendar(rows)
+    
+    def get_analytic_summary_per_dog(self, filters: Filter, kennel_id: int) -> AnalyticSummary:
+
+        where_clause, values = build_time_window_clause(filters, "a", "timestamp")
+
+        with self._connection.cursor(cursor_factory= RealDictCursor) as cur:
+            query = f"""
+                    SELECT
+                        ad.dog_id          AS dog_id,
+                        d.name        AS name,
+                        SUM(a.distance)                AS total_distance_km,
+                        SUM(a.distance / NULLIF(a.speed, 0)) AS total_duration_hours,
+                        COUNT(*)                          AS session_count,
+                        COALESCE(SUM(ad.rating), 0)        AS rating_sum,
+                        MIN(a.timestamp) AS min_date, -- Needed for freq calc in case user does not specify time range
+                        MAX(a.timestamp) AS max_date
+                        FROM activities a
+                        LEFT JOIN activity_dogs ad ON ad.activity_id = a.id
+                        JOIN dogs d ON d.id = ad.dog_id
+                        JOIN kennels k ON d.kennel_id = k.id
+                        WHERE kennel_id = %s
+                        AND a.speed IS NOT NULL 
+                        AND a.speed > 0
+                        AND {where_clause}
+                        GROUP BY ad.dog_id, d.name;
+                    """
+            values.insert(0, kennel_id)
+            cur.execute(query, values)
+            rows = cur.fetchall()
+
+            if rows is None:
+                return None
+            
+            if filters.start_date and filters.end_date:
+                min_d, max_d = filters.start_date, filters.end_date
+            else:
+                min_d = min(r['min_date'] for r in rows if r['min_date'])
+                max_d = max(r['max_date'] for r in rows if r['max_date'])
+
+            weeks = get_number_weeks(min_d,max_d)
+
+            return parse_summary_from_rows(rows, weeks)
+
+            
+
+            
