@@ -1,7 +1,7 @@
 from typing import List, Optional
 from datetime import datetime, timedelta, timezone
 from psycopg2.extras import RealDictCursor
-from src.models.analytics import WeeklyStats, AnalyticSummary, DogCalendarDay
+from src.models.analytics import WeeklyStats, AnalyticSummary, DogCalendarDay, LocationHeatPoint, SportCount
 from src.models import Filter
 from src.parsers.analytic_parser import parse_weekly_stats, parse_dog_calendar, parse_summary_from_rows
 from src.utils.db import build_time_window_clause
@@ -143,6 +143,72 @@ class analytics_repository():
 
             return parse_summary_from_rows(rows, weeks)
 
-            
 
+    def get_activity_heat_map(self, filters: Filter, kennel_id: int) -> list[LocationHeatPoint]:
+
+        where_clause, values = build_time_window_clause(filters, "a", "timestamp")
+
+        with self._connection.cursor(cursor_factory= RealDictCursor) as cur:
+
+            query = f"""
+                SELECT 
+                    COUNT(*) AS day_count,
+                    al.name      AS location_name,
+                    al.latitude,
+                    al.longitude
+                FROM (
+                    -- one row per (location, day)
+                    SELECT DISTINCT
+                        a.location_id,
+                        a.timestamp::date AS activity_date
+                    FROM activities a
+                    JOIN activity_dogs ad ON ad.activity_id = a.id
+                    JOIN dogs d ON d.id = ad.dog_id
+                    WHERE d.kennel_id = %s
+                    AND {where_clause}
+                ) AS days
+                JOIN activity_locations al
+                    ON al.id = days.location_id
+                GROUP BY
+                    days.location_id,
+                    al.name,
+                    al.latitude,
+                    al.longitude
+                ORDER BY
+                    day_count DESC;
+                """
             
+            values.insert(0, kennel_id)
+            cur.execute(query, values)
+            rows = cur.fetchall()
+
+            if rows is None:
+                return None
+        
+            return [LocationHeatPoint(**row) for row in rows]
+        
+    def get_sport_counts(self, filters: Filter, kennel_id: int):
+        
+        where_clause, values = build_time_window_clause(filters, "a", "timestamp")
+
+        with self._connection.cursor(cursor_factory= RealDictCursor) as cur:
+
+            query = f"""
+                    SELECT 
+                        COUNT(*) as activity_count,
+                        s.name as sport_name,
+                        s.type as sport_type
+                    FROM activities a
+                    JOIN sports s on a.sport_id = s.id
+                    JOIN activity_dogs ad ON ad.activity_id = a.id
+                    JOIN dogs d ON d.id = ad.dog_id
+                    WHERE kennel_id = %s
+                    AND {where_clause}
+                    GROUP BY a.sport_id, s.name, s.type
+                    """
+            
+            values.insert(0, kennel_id)
+            cur.execute(query, values)
+            rows = cur.fetchall()
+
+        return [SportCount(**row) for row in rows]
