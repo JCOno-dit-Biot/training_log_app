@@ -8,6 +8,9 @@ from src.models import (
     Sport, 
     ActivityLaps, 
     ActivityDogs, 
+    ActivityDogsCreate,
+    ActivityCreate,
+    ActivityUpdate,
     Weather, 
     commentCreate,
     commentOut,
@@ -22,8 +25,6 @@ import pytest
 from pydantic import ValidationError
 from datetime import datetime, date, timedelta
 from src.utils import calculation_helpers as ch
-
-
 
 @pytest.fixture
 def activity_entry(JC):
@@ -46,6 +47,22 @@ def activity_entry(JC):
         )]
     )
     return training_entry
+
+@pytest.fixture()
+def activity_create_entry():
+    return ActivityCreate(
+        timestamp=datetime.now(),
+        runner_id=1,
+        dogs = [ActivityDogsCreate(
+            dog_id=1,
+            rating=8
+        )],
+        sport_id=1,
+        location_id=4,
+        distance=3,
+        workout=False,
+        pace="03:20"
+    )
 
 @pytest.fixture
 def Luna():
@@ -139,6 +156,26 @@ def test_no_speed_pace_raises_ValError(JC,Luna):
         workout = False
     )
 
+def test_no_speed_pace_raises_ValError_activity_create(JC,Luna):
+    with pytest.raises(ValueError, match = 'must be provided the activity'):
+        training_entry= ActivityCreate (
+            timestamp = datetime.now(),
+            runner_id = 1,
+            dogs = [ActivityDogsCreate(
+                dog_id = 1,
+                rating = 8
+            )],
+            sport_id = 1,
+            location_id = 4,
+            distance = 2.4,
+            workout = False
+        )
+
+def test_activity_create_calculates_speed(activity_create_entry):
+    assert activity_create_entry.speed is not None
+    assert activity_create_entry.speed == 18
+
+        
 def test_activity_workout_without_lap_raise(Luna, JC):
     with pytest.raises(ValueError, match = 'Laps cannot be None'):
         training_entry= Activity (
@@ -172,8 +209,51 @@ def test_activity_with_pace_no_speed(JC, Luna):
 
         )]
     )
-    print(bike_activity)
     assert bike_activity.speed is not None
+
+def test_activity_update_no_lap_raises():
+    with pytest.raises(ValueError, match="Laps cannot be None or an empty list"):
+        update = ActivityUpdate(
+            timestamp=datetime.now(),
+            workout=True
+        )
+def test_activity_create_no_lap_raises():
+    with pytest.raises(ValueError):
+        create_activity = ActivityCreate(
+            timestamp = datetime.now(),
+            runner_id = 1,
+            dogs = [ActivityDogsCreate(
+                dog_id = 1,
+                rating = 8
+            )],
+            speed=18,
+            sport_id = 1,
+            location_id = 4,
+            distance = 2.4,
+            workout = True,
+        )
+
+def test_activity_update_calculates_speed():
+    update = ActivityUpdate(
+        pace="03:20"
+    )
+    assert update.speed == 18
+
+def test_activity_create_calculates_pace():
+    create_activity = ActivityCreate(
+            timestamp = datetime.now(),
+            runner_id = 1,
+            dogs = [ActivityDogsCreate(
+                dog_id = 1,
+                rating = 8
+            )],
+            speed=18,
+            sport_id = 1,
+            location_id = 4,
+            distance = 2.4,
+            workout = False
+        )
+    assert create_activity.pace == "03:20"
 
 def test_activity_lap_no_speed_raise():
  with pytest.raises(ValueError):
@@ -191,6 +271,7 @@ def test_activity_lap_with_time_distance():
     assert activitylap.pace == "03:00"
     assert activitylap.lap_time_delta is not None
     assert activitylap.lap_time_delta == timedelta(minutes=3)
+
 
 def test_activity_workout_with_lap(JC, Luna):
     workout = Activity (
