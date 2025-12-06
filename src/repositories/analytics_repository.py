@@ -75,11 +75,10 @@ class analytics_repository():
             }
             cur.execute(query, params)
             rows = cur.fetchall()
-            print(rows)
 
         return parse_weekly_stats(rows)
     
-    def get_dog_running_per_day(self, start_date, end_date) -> list[DogCalendarDay]:
+    def get_dog_running_per_day(self, start_date, end_date, kennel_id) -> list[DogCalendarDay]:
         with self._connection.cursor(cursor_factory= RealDictCursor) as cur:
             query = """
                     SELECT
@@ -87,11 +86,15 @@ class analytics_repository():
                         ad.dog_id
                     FROM activities a
                     JOIN activity_dogs ad ON ad.activity_id = a.id
-                    WHERE a.timestamp >= %(start_date)s
+                    JOIN dogs d on ad.dog_id = d.id
+                    WHERE d.kennel_id = %(kennel_id)s
+                    AND a.timestamp >= %(start_date)s
                     AND a.timestamp < %(end_date)s
                     """
-        
+            # In this query the controller calcluates end day and automatically picks the following day 
+            # to include the last day of the month
             params = {
+                    "kennel_id": kennel_id,
                     "start_date": start_date,
                     "end_date": end_date,
                 }
@@ -130,7 +133,8 @@ class analytics_repository():
             cur.execute(query, values)
             rows = cur.fetchall()
 
-            if rows is None:
+            
+            if len(rows) == 0 or rows is None:
                 return None
             
             if filters.start_date and filters.end_date:
@@ -182,7 +186,7 @@ class analytics_repository():
             cur.execute(query, values)
             rows = cur.fetchall()
 
-            if rows is None:
+            if rows is None or len(rows)==0:
                 return None
         
             return [LocationHeatPoint(**row) for row in rows]

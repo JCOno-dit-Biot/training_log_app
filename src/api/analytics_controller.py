@@ -31,14 +31,16 @@ class AnalyticsController:
     @router.get("/dog-calendar", response_model=List[DogCalendarDay])
     def dog_calendar_route(
         self,
+        request: Request,
         year: int = Query(..., ge=2000),
         month: int = Query(..., ge=1, le=12)
     ):
         """
         Return which dogs ran on each day of the specified month.
         """
+        kennel_id = request.state.kennel_id
         start_date, end_date = get_month_range(year, month)
-        return self.repo.get_dog_running_per_day(start_date, end_date)
+        return self.repo.get_dog_running_per_day(start_date, end_date, kennel_id)
     
     @router.get("/summary", response_model=AnalyticSummary)
     def summary_all_dogs(
