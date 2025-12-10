@@ -10,7 +10,9 @@ def location_repo(test_db_conn):
 @pytest.fixture
 def test_location_no_id():
     return Location(
-        name = "Forest Loop"
+        name = "Forest Loop",
+        latitude = 53.5501,
+        longitude =  -113.469
     )
 
 @pytest.fixture
@@ -50,7 +52,7 @@ def test_update_location(location_repo):
         result = cur.fetchone()
 
     assert result[1] == 1
-    assert result[-1] == 'Forest Loop'
+    assert result[2] == 'Forest Loop'
   
     location_repo.update('Forest Loop modified', 1)
     with location_repo._connection.cursor() as cur:
@@ -58,7 +60,7 @@ def test_update_location(location_repo):
         result = cur.fetchone()
 
     assert result[1] == 1
-    assert result[-1] == 'Forest Loop modified'
+    assert result[2] == 'Forest Loop modified'
 
 def test_delete_location(location_repo):
     res = location_repo.delete(4, 2)

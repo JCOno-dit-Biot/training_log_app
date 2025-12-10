@@ -10,8 +10,8 @@ def sport_repo(test_db_conn):
 
 def test_get_all_sports(sport_repo):
     sports = sport_repo.get_all()
-    assert len(sports) == 2
-    assert all([sport.name.lower() in ['canicross', 'bikejoring'] for sport in sports])
+    assert len(sports) == 3
+    assert all([sport.name.lower() in ['canicross', 'bikejoring', 'sled'] for sport in sports])
 
 @pytest.mark.parametrize("sport_name, expected", 
                          [

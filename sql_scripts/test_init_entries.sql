@@ -95,7 +95,7 @@ INSERT INTO activity_dogs (activity_id, dog_id, rating) VALUES
 INSERT INTO activities (
     runner_id, sport_id, timestamp, location_id, workout, speed, distance
 ) VALUES (
-    2, 1, '2025-04-04T07:00:00Z', 1, true, NULL, 0
+    2, 1, '2025-04-04T07:00:00Z', 1, false, NULL, 0
 ) RETURNING id;
 -- Assume id = 4
 
@@ -170,8 +170,6 @@ INSERT INTO activities (
 INSERT INTO activity_dogs (activity_id, dog_id, rating) VALUES 
 (10, 1, 7),
 (10, 2, 8);
-
-
 
 INSERT INTO weather_entries (activity_id, temperature, humidity, condition)
 VALUES 
