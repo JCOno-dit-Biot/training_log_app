@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 from datetime import date
-from models.sport import SportType
+from src.models.sport import SportType
 
 class MostPracticedSport(BaseModel):
     sport: str
