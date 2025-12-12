@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - main
-      - add-authentication
+      - tests-analytics
   pull_request:
     branches:
       - main
@@ -65,7 +65,10 @@ jobs:
           until pg_isready -h localhost -p 5433 -U test_user; do sleep 2; done
 
       - name: Run integration tests
-        run: uv run pytest tests/integration -s
+        run: |
+          uv run pytest tests/integration/test_analytics_repository.py
+          uv run pytest tests/integration --ignore=tests/integration/test_analytics_repository.py
+
         env:
           ENV: test
           TEST_DATABASE_URL: postgres://test_user:${{ secrets.TEST_DB_PASSWORD }}@localhost:5433/test_db
