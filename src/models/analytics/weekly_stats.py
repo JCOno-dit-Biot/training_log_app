@@ -43,3 +43,9 @@ class WeeklyStats(BaseModel):
 
 
         return self
+    
+class WeeklyDogDistance(BaseModel):
+    week_start: date
+    dog_id: int
+    dog_name: str
+    weekly_distance_km: float

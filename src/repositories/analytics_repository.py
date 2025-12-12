@@ -1,7 +1,7 @@
 from typing import List, Optional
 from datetime import datetime, timedelta, timezone
 from psycopg2.extras import RealDictCursor
-from src.models.analytics import WeeklyStats, AnalyticSummary, DogCalendarDay, LocationHeatPoint, SportCount
+from src.models.analytics import WeeklyStats, AnalyticSummary, DogCalendarDay, LocationHeatPoint, SportCount, WeeklyDogDistance
 from src.models import Filter
 from src.parsers.analytic_parser import parse_weekly_stats, parse_dog_calendar, parse_summary_from_rows
 from src.utils.db import build_time_window_clause
@@ -78,6 +78,37 @@ class analytics_repository():
 
         return parse_weekly_stats(rows)
     
+    def get_weekly_mileage(self, filters: Filter, kennel_id: int):
+        where_clause, values = build_time_window_clause(filters, "a", "timestamp")
+
+        with self._connection.cursor(cursor_factory= RealDictCursor) as cur:
+            query = f"""
+                    SELECT
+                        d.id AS dog_id,
+                        d.name AS dog_name,
+                        date_trunc('week', a.timestamp)::date AS week_start, -- Monday according to ISO 
+                        COALESCE(SUM(NULLIF(a.distance, 'NaN'::float8)),0) AS weekly_distance_km
+                    FROM activities a
+                    JOIN activity_dogs ad ON ad.activity_id = a.id
+                    JOIN dogs d           ON d.id = ad.dog_id
+                    WHERE
+                        d.kennel_id = %s
+                    AND {where_clause}
+                    GROUP BY
+                        d.id,
+                        d.name,
+                        date_trunc('week', a.timestamp)
+                    ORDER BY
+                        week_start,
+                        dog_name;
+            """
+            values.insert(0, kennel_id)
+            cur.execute(query, values)
+            rows = cur.fetchall()
+
+            print(rows)
+            return [WeeklyDogDistance(**row) for row in rows]
+        
     def get_dog_running_per_day(self, start_date, end_date, kennel_id) -> list[DogCalendarDay]:
         with self._connection.cursor(cursor_factory= RealDictCursor) as cur:
             query = """

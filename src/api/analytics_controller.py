@@ -3,7 +3,7 @@ from fastapi.requests import Request
 from fastapi_utils.cbv import cbv
 from typing import List
 from src.repositories.analytics_repository import analytics_repository
-from src.models.analytics import WeeklyStats, DogCalendarDay, AnalyticSummary, LocationHeatPoint, SportCount
+from src.models.analytics import WeeklyStats, WeeklyDogDistance, DogCalendarDay, AnalyticSummary, LocationHeatPoint, SportCount
 from src.models import Filter
 from src.deps import get_analytics_repo
 from src.utils.calculation_helpers import get_month_range
@@ -51,7 +51,7 @@ class AnalyticsController:
         kennel_id = request.state.kennel_id
         return self.repo.get_analytic_summary_per_dog(filters, kennel_id)
 
-    @router.get("/sport-distribution", response_model=list[SportCount])
+    @router.get("/activities/sport-distribution", response_model=list[SportCount])
     def sport_distribution(
         self,
         request: Request,
@@ -60,7 +60,16 @@ class AnalyticsController:
         kennel_id = request.state.kennel_id
         return self.repo.get_sport_counts(filters, kennel_id)
     
-    @router.get("/locations/heatmap", response_model = list[LocationHeatPoint])
+    @router.get("/activities/weekly-distance", response_model=list[WeeklyDogDistance])
+    def get_weekly_distance(
+        self,
+        request: Request,
+        filters: Filter = Depends()
+    ):
+        kennel_id = request.state.kennel_id
+        return self.repo.get_weekly_mileage(filters, kennel_id)
+    
+    @router.get("activities/locations/heatmap", response_model = list[LocationHeatPoint])
     def actitivities_heat_map(
         self,
         request: Request,
