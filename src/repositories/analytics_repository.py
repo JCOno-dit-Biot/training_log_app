@@ -105,8 +105,7 @@ class analytics_repository():
             values.insert(0, kennel_id)
             cur.execute(query, values)
             rows = cur.fetchall()
-
-            print(rows)
+            
             return [WeeklyDogDistance(**row) for row in rows]
         
     def get_dog_running_per_day(self, start_date, end_date, kennel_id) -> list[DogCalendarDay]:

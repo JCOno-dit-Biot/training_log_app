@@ -84,3 +84,10 @@ def test_weekly_stats(analytics_repo):
     assert dog_1.trend_distance == Trend.down
     assert dog_2.average_rating == 8
     assert dog_2.trend_rating == Trend.up
+
+def test_weekly_mileage(analytics_repo):
+    weekly_distance = analytics_repo.get_weekly_mileage(filters=Filter(), kennel_id = 2)
+    assert len(weekly_distance) == 5
+    assert all([entry.dog_id in (1, 2) for entry in weekly_distance])
+    assert weekly_distance[-1].week_start == date(2025,4,28)
+    assert weekly_distance[0].weekly_distance_km == pytest.approx(22.4)
