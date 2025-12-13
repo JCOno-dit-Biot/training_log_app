@@ -1,6 +1,6 @@
 import pytest
 from src.repositories.location_repository import location_repository, DuplicateLocationError
-from src.models import Location
+from src.models import Location, LocationUpdate
 from datetime import datetime
 
 @pytest.fixture
@@ -64,13 +64,32 @@ def test_update_location(location_repo):
     assert result[1] == 1
     assert result[2] == 'Forest Loop'
   
-    location_repo.update('Forest Loop modified', 1)
+    location_repo.update({'name':'Forest Loop modified'}, 1)
     with location_repo._connection.cursor() as cur:
         cur.execute(""" SELECT * FROM activity_locations WHERE id = 1""")
         result = cur.fetchone()
 
     assert result[1] == 1
     assert result[2] == 'Forest Loop modified'
+
+def test_update_gps_coord(location_repo):
+    with location_repo._connection.cursor() as cur:
+        cur.execute(""" SELECT * FROM activity_locations WHERE id = 2""")
+        result = cur.fetchone()
+
+        assert result[-1] == -114.469
+        assert result[-2] == 53.5001
+
+    location_update=LocationUpdate(latitude=53.5005, longitude=-114.5)
+
+    location_repo.update(location_update.model_dump(exclude_none=True), 2)
+    with location_repo._connection.cursor() as cur:
+        cur.execute(""" SELECT * FROM activity_locations WHERE id = 2""")
+        result = cur.fetchone()
+
+    assert result[-1] == -114.5
+    assert result[-2] == 53.5005
+
 
 def test_delete_location(location_repo):
     res = location_repo.delete(4, 2)
