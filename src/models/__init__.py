@@ -7,4 +7,4 @@ from .dog_weight import DogWeightEntry, DogWeightUpdate, DogWeightIn, DogWeightL
 from .weather import Weather
 from .comment import commentCreate, commentOut
 from .common import PaginationParams, Filter, WeightQueryFilter, ActivityQueryFilters
-from .location import Location
+from .location import Location, LocationUpdate

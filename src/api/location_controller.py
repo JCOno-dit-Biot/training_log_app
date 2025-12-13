@@ -1,7 +1,7 @@
 from fastapi import Depends, APIRouter, Request, HTTPException
 from fastapi_utils.cbv import cbv
 from src.repositories.location_repository import location_repository
-from src.models.location import Location
+from src.models.location import Location, LocationUpdate
 from src.deps import (
     get_location_repo
 )
@@ -30,9 +30,10 @@ class LocationController:
             raise HTTPException(status_code=409, detail=str(e))
 
     @router.put("/locations/{location_id}")
-    def update_location(self, location: Location, location_id: int):
+    def update_location(self, location: LocationUpdate, location_id: int):
+        updated_fields = location.model_dump(exclude_none=True)
         if location_id is not None:
-            res = self.repo.update(update_name=location.name, id=location_id)
+            res = self.repo.update(fields = updated_fields, id=location_id)
         return {"success": res}
         
 

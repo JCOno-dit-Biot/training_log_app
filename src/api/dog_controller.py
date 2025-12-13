@@ -25,7 +25,6 @@ class DogController:
     @router.put("/dogs/{dog_id}")
     def update_dog(self, dog: DogUpdate, dog_id: int):
         updated_fields = dog.model_dump(exclude_none=True)
-        print(updated_fields)
         if not updated_fields:
             raise HTTPException(status_code=400, detail="No data to update")
 
