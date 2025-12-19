@@ -143,8 +143,8 @@ class analytics_repository():
                     SELECT
                         ad.dog_id          AS dog_id,
                         d.name        AS name,
-                        SUM(a.distance)                AS total_distance_km,
-                        SUM(a.distance / NULLIF(a.speed, 0)) AS total_duration_hours,
+                        COALESCE(SUM(NULLIF(a.distance, 'NaN'::float8)),0)                AS total_distance_km,
+                        COALESCE(SUM(NULLIF(a.distance, 'NaN'::float8)/NULLIF(NULLIF(a.speed, 'NaN'::float8), 0)),0) AS total_duration_hours,
                         COUNT(*)                          AS session_count,
                         COALESCE(SUM(ad.rating), 0)        AS rating_sum,
                         MIN(a.timestamp) AS min_date, -- Needed for freq calc in case user does not specify time range
