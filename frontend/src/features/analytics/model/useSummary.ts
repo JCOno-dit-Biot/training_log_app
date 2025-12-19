@@ -6,8 +6,9 @@ import type { DateRangeParams } from '@/shared/types/DateRangeParams';
 import { useQuery } from '@tanstack/react-query';
 
 export function useWeeklySummary(range: DateRangeParams) {
-    return useQuery<summaryRow[]>({
+    return useQuery<summaryRow>({
         queryKey: analyticsKeys.summary(range),
         queryFn: () => fetchSummary(range),
+        placeholderData: (prev) => prev,
     });
 }
