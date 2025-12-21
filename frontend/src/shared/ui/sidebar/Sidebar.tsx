@@ -39,7 +39,7 @@ export default function Sidebar() {
       <Button
         type="button"
         variant={'ghost'}
-        className="h-12 w-full justify-start px-4 gap-3 absolute bottom-4"
+        className="h-12 w-full justify-start px-4 gap-3 absolute bottom-0"
         onClick={handleLogout}
       >
         <span><LogOut /></span>

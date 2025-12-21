@@ -16,7 +16,7 @@ export default function SidebarItem({ to, label, icon }: SidebarItemProps) {
     <Button
       asChild
       variant={isActive ? 'secondary' : 'ghost'}
-      className="h-12 text-l w-full justify-start px-4 gap-3"
+      className="h-12 w-full justify-start px-4 gap-3"
     >
       <Link
         to={to}
