@@ -1,5 +1,7 @@
 import { Link, useLocation } from 'react-router-dom';
 
+import { Button } from '../button';
+
 interface SidebarItemProps {
   to: string;
   label: string;
@@ -11,14 +13,18 @@ export default function SidebarItem({ to, label, icon }: SidebarItemProps) {
   const isActive = location.pathname === to;
 
   return (
-    <Link
-      to={to}
-      className={`block w-full rounded px-4 py-3 transition ${isActive ? 'bg-secondary text-charcoal font-semibold' : 'hover:bg-secondary text-white'}`}
+    <Button
+      asChild
+      variant={isActive ? 'secondary' : 'ghost'}
+      className="h-12 text-l w-full justify-start px-4 gap-3"
     >
-      <div className="flex flex-row space-x-3">
-        {' '}
-        {icon} <span>{label}</span>{' '}
-      </div>
-    </Link>
+      <Link
+        to={to}
+        className={`text-lg w-full flex items-center gap-3`}
+      >
+        <span className="h-5 w-5">{icon}</span>
+        <span>{label}</span>
+      </Link>
+    </Button>
   );
 }

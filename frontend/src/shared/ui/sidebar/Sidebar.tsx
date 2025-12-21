@@ -3,6 +3,7 @@ import { Bike, ChartNoAxesCombined, LogOut, PawPrint, Weight } from 'lucide-reac
 
 import { useAuth } from '@/app/auth/auth-context';
 
+import { Button } from '../button';
 import SidebarItem from '../sidebar/SidebarItem';
 
 const tabs = [
@@ -27,7 +28,7 @@ export default function Sidebar() {
     navigate('/');
   };
   return (
-    <div className="bg-primary text-cream fixed top-0 left-0 flex h-screen w-50 flex-col p-0">
+    <div className="bg-primary text-neutral-100 fixed top-0 left-0 flex h-screen w-50 flex-col p-0">
       <h1 className="text-l mb-6 font-bold">Kennel App</h1>
       <nav className="flex flex-col space-y-1">
         {tabs.map((tab) => (
@@ -35,13 +36,15 @@ export default function Sidebar() {
         ))}
       </nav>
 
-      <button
+      <Button
+        type="button"
+        variant={'ghost'}
+        className="h-12 w-full justify-start px-4 gap-3 absolute bottom-4"
         onClick={handleLogout}
-        className="text-cream hover:bg-secondary hover:text-charcoal absolute bottom-4 flex w-full items-center gap-3 rounded px-4 py-3 transition"
       >
-        <LogOut size={20} />
-        Logout
-      </button>
+        <span><LogOut /></span>
+        <span>Logout</span>
+      </Button>
     </div>
   );
 }

@@ -30,8 +30,8 @@ export function StatCard({
         <Card className="p-4">
             <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
-                    <div className="text-xs text-muted-foreground">{title}</div>
-                    <div className="mt-1 text-2xl font-semibold leading-none">{displayValue}</div>
+                    <div className="text-md text-accent-foreground">{title}</div>
+                    <div className="mt-2 text-xl font-semibold leading-none">{displayValue}</div>
                     {subtitle ? (
                         <div className="mt-2 text-xs text-muted-foreground">{subtitle}</div>
                     ) : null}

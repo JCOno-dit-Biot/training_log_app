@@ -21,8 +21,8 @@ export default function MyKennelPage() {
   return (
     <div className="max-w-full space-y-20">
       {/* Runners Section */}
-      <section className="mt-4 w-full max-w-full">
-        <h2 className="text-centered text-cream bg-primary mb-4 rounded p-1 text-2xl font-bold">
+      <section className="mt-4 w-full max-w-full item-center">
+        <h2 className="text-center text-neutral-100 bg-primary mb-4 rounded p-1 text-2xl font-bold">
           Runners
         </h2>
         <div className="scroll-snap-x max-w-full overflow-x-auto scroll-smooth">
@@ -41,7 +41,7 @@ export default function MyKennelPage() {
 
       {/* Dogs Section */}
       <section className="w-full max-w-full">
-        <h2 className="text-cream bg-primary mb-4 rounded p-1 text-2xl font-bold">Dogs</h2>
+        <h2 className="text-center text-neutral-100 bg-primary mb-4 rounded p-1 text-2xl font-bold">Dogs</h2>
         <div className="scroll-snap-x max-w-full overflow-x-auto scroll-smooth">
           <div className="flex snap-x snap-mandatory gap-3 pb-2">
             {sortedDogs.map((dog) => (

@@ -41,7 +41,7 @@
   --background: var(--neutral-25);
   --foreground: var(--neutral-900);
 
-  --card: var(--neutral-25);
+  --card: var(--neutral-100);
   --card-foreground: var(--neutral-900);
 
   --popover: var(--neutral-50);
@@ -62,7 +62,7 @@
   --destructive: var(--status-error);
   --destructive-foreground: var(--neutral-25);
 
-  --border: var(--neutral-100);
+  --border: var(--neutral-500);
   --input: var(--neutral-100);
   --ring: color-mix(in srgb, var(--color-primary) 55%, white 45%);
 
