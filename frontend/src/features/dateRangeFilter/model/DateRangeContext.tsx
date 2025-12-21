@@ -5,7 +5,7 @@ export type DateRange = {
   endDate: string;   // yyyy-mm-dd
 };
 
-export type Preset = 'last4w' | 'last12w' | 'ytd' | 'last365';
+export type PresetKey = 'last4w' | 'last12w' | 'ytd' | 'last365' | 'custom';
 
 export type DateRangeContextValue = {
   range: DateRange;
@@ -16,8 +16,8 @@ export type DateRangeContextValue = {
   setEndDate: (endDate: string) => void;
 
   // optional: presets
-  preset: Preset;
-  setPreset: (preset: Preset) => void;
+  preset: PresetKey;
+  setPreset: (preset: PresetKey) => void;
 
   // useful for react-query query keys
   queryParams: DateRange;
@@ -43,7 +43,7 @@ function addDays(d: Date, days: number) {
   return x;
 }
 
-export function getPresetRange(preset: Preset, now = new Date()): DateRange {
+export function getPresetRange(preset: PresetKey, now = new Date()): DateRange {
   const endDate = toYMD(now);
 
   if (preset === 'ytd') {
