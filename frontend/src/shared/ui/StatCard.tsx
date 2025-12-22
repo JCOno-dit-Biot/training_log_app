@@ -1,20 +1,23 @@
 import * as React from 'react';
 
-import { Card } from '@/shared/ui/card';
+import { cn } from '@/shared/lib/utils';
 
 import { Spinner } from './Spinner';
+
 export function StatCard({
     title,
     value,
     subtitle,
     right,
-    loading
+    loading,
+    compact
 }: {
     title: string;
     value: React.ReactNode;
     subtitle?: React.ReactNode;
     right?: React.ReactNode; // e.g. delta pill
     loading?: boolean;
+    compact?: boolean;
 }) {
     const displayValue = React.useMemo(() => {
         if (loading) {
@@ -27,17 +30,36 @@ export function StatCard({
         return value
     }, [loading, value]);
     return (
-        <Card className="p-4">
+        <div
+            className={cn(
+                'rounded-md border',
+                compact ? 'p-3' : 'p-4'
+            )}
+        >
             <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
-                    <div className="text-md text-accent-foreground">{title}</div>
-                    <div className="mt-2 text-xl font-semibold leading-none">{displayValue}</div>
+                    <div className={cn('text-muted-foreground', compact ? 'text-xs' : 'text-sm')}>
+                        {title}
+                    </div>
+
+                    <div
+                        className={cn(
+                            'font-semibold leading-none',
+                            compact ? 'mt-1 text-xl' : 'mt-2 text-2xl'
+                        )}
+                    >
+                        {displayValue}
+                    </div>
+
                     {subtitle ? (
-                        <div className="mt-2 text-xs text-muted-foreground">{subtitle}</div>
+                        <div className={cn('text-muted-foreground', compact ? 'mt-1 text-xs' : 'mt-2 text-sm')}>
+                            {subtitle}
+                        </div>
                     ) : null}
                 </div>
+
                 {right ? <div className="shrink-0">{right}</div> : null}
             </div>
-        </Card>
+        </div>
     );
 }

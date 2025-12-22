@@ -2,7 +2,9 @@ import { useWeeklySummary } from "@/features/analytics/model";
 import { AnalyticsHeader } from "@/features/analytics/ui/AnalyticsHeader";
 import { DateRangeProvider } from "@/features/dateRangeFilter/model/DateRangeProvider";
 import { useDateRange } from "@/features/dateRangeFilter/model/useDateRange";
+import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
 import { StatCard } from "@/shared/ui/StatCard";
+
 
 export default function AnalyticsPage() {
     return (
@@ -25,28 +27,21 @@ function AnalyticsPageInner() {
     return (
         <div className="flex flex-col gap-4 p-4">
             <AnalyticsHeader crumbs={[{ label: 'Analytics', to: '/analytics' }]} scopeLabel="Kennel" />
+            <div className="grid grid-cols-1 gap-4 lg:grid-cols-3 lg:items-start">
+                <Card>
+                    <CardHeader className="pb-0">
+                        <CardTitle className="text-base">Kennel summary</CardTitle>
+                    </CardHeader>
 
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
-                <StatCard
-                    title="Total distance (km)"
-                    value={Summary?.total_distance_km}
-                    subtitle=""
-                    loading={isSummaryLoading}
-                />
-                <StatCard
-                    title="Total duration (hours)"
-                    value={Summary?.total_duration_hours.toFixed(1)}
-                />
-                <StatCard
-                    title="Average rating"
-                    value={Summary?.avg_rating.toFixed(1)}
-                    loading={isSummaryLoading}
-                />
-                <StatCard
-                    title="Training per week"
-                    value={Summary?.avg_frequency_per_week.toFixed(1)}
-                    loading={isSummaryLoading}
-                />
+                    <CardContent>
+                        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                            <StatCard title="Total distance (km)" value={Summary?.total_distance_km ?? '—'} loading={isSummaryLoading} compact />
+                            <StatCard title="Total duration (hours)" value={Summary?.total_duration_hours?.toFixed(1) ?? '—'} loading={isSummaryLoading} compact />
+                            <StatCard title="Average rating" value={Summary?.avg_rating?.toFixed(1) ?? '—'} loading={isSummaryLoading} compact />
+                            <StatCard title="Training per week" value={Summary?.avg_frequency_per_week?.toFixed(1) ?? '—'} loading={isSummaryLoading} compact />
+                        </div>
+                    </CardContent>
+                </Card>
             </div>
         </div>
     )
