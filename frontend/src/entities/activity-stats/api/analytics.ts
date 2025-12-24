@@ -34,7 +34,7 @@ export async function fetchWeeklyMileage(params: DateRangeParams) {
 }
 
 export async function fetchLocationHeatmap(params: DateRangeParams) {
-    const res = await axios.get<LocationHeatmapPoint[]>('/analytics/locations/heatmap', {
+    const res = await axios.get<LocationHeatmapPoint[]>('/analytics/activities/locations/heatmap', {
         params: {
             start_date: params.startDate,
             end_date: params.endDate,

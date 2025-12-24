@@ -9,10 +9,11 @@ import { useQuery } from '@tanstack/react-query';
 export interface DonutSlice {
     name: string;
     value: number;
+    type: SportType;
 }
 
 export interface SportDistribution {
-    outer: (DonutSlice & { type: SportType })[]; // per sport
+    outer: DonutSlice[]; // per sport
     inner: DonutSlice[];                          // per sport type
 }
 
@@ -41,8 +42,8 @@ function buildSportDistribution(rows: SportDistributionRow[]): SportDistribution
     }
 
     const inner: DonutSlice[] = [
-        { name: 'dryland', value: typeTotals['dryland'] },
-        { name: 'on-snow', value: typeTotals['on-snow'] },
+        { name: 'dryland', value: typeTotals['dryland'], type: 'dryland' },
+        { name: 'on-snow', value: typeTotals['on-snow'], type: 'on-snow' },
     ];
 
     return { outer, inner };
