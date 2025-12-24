@@ -69,7 +69,7 @@ class AnalyticsController:
         kennel_id = request.state.kennel_id
         return self.repo.get_weekly_mileage(filters, kennel_id)
     
-    @router.get("activities/locations/heatmap", response_model = list[LocationHeatPoint])
+    @router.get("/activities/locations/heatmap", response_model = list[LocationHeatPoint])
     def actitivities_heat_map(
         self,
         request: Request,
