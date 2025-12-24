@@ -13,6 +13,9 @@ import { AfterAuthWarmup } from './auth/warmup';
 import { AuthProvider } from './providers/auth-provider';
 import { ReactQueryProvider } from './providers/react-query';
 
+import 'leaflet/dist/leaflet.css';
+import 'react-leaflet-cluster/dist/assets/MarkerCluster.css';
+import 'react-leaflet-cluster/dist/assets/MarkerCluster.Default.css';
 import './index.css';
 
 export default function App() {

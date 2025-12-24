@@ -11,6 +11,11 @@
   --color-secondary: #a5bda2;
   /* sage */
 
+  --primary-rgb: 45 74 38;
+  /* #2d4a26 forest */
+  --secondary-rgb: 165 189 162;
+  /* #a5bda2 sage */
+
   --neutral-0: #ffffff;
   /* pure white (rarely used) */
   --neutral-25: #fbfaf6;
@@ -175,4 +180,76 @@
     @apply leading-7;
   }
 
+}
+
+
+/* Leaflet cluster map styling */
+
+/* remove default leaflet divIcon styling */
+.bubble-marker {
+  background: transparent;
+  border: none;
+}
+
+/* the actual bubble */
+.bubble {
+  display: grid;
+  place-items: center;
+  border-radius: 9999px;
+  background: rgba(59, 130, 246, 0.35);
+  border: 1px solid rgba(59, 130, 246, 0.7);
+  color: rgba(15, 23, 42, 0.95);
+}
+
+.bubble-text {
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+/* Remove default divIcon background */
+.cluster-icon {
+  background: transparent;
+  border: none;
+}
+
+.cluster-bubble {
+  width: 44px;
+  height: 44px;
+  border-radius: 9999px;
+  display: grid;
+  place-items: center;
+  color: var(--neutral-900);
+  font-weight: 800;
+  font-size: 13px;
+  /* ring */
+  border: 3px solid transparent;
+
+  /* subtle depth */
+  box-shadow:
+    0 8px 18px rgb(0 0 0 / 0.12);
+}
+
+/* LOW: sage fill + sage ring */
+.cluster-low {
+  background: rgb(var(--secondary-rgb) / 0.85);
+  box-shadow:
+    0 0 0 6px rgb(var(--secondary-rgb) / 0.18),
+    0 8px 18px rgb(0 0 0 / 0.12);
+}
+
+/* MID: forest but lighter (more transparent fill), forest ring */
+.cluster-mid {
+  background: rgb(var(--primary-rgb) / 0.45);
+  box-shadow:
+    0 0 0 6px rgb(var(--primary-rgb) / 0.14),
+    0 8px 18px rgb(0 0 0 / 0.12);
+}
+
+/* HIGH: forest stronger fill + stronger ring */
+.cluster-high {
+  background: rgb(var(--primary-rgb) / 0.65);
+  color: var(--neutral-100);
+  box-shadow: 0 0 0 7px rgb(var(--primary-rgb) / 0.22),
+    0 8px 18px rgb(0 0 0 / 0.12);
 }
