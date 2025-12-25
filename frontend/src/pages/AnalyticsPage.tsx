@@ -1,10 +1,12 @@
 
-import { useLocationHeatmap, useSportDistribution, useWeeklySummary } from "@/features/analytics/model";
+import { useLocationHeatmap, useSportDistribution, useWeeklyMileage, useWeeklySummary } from "@/features/analytics/model";
 import { AnalyticsHeader } from "@/features/analytics/ui/AnalyticsHeader";
 import { SportDistributionDonut } from "@/features/analytics/ui/charts/DistributionSportDonut";
+import { WeeklyMileageStackedArea } from "@/features/analytics/ui/charts/WeeklyMileageStackedArea";
 import { LocationBubbleClusterMap } from "@/features/analytics/ui/maps/LocationBubbleClusterMap";
 import { DateRangeProvider } from "@/features/dateRangeFilter/model/DateRangeProvider";
 import { useDateRange } from "@/features/dateRangeFilter/model/useDateRange";
+import { useDogs } from "@/features/dogs/model/useDogs";
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
 import { StatCard } from "@/shared/ui/StatCard";
 
@@ -18,14 +20,12 @@ export default function AnalyticsPage() {
 
 function AnalyticsPageInner() {
     const { queryParams, range } = useDateRange();
-
+    const { data: dogs } = useDogs();
     const { data: Summary, isLoading: isSummaryLoading } = useWeeklySummary(queryParams);
-    console.log(isSummaryLoading)
-    // const { data: weeklyMileage } = useWeeklyMileage(queryParams);
+    const { data: weeklyMileage, isLoading: isMileageLoading } = useWeeklyMileage(queryParams);
     const { data: locationPoints, isLoading: isMapLoading } = useLocationHeatmap(queryParams);
     const { data: sportDistribution, isLoading: sportLoading } = useSportDistribution(queryParams);
 
-    console.log(locationPoints)
     return (
         <div className="flex flex-col gap-4 p-4">
             <AnalyticsHeader crumbs={[{ label: 'Analytics', to: '/analytics' }]} scopeLabel="Kennel" />
@@ -53,23 +53,22 @@ function AnalyticsPageInner() {
                 </div>
             </div>
             <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-                {/* Weekly mileage chart takes 2/3 */}
-                {/* <Card className="lg:col-span-2">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-base">Weekly mileage</CardTitle>
-          </CardHeader>
-          <CardContent className="h-[340px]">
-            <WeeklyMileageStackedArea data={weeklyMileage} loading={mileageLoading} />
-          </CardContent>
-        </Card> */}
-
                 {/* Sport distribution takes 1/3 */}
                 <Card className="lg:col-span-1">
-                    <CardHeader className="pb-2">
+                    <CardHeader className="pb-0">
                         <CardTitle className="text-base">Sport distribution</CardTitle>
                     </CardHeader>
                     <CardContent className="h-[230px]">
                         <SportDistributionDonut data={sportDistribution} loading={sportLoading} />
+                    </CardContent>
+                </Card>
+                {/* Weekly mileage chart takes 2/3 */}
+                <Card className="lg:col-span-2">
+                    <CardHeader className="pb-0">
+                        <CardTitle className="text-base">Weekly mileage (km)</CardTitle>
+                    </CardHeader>
+                    <CardContent className="h-[230px]">
+                        <WeeklyMileageStackedArea data={weeklyMileage} loading={isMileageLoading} dogsData={dogs} />
                     </CardContent>
                 </Card>
             </div>
