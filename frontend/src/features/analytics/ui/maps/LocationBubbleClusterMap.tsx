@@ -106,7 +106,7 @@ export function LocationBubbleClusterMap({
     }, [thresholds]);
 
     return (
-        <div style={{ height }} className="w-full overflow-hidden rounded-md border border-neutral-500 z-0">
+        <div style={{ height }} className="w-full overflow-hidden z-0 isolate rounded-md border border-neutral-500">
             <MapContainer
                 center={[45.4215, -75.6972]} // fallback; FitBounds will override
                 zoom={10}

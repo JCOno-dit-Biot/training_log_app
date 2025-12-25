@@ -19,7 +19,7 @@ export default function AnalyticsPage() {
 }
 
 function AnalyticsPageInner() {
-    const { queryParams, range } = useDateRange();
+    const { queryParams } = useDateRange();
     const { data: dogs } = useDogs();
     const { data: Summary, isLoading: isSummaryLoading } = useWeeklySummary(queryParams);
     const { data: weeklyMileage, isLoading: isMileageLoading } = useWeeklyMileage(queryParams);

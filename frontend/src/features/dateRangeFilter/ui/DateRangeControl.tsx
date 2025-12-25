@@ -56,7 +56,10 @@ export function DateRangeControl() {
         setMode('presets');
     }
     return (
-        <Popover open={open} onOpenChange={(v) => { setOpen(v); if (!v) setMode('presets'); }}>
+        <Popover
+            open={open}
+            onOpenChange={(v) => { setOpen(v); if (!v) setMode('presets'); }}
+        >
             <PopoverTrigger asChild>
                 <Button variant="default" className="h-9 gap-2">
                     <CalendarIcon className="h-4 w-4" />
@@ -64,7 +67,7 @@ export function DateRangeControl() {
                 </Button>
             </PopoverTrigger>
 
-            <PopoverContent align="end" className="w-[320px] p-2">
+            <PopoverContent align="end" className="w-[320px] z-10 p-2">
                 {mode === 'presets' ? (
                     <div className="flex flex-col">
                         <div className="px-2 py-2 text-sm font-medium text-muted-foreground">
