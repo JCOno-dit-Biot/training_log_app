@@ -6,6 +6,7 @@ import { cn } from '@/shared/lib/utils';
 import { Button } from '@/shared/ui/button';
 import { Calendar } from '@/shared/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/shared/ui/popover';
+import { parseYMD } from '@/shared/util/dates';
 
 import { type DateRange, type PresetKey } from '../model/DateRangeContext';
 import { getPresetRange } from '../model/DateRangeContext';
@@ -17,12 +18,6 @@ const PRESETS: Array<{ key: PresetKey; label: string }> = [
     { key: 'ytd', label: 'YTD' },
     { key: 'last365', label: 'Last 365 days' },
 ];
-
-function parseYMD(s: string) {
-    // safe parse YYYY-MM-DD in local time
-    const [y, m, d] = s.split('-').map(Number);
-    return new Date(y, (m ?? 1) - 1, d ?? 1);
-}
 
 function labelForRange(preset: PresetKey, range: DateRange) {
     const presetLabel = PRESETS.find((p) => p.key === preset)?.label;

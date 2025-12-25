@@ -1,5 +1,7 @@
 import { createContext } from 'react';
 
+import { parseYMD } from '@/shared/util/dates';
+
 export type DateRange = {
   startDate: string; // yyyy-mm-dd
   endDate: string;   // yyyy-mm-dd
@@ -41,6 +43,12 @@ function addDays(d: Date, days: number) {
   const x = new Date(d);
   x.setDate(x.getDate() + days);
   return x;
+}
+
+export function shiftRange(range: DateRange, days: number): DateRange {
+  const start = addDays(parseYMD(range.startDate), days);
+  const end = addDays(parseYMD(range.endDate), days);
+  return { startDate: toYMD(start), endDate: toYMD(end) };
 }
 
 export function getPresetRange(preset: PresetKey, now = new Date()): DateRange {

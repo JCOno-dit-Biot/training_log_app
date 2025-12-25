@@ -1,3 +1,5 @@
+import type { DateRange } from "@/features/dateRangeFilter/model/DateRangeContext";
+
 // Returns local date as 'yyyy-MM-dd'
 export function toYMD(d: Date): string {
     const pad = (n: number) => String(n).padStart(2, '0');
@@ -28,4 +30,24 @@ export function combineLocalDateTimeToUTCISO(dateStr?: string, timeStr?: string)
     const [hh, mm, ss] = timeStr.split(':').map(Number);
     const date = new Date(y, m - 1, d, hh, mm, isNaN(ss) ? 0 : ss, 0); // LOCAL time
     return Number.isFinite(date.getTime()) ? date.toISOString() : null; // ISO in UTC
+}
+
+export function parseYMD(s: string) {
+    // safe parse YYYY-MM-DD in local time
+    const [y, m, d] = s.split('-').map(Number);
+    return new Date(y, (m ?? 1) - 1, d ?? 1);
+}
+// count days, inclusive of boundaries
+export function daysInclusive(range: DateRange) {
+    const start = parseYMD(range.startDate);
+    const end = parseYMD(range.endDate);
+    const ms = end.getTime() - start.getTime();
+    const days = Math.floor(ms / (1000 * 60 * 60 * 24)) + 1;
+    return Math.max(1, days);
+}
+
+export function shiftRange(range: DateRange, days: number): DateRange {
+    const start = addDays(parseYMD(range.startDate), days);
+    const end = addDays(parseYMD(range.endDate), days);
+    return { startDate: toYMD(start), endDate: toYMD(end) };
 }
