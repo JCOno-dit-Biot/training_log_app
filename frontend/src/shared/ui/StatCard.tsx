@@ -32,7 +32,7 @@ export function StatCard({
     return (
         <div
             className={cn(
-                'rounded-md border',
+                'rounded-md border border-neutral-500',
                 compact ? 'p-3' : 'p-4'
             )}
         >

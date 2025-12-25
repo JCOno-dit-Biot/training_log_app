@@ -29,7 +29,7 @@ export default function Sidebar() {
   };
   return (
     <div className="bg-primary text-neutral-100 fixed top-0 left-0 flex h-screen w-50 flex-col p-0">
-      <h1 className="text-l mb-6 font-bold">Kennel App</h1>
+      <h1 className="text-l mb-6 mt-2 text-center font-bold">PackTrack</h1>
       <nav className="flex flex-col space-y-1">
         {tabs.map((tab) => (
           <SidebarItem key={tab.path} to={tab.path} label={tab.label} icon={tab.icon} />
@@ -39,7 +39,7 @@ export default function Sidebar() {
       <Button
         type="button"
         variant={'ghost'}
-        className="h-12 w-full justify-start px-4 gap-3 absolute bottom-0"
+        className="h-12 w-full justify-start px-4 gap-3 absolute bottom-1"
         onClick={handleLogout}
       >
         <span><LogOut /></span>
