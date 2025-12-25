@@ -68,10 +68,24 @@ export function SportDistributionDonut({
 }) {
     console.log(data)
 
-    const innerData = data?.inner.map((s) => ({ ...s, __ring: "type" as const }));
-    const outerData = data?.outer.map((s) => ({ ...s, __ring: "sport" as const }));
+    const innerData = useMemo(
+        () => data?.inner.map((s) => ({
+            ...s,
+            __ring: "type" as const,
+            inner_value: s.value
+        })) ?? [],
+        [data]
+    );
 
-
+    const outerData = useMemo(
+        () =>
+            (data?.outer ?? []).map((s) => ({
+                ...s,
+                __ring: "sport" as const,
+                outer_value: s.value,
+            })),
+        [data]
+    );
     const colorMap = useMemo(
         () => (data ? buildSportColorMap(data.outer) : new Map<string, string>()),
         [data]
@@ -111,7 +125,7 @@ export function SportDistributionDonut({
                             {/* Inner ring: sport type */}
                             <Pie
                                 data={innerData}
-                                dataKey="value"
+                                dataKey="inner_value"
                                 nameKey="name"
                                 innerRadius="35%"
                                 outerRadius="55%"
@@ -126,7 +140,7 @@ export function SportDistributionDonut({
                             {/* Outer ring: per sport */}
                             <Pie
                                 data={outerData}
-                                dataKey="value"
+                                dataKey="outer_value"
                                 nameKey="name"
                                 innerRadius="62%"
                                 outerRadius="85%"

@@ -1,29 +1,37 @@
-import type { TooltipProps } from "recharts";
+
+type TP = {
+    active?: boolean;
+    payload?: Array<{
+        dataKey?: string;
+        value?: number;
+        payload?: any; // the original datum
+    }>;
+};
 
 function prettyTypeLabel(name: string) {
     const n = name.trim().toLowerCase();
     if (n === "dryland") return "Dryland";
-    if (n === "on-snow" || n === "onsnow" || n === "snow") return "On snow";
+    if (n === "on-snow" || n === "onsnow" || n === "snow") return "On Snow";
     return name;
 }
 
 export function DonutTooltip({
     active,
     payload,
-}: TooltipProps<number, string>) {
+}: TP) {
     if (!active || !payload || payload.length === 0) return null;
 
-    // Find the payload item that corresponds to the ring being hovered.
-    const ringItem =
-        payload.find((p: any) => p?.payload?.__ring) ?? payload[0];
+    const outer = payload.find((p) => p.dataKey === "outer_value" && p.value != null);
+    const inner = payload.find((p) => p.dataKey === "inner_value" && p.value != null);
+    const item = outer ?? inner ?? payload[0];
 
-    const p: any = ringItem.payload;
-    const value = Number(ringItem.value ?? p.value ?? 0);
+    const d = item.payload;
+    const value = Number(item.value ?? 0);
 
-    if (p.__ring === "type") {
+    if (item.dataKey === "inner_value") {
         return (
             <div className="rounded-md border bg-background px-3 py-2 shadow-sm">
-                <div className="text-sm font-medium">{prettyTypeLabel(p.name)}</div>
+                <div className="text-sm font-medium">{prettyTypeLabel(d.name)}</div>
                 <div className="text-xs text-muted-foreground">{value}</div>
             </div>
         );
@@ -32,9 +40,10 @@ export function DonutTooltip({
     // outer ring (sport)
     return (
         <div className="rounded-md border bg-background px-3 py-2 shadow-sm">
-            <div className="text-sm font-medium">{p.name}</div>
+            <div className="text-sm font-medium">{d.name}</div>
+            {/* optional type line */}
             <div className="text-xs text-muted-foreground">
-                {p.type === "DRYLAND" ? "Dryland" : "On snow"} • {value}
+                {d.type === "dryland" ? "Dryland" : "On Snow"} • {value}
             </div>
         </div>
     );
