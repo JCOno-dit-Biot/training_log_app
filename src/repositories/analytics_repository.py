@@ -165,7 +165,13 @@ class analytics_repository():
 
             
             if len(rows) == 0 or rows is None:
-                return None
+                    return AnalyticSummary(
+                        total_distance_km=0,
+                        total_duration_hours=0,
+                        avg_rating=0,
+                        avg_frequency_per_week=0,
+                        per_dog = []
+                    )
             
             if filters.start_date and filters.end_date:
                 min_d, max_d = filters.start_date, filters.end_date
@@ -217,7 +223,7 @@ class analytics_repository():
             rows = cur.fetchall()
 
             if rows is None or len(rows)==0:
-                return None
+                return []
         
             return [LocationHeatPoint(**row) for row in rows]
         
