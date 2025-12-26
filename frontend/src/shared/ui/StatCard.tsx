@@ -1,8 +1,59 @@
 import * as React from 'react';
+import { ArrowDown, ArrowUp, Minus } from 'lucide-react';
 
+import type { MetricTrend } from '@/features/analytics/utils/computeMetricTrend';
 import { cn } from '@/shared/lib/utils';
 
 import { Spinner } from './Spinner';
+
+function formatPct(p: number) {
+    const sign = p > 0 ? '+' : '';
+    return `${sign}${Math.round(p * 100)}%`;
+}
+
+function formatSigned(n: number, digits = 0) {
+    const sign = n > 0 ? '+' : '';
+    return `${sign}${n.toFixed(digits)}`;
+}
+
+export function InlineTrend({
+    trend,
+    label,          // "vs last year" / "vs prev period"
+    loading,
+    className,
+}: {
+    trend?: MetricTrend;
+    label?: string;
+    loading?: boolean;
+    className?: string;
+}) {
+    if (loading) return null;
+    if (!trend || trend.direction === 'none' || trend.pct == null) return null;
+
+    const isUp = trend.pct > 0;
+    const isDown = trend.pct < 0;
+
+    const Icon =
+        trend.direction === 'up' ? ArrowUp :
+            trend.direction === 'down' ? ArrowDown :
+                Minus;
+
+    return (
+        <span
+            className={cn(
+                'inline-flex items-center gap-1 text-sm font-medium',
+                isUp && 'text-green-600',
+                isDown && 'text-red-600',
+                !isUp && !isDown && 'text-muted-foreground',
+                className
+            )}
+            title={label ? `${formatPct(trend.pct)} ${label}` : formatPct(trend.pct)}
+        >
+            <Icon className="h-4 w-4" />
+            {formatPct(trend.pct)}
+        </span>
+    );
+}
 
 export function StatCard({
     title,

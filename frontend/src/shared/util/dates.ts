@@ -37,6 +37,7 @@ export function parseYMD(s: string) {
     const [y, m, d] = s.split('-').map(Number);
     return new Date(y, (m ?? 1) - 1, d ?? 1);
 }
+
 // count days, inclusive of boundaries
 export function daysInclusive(range: DateRange) {
     const start = parseYMD(range.startDate);
@@ -44,10 +45,4 @@ export function daysInclusive(range: DateRange) {
     const ms = end.getTime() - start.getTime();
     const days = Math.floor(ms / (1000 * 60 * 60 * 24)) + 1;
     return Math.max(1, days);
-}
-
-export function shiftRange(range: DateRange, days: number): DateRange {
-    const start = addDays(parseYMD(range.startDate), days);
-    const end = addDays(parseYMD(range.endDate), days);
-    return { startDate: toYMD(start), endDate: toYMD(end) };
 }

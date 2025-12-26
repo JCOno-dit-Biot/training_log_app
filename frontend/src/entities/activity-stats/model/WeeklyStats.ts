@@ -10,7 +10,7 @@ export interface WeeklyStats {
 }
 
 export enum Trend {
-  Up = 'up',
-  Down = 'down',
-  Same = 'same',
+  UP = 'up',
+  DOWN = 'down',
+  SAME = 'same',
 }
