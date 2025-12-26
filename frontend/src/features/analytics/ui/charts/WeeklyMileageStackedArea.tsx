@@ -147,7 +147,7 @@ export function WeeklyMileageStackedArea({
     const visibleDogs = dogs.filter((d) => !hidden.has(d.key));
 
     if (loading) return <div className="h-full w-full animate-pulse rounded-md bg-muted" />;
-    if (!data || rows.length === 0) return <div className="text-sm text-muted-foreground">No data</div>;
+    if (!data || rows.length === 0) return <div className="text-sm text-muted-foreground text-center">No activities in this range</div>;
 
     return (
         <div className="flex h-full gap-3">

@@ -79,22 +79,37 @@ export function LocationBubbleClusterMap({
     height?: number;
 }) {
     const valid = useMemo(
-        () => data.filter((p) => Number.isFinite(p.lat) && Number.isFinite(p.lng)),
+        () =>
+            (data ?? []).filter(
+                (p) => Number.isFinite(p.lat) && Number.isFinite(p.lng)
+            ),
         [data]
     );
 
-    const maxWeight = useMemo(
-        () => Math.max(1, ...valid.map((p) => p.weight)),
-        [valid]
-    );
+    const hasPoints = valid.length > 0;
+
+    const maxWeight = useMemo(() => {
+        if (!hasPoints) return 1;
+        return Math.max(1, ...valid.map((p) => p.weight));
+    }, [hasPoints, valid]);
+
 
     const thresholds = useMemo(() => {
+        if (!hasPoints) return [];
         const weights = valid.map((p) => p.weight);
         return computeThresholds(weights);
-    }, [valid]);
+    }, [hasPoints, valid]);
+
 
 
     const iconCreateFunction = useCallback((cluster: any) => {
+        if (!hasPoints || thresholds.length === 0) {
+            return L.divIcon({
+                html: `<div class="cluster-bubble"><span>0</span></div>`,
+                className: 'cluster-icon',
+                iconSize: L.point(44, 44),
+            });
+        }
         const total = sumClusterWeight(cluster);
         const cls = clusterClass(total, thresholds);
 
@@ -103,10 +118,10 @@ export function LocationBubbleClusterMap({
             className: 'cluster-icon', // keep outer class clean
             iconSize: L.point(44, 44),
         });
-    }, [thresholds]);
+    }, [thresholds, hasPoints]);
 
     return (
-        <div style={{ height }} className="w-full overflow-hidden z-0 isolate rounded-md border border-neutral-500">
+        <div className="w-full h-full overflow-hidden z-0 isolate rounded-md border border-neutral-500">
             <MapContainer
                 center={[45.4215, -75.6972]} // fallback; FitBounds will override
                 zoom={10}
@@ -118,7 +133,10 @@ export function LocationBubbleClusterMap({
                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                 />
 
-                <FitBounds points={valid.map((p) => ({ lat: p.lat, lng: p.lng }))} />
+                {hasPoints && (
+                    <FitBounds points={valid.map((p) => ({ lat: p.lat, lng: p.lng }))} />
+                )}
+
 
                 <MarkerClusterGroup
                     chunkedLoading
@@ -128,28 +146,29 @@ export function LocationBubbleClusterMap({
                     maxClusterRadius={30}
                     disableClusteringAtZoom={13}
                 >
-                    {valid.map((p, idx) => {
-                        const r = radiusFor(p.weight, maxWeight);
-                        return (
-                            <Marker
-                                key={`${p.label}-${idx}`}
-                                position={[p.lat, p.lng]}
-                                icon={bubbleIcon(r, String(p.weight))}
+                    {hasPoints &&
+                        valid.map((p, idx) => {
+                            const r = radiusFor(p.weight, maxWeight);
+                            return (
+                                <Marker
+                                    key={`${p.label}-${idx}`}
+                                    position={[p.lat, p.lng]}
+                                    icon={bubbleIcon(r, String(p.weight))}
 
-                                // @ts-ignore
-                                weight={p.weight}
-                            >
-                                <Tooltip direction="top" opacity={1}>
-                                    <div className="text-sm font-medium">
-                                        {formatLocationLabel(p.label)}
-                                    </div>
-                                    <div className="text-xs text-muted-foreground">
-                                        {p.weight} trainings
-                                    </div>
-                                </Tooltip>
-                            </Marker>
-                        );
-                    })}
+                                    // @ts-ignore
+                                    weight={p.weight}
+                                >
+                                    <Tooltip direction="top" opacity={1}>
+                                        <div className="text-sm font-medium">
+                                            {formatLocationLabel(p.label)}
+                                        </div>
+                                        <div className="text-xs text-muted-foreground">
+                                            {p.weight} trainings
+                                        </div>
+                                    </Tooltip>
+                                </Marker>
+                            );
+                        })}
                 </MarkerClusterGroup>
             </MapContainer>
         </div>

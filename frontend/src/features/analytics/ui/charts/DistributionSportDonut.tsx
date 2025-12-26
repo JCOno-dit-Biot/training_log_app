@@ -111,7 +111,7 @@ export function SportDistributionDonut({
 
     if (loading) return <div className="h-full w-full animate-pulse rounded-md bg-muted" />;
     if (!data || (data.outer?.length ?? 0) === 0) {
-        return <div className="text-sm text-muted-foreground">No data</div>;
+        return <div className="text-sm text-muted-foreground text-center">No activities in this range</div>;
     }
 
     return (
