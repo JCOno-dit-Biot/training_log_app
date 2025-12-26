@@ -9,12 +9,14 @@ class AnalyticSummaryDog(BaseModel):
     total_duration_hours: float
     avg_frequency_per_week: float
     avg_rating: float
+    time_since_last_training: float
 
 class AnalyticSummary(BaseModel):
     total_distance_km: float
     total_duration_hours: float
     avg_frequency_per_week: float
     avg_rating: float
+    time_since_last_training: float
     per_dog: List[AnalyticSummaryDog]
 
 
