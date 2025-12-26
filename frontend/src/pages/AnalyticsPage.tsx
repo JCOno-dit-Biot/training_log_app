@@ -34,7 +34,7 @@ function AnalyticsPageInner() {
 
     const comparisonRange = useMemo(
         () => getComparisonRange(queryParams, preset),
-        [queryParams, preset]
+        [queryParams.startDate, queryParams.endDate, preset]
     );
 
     const { data: prevSummary, isLoading: isPrevSummaryLoading } = useWeeklySummary(comparisonRange);
@@ -57,81 +57,87 @@ function AnalyticsPageInner() {
     const trendLoading = isSummaryLoading || isPrevSummaryLoading;
 
     return (
-        <div className="flex flex-col gap-4 p-4">
+        <div className="min-h-screen flex flex-col gap-4 p-4">
             <AnalyticsHeader crumbs={[{ label: 'Analytics', to: '/analytics' }]} scopeLabel="Kennel" />
-            <div className="grid grid-cols-1 gap-4 lg:grid-cols-3 lg:items-stretch">
-                <Card className="lg:col-span-1">
-                    <CardHeader className="pb-0">
-                        <CardTitle className="text-base">Kennel summary</CardTitle>
-                    </CardHeader>
+            <div className="flex-1 flex flex-col gap-4">
+                <div className="grid grid-cols-1 gap-4 lg:grid-cols-3 lg:auto-rows-fr lg:flex-1">
+                    <Card className="lg:col-span-1 flex flex-col">
+                        <CardHeader className="pb-0">
+                            <CardTitle className="text-base">Kennel summary</CardTitle>
+                        </CardHeader>
 
-                    <CardContent>
-                        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                            <StatCard
-                                title="Distance (km)"
-                                value={<div className="inline-flex items-baseline gap-2">
-                                    <span>{Summary?.total_distance_km?.toFixed(0) ?? '—'}</span>
-                                    <InlineTrend className="relative top-[1px]" trend={distanceTrend} label={trendLabel} loading={trendLoading} />
-                                </div>
-                                }
-                                loading={isSummaryLoading}
-                                compact />
-                            <StatCard
-                                title="Sessions/week"
-                                value={<div className="inline-flex items-baseline gap-2">
-                                    <span>{Summary?.avg_frequency_per_week?.toFixed(1) ?? '—'}</span>
-                                    <InlineTrend className="relative top-[1px]" trend={freqTrend} label={trendLabel} loading={trendLoading} />
-                                </div>
-                                }
-                                loading={isSummaryLoading}
-                                compact />
-                            <StatCard
-                                title="Avg training rating"
-                                value={<div className="inline-flex items-baseline gap-2">
-                                    <span>{Summary?.avg_rating?.toFixed(1) ?? '—'}</span>
-                                    <InlineTrend className="relative top-[1px]" trend={ratingTrend} label={trendLabel} loading={trendLoading} />
-                                </div>
-                                }
-                                loading={isSummaryLoading}
-                                compact />
-                            <StatCard
-                                title="Rest days"
-                                value={<div className="inline-flex items-baseline gap-2">
-                                    <span>{Summary?.time_since_last_training?.toFixed(0) ?? '—'}</span>
-                                </div>
-                                }
-                                loading={isSummaryLoading}
-                                compact />
-                        </div>
-                    </CardContent>
-                </Card>
-                <div className="lg:col-span-2">
-                    {isMapLoading ? (
-                        <div className="h-[360px] rounded-md border bg-neutral-50" />
-                    ) : (
-                        <LocationBubbleClusterMap data={locationPoints} height={280} />
-                    )}
+                        <CardContent className="flex-1" >
+                            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                                <StatCard
+                                    title="Distance (km)"
+                                    value={<div className="inline-flex items-baseline gap-2">
+                                        <span>{Summary?.total_distance_km?.toFixed(0) ?? '—'}</span>
+                                        <InlineTrend className="relative top-[1px]" trend={distanceTrend} label={trendLabel} loading={trendLoading} />
+                                    </div>
+                                    }
+                                    loading={isSummaryLoading}
+                                    compact />
+                                <StatCard
+                                    title="Sessions/week"
+                                    value={<div className="inline-flex items-baseline gap-2">
+                                        <span>{Summary?.avg_frequency_per_week?.toFixed(1) ?? '—'}</span>
+                                        <InlineTrend className="relative top-[1px]" trend={freqTrend} label={trendLabel} loading={trendLoading} />
+                                    </div>
+                                    }
+                                    loading={isSummaryLoading}
+                                    compact />
+                                <StatCard
+                                    title="Avg training rating"
+                                    value={<div className="inline-flex items-baseline gap-2">
+                                        <span>{Summary?.avg_rating?.toFixed(1) ?? '—'}</span>
+                                        <InlineTrend className="relative top-[1px]" trend={ratingTrend} label={trendLabel} loading={trendLoading} />
+                                    </div>
+                                    }
+                                    loading={isSummaryLoading}
+                                    compact />
+                                <StatCard
+                                    title="Rest days"
+                                    value={<div className="inline-flex items-baseline gap-2">
+                                        <span>{Summary?.time_since_last_training?.toFixed(0) ?? '—'}</span>
+                                    </div>
+                                    }
+                                    loading={isSummaryLoading}
+                                    compact />
+                            </div>
+                        </CardContent>
+                    </Card>
+                    <div className="lg:col-span-2">
+                        {isMapLoading ? (
+                            <div className="h-[360px] rounded-md border bg-neutral-50" />
+                        ) : (
+                            <LocationBubbleClusterMap data={locationPoints} />
+                        )}
+                    </div>
                 </div>
-            </div>
-            <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-                {/* Sport distribution takes 1/3 */}
-                <Card className="lg:col-span-1">
-                    <CardHeader className="pb-0">
-                        <CardTitle className="text-base">Sport distribution</CardTitle>
-                    </CardHeader>
-                    <CardContent className="h-[230px]">
-                        <SportDistributionDonut data={sportDistribution} loading={sportLoading} />
-                    </CardContent>
-                </Card>
-                {/* Weekly mileage chart takes 2/3 */}
-                <Card className="lg:col-span-2">
-                    <CardHeader className="pb-0">
-                        <CardTitle className="text-base">Weekly mileage (km)</CardTitle>
-                    </CardHeader>
-                    <CardContent className="h-[230px]">
-                        <WeeklyMileageStackedArea data={weeklyMileage} loading={isMileageLoading} dogsData={dogs} />
-                    </CardContent>
-                </Card>
+                <div className="grid grid-cols-1 gap-4 lg:grid-cols-3 lg:auto-rows-fr lg:flex-1">
+                    {/* Sport distribution takes 1/3 */}
+                    <Card className="lg:col-span-1 flex flex-col">
+                        <CardHeader className="pb-0">
+                            <CardTitle className="text-base">Sport distribution</CardTitle>
+                        </CardHeader>
+                        <CardContent className="flex-1">
+                            <div className="h-full">
+                                <SportDistributionDonut data={sportDistribution} loading={sportLoading} />
+                            </div>
+                        </CardContent>
+                    </Card>
+                    {/* Weekly mileage chart takes 2/3 */}
+                    <Card className="lg:col-span-2 flex flex-col">
+                        <CardHeader className="pb-0">
+                            <CardTitle className="text-base">Weekly mileage (km)</CardTitle>
+                        </CardHeader>
+                        <CardContent className="flex-1">
+                            <div className="h-full">
+                                <WeeklyMileageStackedArea data={weeklyMileage} loading={isMileageLoading} dogsData={dogs} />
+                            </div>
+                        </CardContent>
+                    </Card>
+                </div>
             </div>
         </div>
     )
