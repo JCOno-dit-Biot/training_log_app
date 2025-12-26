@@ -121,6 +121,9 @@ celerybeat.pid
 
 # Frontend
 frontend/public/
+#include the shadcn lib folder
+!frontend/src/shared/lib/
+!frontend/src/shared/lib/**
 
 # Exclude certain data files
 db_backups
