@@ -2,7 +2,7 @@ import pytest
 from src.repositories.analytics_repository import analytics_repository
 from src.models.common import Filter
 from src.models import SportType
-from src.models.analytics import Trend
+from src.models.analytics import Trend, AnalyticSummary
 from datetime import date, timezone, datetime, timedelta
 from psycopg2.extras import RealDictCursor
 
@@ -61,8 +61,8 @@ def test_sport_count_no_range(analytics_repo):
     assert sport_count[0].activity_count == 1
 
 def test_analytics_summary_returns_none(analytics_repo):
-    summary_none = analytics_repo.get_analytic_summary_per_dog(Filter(end_date="2023-12-01"),2)
-    assert summary_none is None
+    summary_empty = analytics_repo.get_analytic_summary_per_dog(Filter(end_date="2023-12-01"),2)
+    assert summary_empty == AnalyticSummary(total_distance_km=0.0, total_duration_hours=0.0, avg_frequency_per_week=0.0, avg_rating=0.0, time_since_last_training=None, per_dog=[])
 
 def test_dog_running_per_day(analytics_repo):
     dog_days = analytics_repo.get_dog_running_per_day(
