@@ -85,3 +85,15 @@ def get_month_range(year: int, month: int) -> tuple[date, date]:
     else:
         end = date(year, month + 1, 1)
     return start, end
+
+def get_number_weeks(start_date, end_date):
+
+    if isinstance(start_date, datetime):
+        start_date = start_date.date()
+    if isinstance(end_date, datetime):
+        end_date = end_date.date()
+
+    days = (end_date - start_date).days + 1
+    weeks = max(days / 7.0, 1.0)
+
+    return weeks

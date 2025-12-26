@@ -93,15 +93,23 @@ class location_repository(abstract_repository):
                 self._connection.rollback()
                 return False
 
-    def update(self, update_name: str, id: int):
+    def update(self,fields: dict, id: int):
+        keys = list(fields.keys())
+        values = list(fields.values())
+
+        set_clause = ", ".join([f"{key} = %s" for key in keys])
+
+        values.append(id)
+
         with self._connection.cursor(cursor_factory= RealDictCursor) as cur:
             try:
                 # can only update own id so kennel_id is not needed here
-                query = """ UPDATE activity_locations
-                            SET name = %s
+                query = f""" 
+                            UPDATE activity_locations
+                            SET {set_clause}
                             WHERE id = %s;
                         """
-                cur.execute(query, (update_name, id,))
+                cur.execute(query, values)
                 self._connection.commit()
                 return cur.rowcount > 0
             except Exception as e:

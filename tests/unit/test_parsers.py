@@ -2,11 +2,11 @@ from src.parsers.dog_parser import parse_dog_from_row
 from src.parsers.runner_parser import parse_runner_from_row
 from src.parsers.activity_parser import parse_activity_from_row
 from src.parsers.weight_parser import parse_weight_from_row
-from src.parsers.analytic_parser import parse_weekly_stats, parse_dog_calendar
+from src.parsers.analytic_parser import parse_weekly_stats, parse_dog_calendar, parse_summary_from_rows
 from src.models import Dog, DogWeightEntry
 from src.models.analytics.weekly_stats import WeeklyStats, Trend
 from src.models.analytics.dog_calendar_day import DogCalendarDay
-from datetime import date, timedelta
+from datetime import date, timedelta, datetime
 from pydantic import ValidationError
 import pytest
 
@@ -320,3 +320,38 @@ def test_parse_dog_calendar_deduplicates():
 
     result = parse_dog_calendar(rows)
     assert result == [DogCalendarDay(date=date(2025, 7, 1), dog_ids=[1])]
+
+
+def test_parse_summary_from_rows():
+    rows = [{
+        'dog_id': 1,
+        'name': 'Luna',
+        'total_distance_km': 20,
+        'total_duration_hours': 0.5,
+        'session_count': 3,
+        'rating_sum': 24,
+        'min_date': datetime(2025,1,1,12),
+        'max_date': datetime(2025,1,1,18)
+    },
+    {
+        'dog_id': 2,
+        'name': 'Bolt',
+        'total_distance_km': 10,
+        'total_duration_hours': 0.3,
+        'session_count': 2,
+        'rating_sum': 16,
+        'min_date': datetime(2025,1,1,12),
+        'max_date': datetime(2025,2,15,8)
+    }
+    ]
+    delta_days = (date.today() - date(2025,2,15)).days
+    summary = parse_summary_from_rows(rows, weeks = 2)
+    assert len(summary.per_dog) == 2
+    assert summary.total_distance_km == 30
+    assert summary.total_duration_hours ==0.8
+    assert summary.avg_frequency_per_week==2.5
+    assert summary.avg_rating == 8
+    assert summary.per_dog[0].avg_frequency_per_week==1.5
+    assert summary.per_dog[0].avg_rating == 8
+    assert summary.time_since_last_training == delta_days
+    

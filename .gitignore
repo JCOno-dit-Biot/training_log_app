@@ -123,6 +123,7 @@ celerybeat.pid
 frontend/public/
 
 # Exclude certain data files
+db_backups
 data/
 secret/
 *.csv

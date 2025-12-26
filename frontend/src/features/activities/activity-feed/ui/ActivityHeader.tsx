@@ -22,11 +22,10 @@ export function ActivityHeader({
   }, []);
   return (
     <header
-      className={`sticky top-0 z-50 transition-colors duration-200 ${
-        atTop
+      className={`sticky top-0 z-50 transition-colors duration-200 ${atTop
           ? 'bg-gray' // solid when at top
           : 'bg-white/70 backdrop-blur supports-[backdrop-filter]:bg-white/60'
-      } ${className}`}
+        } ${className}`}
       role="region"
       aria-label="Activity header"
     >
@@ -37,7 +36,7 @@ export function ActivityHeader({
           <div className="flex items-center">
             <button
               onClick={onOpenCreate}
-              className="bg-primary text-cream inline-flex items-center gap-2 rounded-full px-3.5 py-2 shadow transition hover:shadow-md active:scale-[.98]"
+              className="bg-primary text-neutral-100 inline-flex items-center gap-2 rounded-full px-3.5 py-2 shadow transition hover:shadow-md active:scale-[.98]"
             >
               <Plus className="h-4 w-4" />
               <span className="hidden sm:inline">Add new activity</span>

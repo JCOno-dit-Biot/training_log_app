@@ -93,7 +93,7 @@ def test_update_locations(test_app, mock_repo):
     mock_repo.update.assert_called_once()
     assert response.status_code == 200
     assert response.json() == {"success": True}
-    mock_repo.update.assert_called_with(update_name='updated location', id=2)
+    mock_repo.update.assert_called_with(fields={'name':'updated location'}, id=2)
 
 def test_update_location_update_fails(test_app, mock_repo):
     client = TestClient(test_app)

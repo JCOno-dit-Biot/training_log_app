@@ -4,23 +4,21 @@ import { CartesianGrid, Label, Legend, Line, LineChart, ReferenceArea, Responsiv
 
 import type { Dog } from '@/entities/dogs/model';
 import type { WeightEntry } from '@/entities/dogs/model/Weight';
+import { parseYMD } from '@/shared/util/dates';
 
 import { convertWeight } from '../util/convertUnit';
 
 type Unit = 'kg' | 'lb';
 type Preset = '90d' | 'ytd' | '1y' | 'all';
 
-function parseYMDLocal(ymd: string) {
-    const [y, m, d] = ymd.split('-').map(Number);
-    return new Date(y, m - 1, d);
-}
+
 function fmtTick(ymd: string, preset: Preset) {
     if (preset === 'all') return ymd.slice(0, 4);
-    const dt = parseYMDLocal(ymd);
+    const dt = parseYMD(ymd);
     return new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric' }).format(dt);
 }
 function fmtTooltipLabel(ymd: string) {
-    const dt = parseYMDLocal(ymd);
+    const dt = parseYMD(ymd);
     return new Intl.DateTimeFormat(undefined, { year: 'numeric', month: 'short', day: 'numeric' }).format(dt);
 }
 

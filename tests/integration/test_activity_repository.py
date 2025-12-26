@@ -26,12 +26,14 @@ def test_get_by_id(activity_repo):
 
 def test_get_all(activity_repo):
     activities = activity_repo.get_all(kennel_id=2, filters= ActivityQueryFilters(), limit = 10, offset = 0, )
+    print(activities)
     assert isinstance(activities, list)
-    assert len(activities) == 2
+    assert len(activities) == 8
     for activity in activities:
         assert all([x.dog.kennel.name == 'Les Gaulois' for x in activity.dogs])
         assert activity.sport.name =='Canicross'
-    act2 = activities[0]
+    
+    act2 = next((activity for activity in activities if activity.id == 2), None)
     assert act2.laps == []
     assert act2.workout == False
     assert act2.weather.temperature == 1.4
@@ -42,7 +44,7 @@ def test_get_all(activity_repo):
 def test_get_all_default_pagination(activity_repo):
     activities = activity_repo.get_all(kennel_id=2, filters= ActivityQueryFilters() )
     assert isinstance(activities, list)
-    assert len(activities) == 2
+    assert len(activities) == 8
 
 def test_get_all_with_pagination(activity_repo):
     activities = activity_repo.get_all(kennel_id=2, filters= ActivityQueryFilters(), limit = 1, offset= 1 )
@@ -64,7 +66,7 @@ def test_get_all_with_filters(activity_repo):
     assert activity.weather.temperature == 10.4
 
 @pytest.mark.parametrize("filter,expected_count",[
-    (ActivityQueryFilters(), 2),
+    (ActivityQueryFilters(), 8),
     (ActivityQueryFilters(
         start_date = "2025-03-01",
         end_date="2025-04-02"
@@ -77,7 +79,7 @@ def test_get_total_count(activity_repo, filter, expected_count):
 
 def test_create_activity(test_activity_create, activity_repo):
     id = activity_repo.create(test_activity_create)
-    assert id == 4
+    assert id == 11
     with activity_repo._connection.cursor() as cur:
         cur.execute("""SELECT * FROM activities WHERE id = %s""", (id,))
         activity = cur.fetchone()
@@ -95,7 +97,7 @@ def test_create_activity(test_activity_create, activity_repo):
         cur.execute("""SELECT * FROM weather_entries WHERE activity_id = %s""", (id,))
         weather = cur.fetchone()
         assert weather is not None
-        assert weather[1] == 4
+        assert weather[1] == 11
         assert weather[2] == 9.5
         assert weather[3] == 0.85
         assert weather[4] == "rainy"

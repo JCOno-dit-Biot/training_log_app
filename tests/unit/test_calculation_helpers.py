@@ -1,6 +1,7 @@
 from src.models import *
 import pytest
 from src.utils import calculation_helpers as ch
+from datetime import datetime, date
 
 @pytest.mark.parametrize('pace,expected', [('3:20', 18.0), ('5:30', 10.91), ('0:05:30', 10.91), (5.5, 10.91), ('2:00', 30.0)])
 def test_pace_to_speed(pace, expected):
@@ -36,3 +37,13 @@ def test_wrong_type_speed():
     speed = "too fast"
     with pytest.raises(TypeError):
         ch.calculate_pace_from_speed(speed)
+
+@pytest.mark.parametrize('start_date,end_date,expected',
+                        [
+                            (datetime(2025,1,1,12,0,5), datetime(2025,1,14,2,0,9), 2),
+                            (datetime(2025,1,1), date(2025,1,21), 3),
+                            (date(2025,1,8), date(2025,1,21), 2)
+                        ])
+def test_get_number_weeks(start_date, end_date, expected):
+    weeks = ch.get_number_weeks(start_date, end_date)
+    assert weeks == expected

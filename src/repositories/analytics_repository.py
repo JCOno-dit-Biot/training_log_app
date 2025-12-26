@@ -1,9 +1,11 @@
 from typing import List, Optional
 from datetime import datetime, timedelta, timezone
 from psycopg2.extras import RealDictCursor
-from src.models.analytics.weekly_stats import WeeklyStats
-from src.models.analytics.dog_calendar_day import DogCalendarDay
-from src.parsers.analytic_parser import parse_weekly_stats, parse_dog_calendar
+from src.models.analytics import WeeklyStats, AnalyticSummary, DogCalendarDay, LocationHeatPoint, SportCount, WeeklyDogDistance
+from src.models import Filter
+from src.parsers.analytic_parser import parse_weekly_stats, parse_dog_calendar, parse_summary_from_rows
+from src.utils.db import build_time_window_clause
+from src.utils.calculation_helpers import get_number_weeks
 from datetime import datetime
 
 class analytics_repository():
@@ -73,11 +75,40 @@ class analytics_repository():
             }
             cur.execute(query, params)
             rows = cur.fetchall()
-            print(rows)
 
         return parse_weekly_stats(rows)
     
-    def get_dog_running_per_day(self, start_date, end_date) -> list[DogCalendarDay]:
+    def get_weekly_mileage(self, filters: Filter, kennel_id: int):
+        where_clause, values = build_time_window_clause(filters, "a", "timestamp")
+
+        with self._connection.cursor(cursor_factory= RealDictCursor) as cur:
+            query = f"""
+                    SELECT
+                        d.id AS dog_id,
+                        d.name AS dog_name,
+                        date_trunc('week', a.timestamp)::date AS week_start, -- Monday according to ISO 
+                        COALESCE(SUM(NULLIF(a.distance, 'NaN'::float8)),0) AS weekly_distance_km
+                    FROM activities a
+                    JOIN activity_dogs ad ON ad.activity_id = a.id
+                    JOIN dogs d           ON d.id = ad.dog_id
+                    WHERE
+                        d.kennel_id = %s
+                    AND {where_clause}
+                    GROUP BY
+                        d.id,
+                        d.name,
+                        date_trunc('week', a.timestamp)
+                    ORDER BY
+                        week_start,
+                        dog_name;
+            """
+            values.insert(0, kennel_id)
+            cur.execute(query, values)
+            rows = cur.fetchall()
+            
+            return [WeeklyDogDistance(**row) for row in rows]
+        
+    def get_dog_running_per_day(self, start_date, end_date, kennel_id) -> list[DogCalendarDay]:
         with self._connection.cursor(cursor_factory= RealDictCursor) as cur:
             query = """
                     SELECT
@@ -85,11 +116,15 @@ class analytics_repository():
                         ad.dog_id
                     FROM activities a
                     JOIN activity_dogs ad ON ad.activity_id = a.id
-                    WHERE a.timestamp >= %(start_date)s
+                    JOIN dogs d on ad.dog_id = d.id
+                    WHERE d.kennel_id = %(kennel_id)s
+                    AND a.timestamp >= %(start_date)s
                     AND a.timestamp < %(end_date)s
                     """
-        
+            # In this query the controller calcluates end day and automatically picks the following day 
+            # to include the last day of the month
             params = {
+                    "kennel_id": kennel_id,
                     "start_date": start_date,
                     "end_date": end_date,
                 }
@@ -98,3 +133,122 @@ class analytics_repository():
             rows = cur.fetchall()
 
         return parse_dog_calendar(rows)
+    
+    def get_analytic_summary_per_dog(self, filters: Filter, kennel_id: int) -> AnalyticSummary:
+
+        where_clause, values = build_time_window_clause(filters, "a", "timestamp")
+
+        with self._connection.cursor(cursor_factory= RealDictCursor) as cur:
+            query = f"""
+                    SELECT
+                        ad.dog_id          AS dog_id,
+                        d.name        AS name,
+                        COALESCE(SUM(NULLIF(a.distance, 'NaN'::float8)),0)                AS total_distance_km,
+                        COALESCE(SUM(NULLIF(a.distance, 'NaN'::float8)/NULLIF(NULLIF(a.speed, 'NaN'::float8), 0)),0) AS total_duration_hours,
+                        COUNT(*)                          AS session_count,
+                        COALESCE(SUM(ad.rating), 0)        AS rating_sum,
+                        MIN(a.timestamp) AS min_date, -- Needed for freq calc in case user does not specify time range
+                        MAX(a.timestamp) AS max_date
+                        FROM activities a
+                        LEFT JOIN activity_dogs ad ON ad.activity_id = a.id
+                        JOIN dogs d ON d.id = ad.dog_id
+                        JOIN kennels k ON d.kennel_id = k.id
+                        WHERE kennel_id = %s
+                        AND a.speed IS NOT NULL 
+                        AND a.speed > 0
+                        AND {where_clause}
+                        GROUP BY ad.dog_id, d.name;
+                    """
+            values.insert(0, kennel_id)
+            cur.execute(query, values)
+            rows = cur.fetchall()
+
+            
+            if len(rows) == 0 or rows is None:
+                    return AnalyticSummary(
+                        total_distance_km=0,
+                        total_duration_hours=0,
+                        avg_rating=0,
+                        avg_frequency_per_week=0,
+                        per_dog = []
+                    )
+            
+            if filters.start_date and filters.end_date:
+                min_d, max_d = filters.start_date, filters.end_date
+            else:
+                min_d = min(r['min_date'] for r in rows if r['min_date'])
+                max_d = max(r['max_date'] for r in rows if r['max_date'])
+
+            weeks = get_number_weeks(min_d,max_d)
+
+            return parse_summary_from_rows(rows, weeks)
+
+
+    def get_activity_heat_map(self, filters: Filter, kennel_id: int) -> list[LocationHeatPoint]:
+
+        where_clause, values = build_time_window_clause(filters, "a", "timestamp")
+
+        with self._connection.cursor(cursor_factory= RealDictCursor) as cur:
+
+            query = f"""
+                SELECT 
+                    COUNT(*) AS day_count,
+                    al.name      AS location_name,
+                    al.latitude,
+                    al.longitude
+                FROM (
+                    -- one row per (location, day)
+                    SELECT DISTINCT
+                        a.location_id,
+                        a.timestamp::date AS activity_date
+                    FROM activities a
+                    JOIN activity_dogs ad ON ad.activity_id = a.id
+                    JOIN dogs d ON d.id = ad.dog_id
+                    WHERE d.kennel_id = %s
+                    AND {where_clause}
+                ) AS days
+                JOIN activity_locations al
+                    ON al.id = days.location_id
+                GROUP BY
+                    days.location_id,
+                    al.name,
+                    al.latitude,
+                    al.longitude
+                ORDER BY
+                    day_count DESC;
+                """
+            
+            values.insert(0, kennel_id)
+            cur.execute(query, values)
+            rows = cur.fetchall()
+
+            if rows is None or len(rows)==0:
+                return []
+        
+            return [LocationHeatPoint(**row) for row in rows]
+        
+    def get_sport_counts(self, filters: Filter, kennel_id: int):
+        
+        where_clause, values = build_time_window_clause(filters, "a", "timestamp")
+
+        with self._connection.cursor(cursor_factory= RealDictCursor) as cur:
+
+            query = f"""
+                    SELECT 
+                        COUNT(*) as activity_count,
+                        s.name as sport_name,
+                        s.type as sport_type
+                    FROM activities a
+                    JOIN sports s on a.sport_id = s.id
+                    JOIN activity_dogs ad ON ad.activity_id = a.id
+                    JOIN dogs d ON d.id = ad.dog_id
+                    WHERE kennel_id = %s
+                    AND {where_clause}
+                    GROUP BY a.sport_id, s.name, s.type
+                    """
+            
+            values.insert(0, kennel_id)
+            cur.execute(query, values)
+            rows = cur.fetchall()
+
+        return [SportCount(**row) for row in rows]

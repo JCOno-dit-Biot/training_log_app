@@ -18,7 +18,8 @@ VALUES
 INSERT INTO sports ("name", "description", "type", "display_mode")
 VALUES 
     ('Canicross', 'Running with your dog', 'dryland', 'pace'),
-    ('Bikejoring', 'Biking with your dog', 'on-snow', 'speed');
+    ('Bikejoring', 'Biking with your dog', 'dryland', 'speed'),
+    ('Sled', 'Dog sledding', 'on-snow', 'speed');
 
 
 -- insert runner pictures path
@@ -44,10 +45,10 @@ INSERT INTO users(username, password_hash, kennel_id) VALUES ('john@domain.com',
 INSERT INTO users(username, password_hash, kennel_id) VALUES ('john_doe@domain.com', 'bad_hashpassword', 1);
 
 -- Insert locations
-INSERT INTO activity_locations (name, kennel_id) VALUES
-    ('Forest Loop',1), 
-    ('City park',1),
-    ('Mountain Trail',2);
+INSERT INTO activity_locations (name, kennel_id, latitude, longitude) VALUES
+    ('Forest Loop',1, 53.5501, -113.469), 
+    ('City park',1, 53.5001, -114.469),
+    ('Mountain Trail',2, 52.5501, -112.469);
 
 -- Insert into activities
 INSERT INTO activities (
@@ -89,6 +90,86 @@ INSERT INTO activities (
 
 INSERT INTO activity_dogs (activity_id, dog_id, rating) VALUES 
 (3, 1, 8);
+
+-- Activity 4 (zero distance, still a workout)
+INSERT INTO activities (
+    runner_id, sport_id, timestamp, location_id, workout, speed, distance
+) VALUES (
+    2, 1, '2025-04-04T07:00:00Z', 1, false, NULL, 0
+) RETURNING id;
+-- Assume id = 4
+
+INSERT INTO activity_dogs (activity_id, dog_id, rating) VALUES 
+(4, 2, 5);
+
+-- Activity 5 (long distance, multiple dogs, non-workout)
+INSERT INTO activities (
+    runner_id, sport_id, timestamp, location_id, workout, speed, distance
+) VALUES (
+    2, 1, '2025-04-05T14:45:00Z', 1, false, 16.8, 12.3
+) RETURNING id;
+-- Assume id = 5
+
+INSERT INTO activity_dogs (activity_id, dog_id, rating) VALUES 
+(5, 1, 9),
+(5, 2, 6);
+
+
+-- Activity 6 (on-snow sport)
+INSERT INTO activities (
+    runner_id, sport_id, timestamp, location_id, workout, speed, distance
+) VALUES (
+    1, 3, '2025-04-06T10:00:00Z', 3, false, 18.4, 7.0
+) RETURNING id;
+-- Assume id = 6
+
+INSERT INTO activity_dogs (activity_id, dog_id, rating) VALUES 
+(6, 1, 8);
+
+-- Activity 7 (same day as Activity 2 but morning)
+INSERT INTO activities (
+    runner_id, sport_id, timestamp, location_id, workout, speed, distance
+) VALUES (
+    2, 1, '2025-04-02T09:00:00Z', 2, false, 10.4, 2.1
+) RETURNING id;
+-- Assume id = 7
+
+INSERT INTO activity_dogs (activity_id, dog_id, rating) VALUES 
+(7, 2, 7);
+
+-- Activity 8 (same day as Activity 2 but different kennel)
+INSERT INTO activities (
+    runner_id, sport_id, timestamp, location_id, workout, speed, distance
+) VALUES (
+    2, 1, '2025-04-02T09:00:00Z', 2, false, 10.4, 2.1
+) RETURNING id;
+-- Assume id = 8
+
+INSERT INTO activity_dogs (activity_id, dog_id, rating) VALUES 
+(8, 3, 7);
+
+-- Activity 9 (same day as Activity 2 but different kennel)
+INSERT INTO activities (
+    runner_id, sport_id, timestamp, location_id, workout, speed, distance
+) VALUES (
+    2, 1, '2025-05-02T09:00:00Z', 2, false, 10.4, 2.1
+) RETURNING id;
+-- Assume id = 9
+
+INSERT INTO activity_dogs (activity_id, dog_id, rating) VALUES 
+(9, 1, 7);
+
+-- Activity 10 (same dogs and kennel 2 but following week)
+INSERT INTO activities (
+    runner_id, sport_id, timestamp, location_id, workout, speed, distance
+) VALUES (
+    2, 1, '2025-04-10T09:00:00Z', 2, false, 10.4, 4.1
+) RETURNING id;
+-- Assume id = 10
+
+INSERT INTO activity_dogs (activity_id, dog_id, rating) VALUES 
+(10, 1, 7),
+(10, 2, 8);
 
 INSERT INTO weather_entries (activity_id, temperature, humidity, condition)
 VALUES 

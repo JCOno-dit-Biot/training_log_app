@@ -1,6 +1,6 @@
-from src.utils.db import build_conditions
+from src.utils.db import build_conditions, build_time_window_clause
 import pytest
-from src.models import WeightQueryFilter, ActivityQueryFilters
+from src.models import WeightQueryFilter, ActivityQueryFilters, Filter
 from datetime import date
 
 @pytest.fixture
@@ -48,4 +48,16 @@ def test_build_conditions_with_activity_filter(activity_query_filter):
         "%Park%",
         date(2025, 1, 1),
         date(2025, 1, 30)
+    ]
+
+def test_build_time_window_filter():
+    filters = Filter(start_date='2025-01-02',
+                     end_date= '2025-01-31'
+                     )
+    clause, values = build_time_window_clause(filters, "a", "timestamp")
+    assert "a.timestamp >= %s" in clause
+    assert "a.timestamp < %s" in clause
+    assert values == [
+        date(2025,1,2),
+        date(2025,1,31)
     ]

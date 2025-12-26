@@ -1,5 +1,3 @@
-import React from 'react';
-
 import Sidebar from './sidebar/Sidebar';
 
 export default function Layout({ children }: { children: React.JSX.Element }) {
@@ -11,7 +9,7 @@ export default function Layout({ children }: { children: React.JSX.Element }) {
       </div>
 
       {/* Main: pad for the sidebar, no width calc, no vertical overflow */}
-      <main className="min-h-screen bg-gray-50 px-4 md:pl-[13rem]">{children}</main>
+      <main className="min-h-screen bg-neutral-100 px-4 md:pl-[13rem]">{children}</main>
     </>
   );
 }
