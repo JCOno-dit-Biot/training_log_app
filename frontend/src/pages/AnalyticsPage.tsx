@@ -55,6 +55,7 @@ function AnalyticsPageInner() {
     );
     const trendLabel = preset === 'ytd' ? 'vs last year' : 'vs prev period';
     const trendLoading = isSummaryLoading || isPrevSummaryLoading;
+
     return (
         <div className="flex flex-col gap-4 p-4">
             <AnalyticsHeader crumbs={[{ label: 'Analytics', to: '/analytics' }]} scopeLabel="Kennel" />
@@ -89,6 +90,14 @@ function AnalyticsPageInner() {
                                 value={<div className="inline-flex items-baseline gap-2">
                                     <span>{Summary?.avg_rating?.toFixed(1) ?? '—'}</span>
                                     <InlineTrend className="relative top-[1px]" trend={ratingTrend} label={trendLabel} loading={trendLoading} />
+                                </div>
+                                }
+                                loading={isSummaryLoading}
+                                compact />
+                            <StatCard
+                                title="Rest days"
+                                value={<div className="inline-flex items-baseline gap-2">
+                                    <span>{Summary?.time_since_last_training?.toFixed(0) ?? '—'}</span>
                                 </div>
                                 }
                                 loading={isSummaryLoading}

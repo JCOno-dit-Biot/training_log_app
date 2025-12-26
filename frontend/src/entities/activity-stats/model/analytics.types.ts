@@ -7,6 +7,7 @@ export interface summaryDogRow {
     total_duration_hours: number;
     avg_frequency_per_week: number;
     avg_rating: number;
+    time_since_last_training: number;
 }
 
 export interface summaryRow {
@@ -15,6 +16,7 @@ export interface summaryRow {
     avg_frequency_per_week: number;
     avg_rating: number;
     per_dog: summaryDogRow[];
+    time_since_last_training: number;
 }
 
 export interface WeeklyMileageRow {
