@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 
 import type { Location } from '@entities/activities/model';
+import { formatLocationLabel } from '@/shared/util/formatLocationLabel';
 
 type Props = {
   locations: Location[];
@@ -35,7 +36,8 @@ export default function LocationAutocomplete({
   const filtered = useMemo(() => {
     const q = (query || '').trim().toLowerCase();
     const safe = (locations ?? []).filter((l): l is Location => !!l && typeof l.name === 'string');
-    const base = q ? safe.filter((l) => l.name.toLowerCase().includes(q)) : safe;
+    const formatedSafe = safe.map((l) => ({ ...l, name: formatLocationLabel(l.name) }))
+    const base = q ? formatedSafe.filter((l) => l.name.toLowerCase().includes(q)) : formatedSafe;
     return base.slice(0, 5);
   }, [locations, query]);
 
@@ -94,7 +96,7 @@ export default function LocationAutocomplete({
 
   useEffect(() => {
     // when controlled value changes from outside, sync input
-    if (selected && !open) setQuery(selected.name);
+    if (selected && !open) setQuery(formatLocationLabel(selected.name));
     if (value == null && !open && query && !selected) setQuery('');
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value, selected?.name]);
@@ -144,7 +146,7 @@ export default function LocationAutocomplete({
                 commitSelection(loc);
               }}
               onMouseEnter={() => setHighlight(idx)}
-              className={`cursor-pointer px-3 py-2 capitalize ${idx === highlight ? 'bg-gray-100' : ''}`}
+              className={`cursor-pointer px-3 py-2 ${idx === highlight ? 'bg-gray-100' : ''}`}
               role="option"
               aria-selected={value === loc.id}
             >
