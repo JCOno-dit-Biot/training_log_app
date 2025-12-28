@@ -6,7 +6,7 @@ import { useLatestAll } from '@/features/weights/model/useDogWeightLatest';
 import { useWeights } from '@/features/weights/model/useDogWeights';
 import { LatestGrid } from '@/features/weights/ui/LatestGrid';
 import { WeightsMultiChart } from '@/features/weights/ui/WeightChart';
-import { Spinner } from '@/shared/ui/Spinner';
+import { Spinner } from '@/shared/ui/spinner';
 
 type Unit = 'kg' | 'lb'
 

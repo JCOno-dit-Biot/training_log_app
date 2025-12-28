@@ -1,6 +1,6 @@
 import { Route, Routes } from 'react-router-dom';
 
-import Layout from '@shared/ui/Layout';
+import Layout from '@shared/ui/layout';
 import ActivityFeed from '@pages/ActivityFeed';
 import LoginPage from '@pages/LoginPage';
 import MyKennelPage from '@pages/MyKennelPage';

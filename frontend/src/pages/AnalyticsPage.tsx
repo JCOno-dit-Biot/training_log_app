@@ -6,14 +6,13 @@ import { AnalyticsHeader } from "@/features/analytics/ui/AnalyticsHeader";
 import { SportDistributionDonut } from "@/features/analytics/ui/charts/DistributionSportDonut";
 import { WeeklyMileageStackedArea } from "@/features/analytics/ui/charts/WeeklyMileageStackedArea";
 import { LocationBubbleClusterMap } from "@/features/analytics/ui/maps/LocationBubbleClusterMap";
+import { InlineTrend, StatCard } from "@/features/analytics/ui/StatCard";
 import { computeMetricTrend } from "@/features/analytics/utils/computeMetricTrend";
 import { DateRangeProvider } from "@/features/dateRangeFilter/model/DateRangeProvider";
 import { useDateRange } from "@/features/dateRangeFilter/model/useDateRange";
 import { getComparisonRange } from "@/features/dateRangeFilter/utils/getComparisonRange";
 import { useDogs } from "@/features/dogs/model/useDogs";
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
-import { StatCard } from "@/shared/ui/StatCard";
-import { InlineTrend } from "@/shared/ui/StatCard";
 
 
 export default function AnalyticsPage() {
