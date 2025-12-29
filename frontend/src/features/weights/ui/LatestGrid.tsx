@@ -1,14 +1,15 @@
-// src/features/weights/LatestGrid.tsx
 import { useMemo, useState } from 'react';
 import { Pencil, Plus } from 'lucide-react';
 
 import type { FetchWeightsParams, LatestWeight } from '@/entities/dogs/model';
 import type { Dog } from '@/entities/dogs/model';
+import { Button } from "@/shared/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card"
 import { formatMonthDay } from '@/shared/util/dates';
 
 import { convertWeight } from '../util/convertUnit'
 
-import { AddWeightModal, EditWeightModal } from './WeightModal';
+import { AddWeightDialog, EditWeightDialog } from './WeightDialog';
 
 type Unit = 'kg' | 'lb';
 
@@ -30,64 +31,81 @@ export function LatestGrid({
 
     return (
         <>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+            <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-3">
                 {dogs.map(d => {
-                    const lw = latest.find(l => l.dog_id === d.id) || null;
+                    const lw = byDog.get(d.id) ?? null;
                     const val = lw ? (unit === 'kg' ? lw.latest_weight : convertWeight(lw.latest_weight, 'kg', unit)) : null;
                     const delta = lw?.weight_change ?? null;
                     const deltaDisplay = delta == null ? null : (unit === 'kg' ? delta : convertWeight(delta, 'kg', unit));
                     const sign = deltaDisplay != null && deltaDisplay > 0 ? '▲' : deltaDisplay != null && deltaDisplay < 0 ? '▼' : '';
                     return (
-                        <div key={d.id} className=" relative rounded-xl border border-gray-300 bg-white p-3 shadow-md items-center gap-1">
-                            <div className=" absolute top-1 right-1 flex gap-1 items-center">
-                                <button
-                                    className="rounded-full w-8 h-8 flex items-center justify-center hover:bg-gray-50"
-                                    onClick={() => setEditing(lw)}
-                                    title="Edit latest weight"
-                                >
-                                    <Pencil size={18} strokeWidth={2} />
-                                </button>
-                                <button
-                                    className="rounded-full w-10 h-10 flex items-center justify-center hover:bg-gray-50"
-                                    onClick={() => setOpenForDog(d.id)}
-                                    title="Add weight"
-                                >
-                                    <Plus size={20} strokeWidth={2} />
-                                </button>
-                            </div>
+                        <Card key={d.id} className="relative w-full">
+                            <CardHeader className="pb-2">
+                                <div className="flex items-start justify-between gap-3">
+                                    <div className="flex items-center gap-3 mt-1">
+                                        <img
+                                            src={`/profile_picture/dogs/${d.image_url}`}
+                                            alt={d.name}
+                                            className="h-20 w-20 rounded-full border-4 bg-muted object-cover mt-2"
+                                            style={{ borderColor: d.color ?? "#9ca3af" }}
+                                        />
+                                        <CardTitle className="text-base font-semibold">{d.name}</CardTitle>
+                                    </div>
 
-                            <div className="mt-2 flex items-center gap-8">
-                                <img
-                                    src={`/profile_picture/dogs/${d.image_url}`}
-                                    alt={d.name}
-                                    className="w-20 h-20 rounded-full border-3 object-cover p-1"
-                                    style={{ borderColor: d.color ?? '#9ca3af' }} // fallback to gray
-                                />
-                                <div className="font-semibold text-xl">{d.name}</div>
-                            </div>
-                            <div className="mt-4 space-y-1 flex flex-col text-left gap-3">
-                                <div className="text-4xl font-bold tracking-tight">
-                                    {val != null ? `${val.toFixed(1)} ${unit}` : '—'}
+                                    <div className="flex mt-0 items-center gap-1">
+                                        <Button
+                                            type="button"
+                                            variant="ghost"
+                                            size="icon"
+                                            className="h-8 w-8"
+                                            onClick={() => lw && setEditing(lw)}
+                                            disabled={!lw}
+                                            aria-label={`Edit latest weight for ${d.name}`}
+                                            title={lw ? "Edit latest weight" : "No weight to edit"}
+                                        >
+                                            <Pencil className="h-4 w-4" />
+                                        </Button>
+
+                                        <Button
+                                            type="button"
+                                            variant="ghost"
+                                            size="icon"
+                                            className="h-8 w-8"
+                                            onClick={() => setOpenForDog(d.id)}
+                                            aria-label={`Add weight for ${d.name}`}
+                                            title="Add weight"
+                                        >
+                                            <Plus className="h-4 w-4" />
+                                        </Button>
+                                    </div>
                                 </div>
-                                <div className="text-lg text-gray-600">
+                            </CardHeader>
+
+                            <CardContent className="space-y-2">
+                                <div className="text-3xl font-bold tracking-tight">
+                                    {val != null ? `${val.toFixed(1)} ${unit}` : "—"}
+                                </div>
+
+                                <div className="text-sm text-muted-foreground">
                                     {deltaDisplay != null ? (
                                         <span>
                                             {sign} {Math.abs(deltaDisplay).toFixed(1)} {unit} since last
                                         </span>
                                     ) : (
-                                        'No previous data'
+                                        "No previous data"
                                     )}
                                 </div>
-                                <div className="text-xs text-gray-500">
-                                    {lw?.latest_update ? `Updated ${formatMonthDay(lw.latest_update)}` : '—'}
+
+                                <div className="text-xs text-muted-foreground">
+                                    {lw?.latest_update ? `Updated ${formatMonthDay(lw.latest_update)}` : "—"}
                                 </div>
-                            </div>
-                        </div>
+                            </CardContent>
+                        </Card>
                     );
                 })}
             </div>
             {openForDog !== null && (
-                <AddWeightModal
+                <AddWeightDialog
                     open={openForDog !== null}
                     dogId={openForDog}
                     unit={unit}
@@ -96,9 +114,9 @@ export function LatestGrid({
                 />
             )}
 
-            {/* Edit modal */}
+            {/* Edit dialog */}
             {editing && (
-                <EditWeightModal
+                <EditWeightDialog
                     open={!!editing}
                     entry={editing}
                     unit={unit}
