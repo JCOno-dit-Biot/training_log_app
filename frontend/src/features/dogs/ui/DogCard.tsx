@@ -1,34 +1,49 @@
 import React, { useMemo, useState } from 'react';
 import { Pencil } from 'lucide-react';
+import { toast } from "sonner"
 
 import { diff } from '@shared/util/diffObject';
 import type { Dog } from '@entities/dogs/model';
+import { Button } from "@/shared/ui/button"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/shared/ui/card"
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/shared/ui/dialog"
+import { Input } from "@/shared/ui/input"
+import { Label } from "@/shared/ui/label"
 
 import { useUpdateDog } from '../model/useDogs';
 
 interface DogCardProps {
   dog: Dog;
-  onUpdateDog: (dogId: string, patch: Partial<Dog>) => Promise<void>;
+  // onUpdateDog: (dogId: string, patch: Partial<Dog>) => Promise<void>;
+}
+
+
+function formatDOB(dateOfBirth?: string | null) {
+  if (!dateOfBirth) return "Unknown"
+  // expecting YYYY-MM-DD
+  const parts = dateOfBirth.split("-")
+  if (parts.length !== 3) return "Unknown"
+  const [y, m, d] = parts
+  const dt = new Date(`${m}/${d}/${y}`)
+  if (Number.isNaN(dt.getTime())) return "Unknown"
+  return dt.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })
+}
+
+function safeBorderColor(color?: string | null) {
+  // Only allow hex colors here as it is used directly in styling
+  if (!color) return "#9ca3af"
+  return /^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6})$/.test(color) ? color : "#9ca3af"
 }
 
 export default function DogCard({ dog }: DogCardProps) {
   const { mutate: updateDog } = useUpdateDog({ revalidate: true });
 
-  // Format DOB and protect against malformed DOB
-  const dobParts = (dog.date_of_birth ?? '').split('-');
-  const dobFormatted =
-    dobParts.length === 3
-      ? new Date(`${dobParts[1]}/${dobParts[2]}/${dobParts[0]}`).toLocaleDateString('en-US', {
-        month: 'long',
-        day: 'numeric',
-        year: 'numeric',
-      })
-      : 'Unknown';
+
+  const dobFormatted = formatDOB(dog.date_of_birth)
 
   // modal states
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
-  const [successMsg, setSuccessMsg] = useState<string | null>(null);
 
   // form states
   const [name, setName] = useState(dog.name ?? '');
@@ -51,31 +66,26 @@ export default function DogCard({ dog }: DogCardProps) {
   async function handleSave() {
     // very light validation
     if (!name.trim()) {
-      alert('Name is required');
-      return;
-    }
-    if (dob && !/^\d{4}-\d{2}-\d{2}$/.test(dob)) {
-      alert('Date must be in YYYY-MM-DD format');
-      return;
+      toast.error("Name is required")
+      return
     }
 
-    const patch = diff(dog, formSnapshot);
+    const patch = diff(dog, formSnapshot)
     if (Object.keys(patch).length === 0) {
-      setOpen(false);
-      return;
+      setOpen(false)
+      return
     }
 
-    setBusy(true);
+    setBusy(true)
     try {
-      updateDog({ id: dog.id, diff: patch });
-      setOpen(false);
-      setSuccessMsg(`Successfully edited dog ${formSnapshot.name}`);
-      setTimeout(() => setSuccessMsg(null), 4000); // auto-hide after 4s
+      updateDog({ id: dog.id, diff: patch })
+      setOpen(false)
+      toast.success(`Saved changes for ${name.trim()}`)
     } catch (e) {
-      console.error(e);
-      alert('Failed to save changes. Please try again.');
+      console.error(e)
+      toast.error("Failed to save changes. Please try again.")
     } finally {
-      setBusy(false);
+      setBusy(false)
     }
   }
 
@@ -89,126 +99,124 @@ export default function DogCard({ dog }: DogCardProps) {
   }
 
   return (
-    <div className="relative flex h-40 w-full flex-col justify-between rounded-xl border  p-4 shadow-md sm:w-64">
-      {/* Top-left: name and breed */}
-      <div className="text-left">
-        <div className="flex gap-2">
-          <h2 className="text-lg font-bold text-gray-800">{dog.name}</h2>
-          <Pencil
-            onClick={openEditor}
-            aria-label={`Edit ${dog.name}`}
-            className="mt-1 h-3 w-3 text-gray-600"
-          ></Pencil>
-        </div>
-        <p className="text-sm text-gray-600">{dog.breed}</p>
-      </div>
-      <img
-        src={`/profile_picture/dogs/${dog.image_url}`}
-        alt={dog.name}
-        className="absolute top-3 right-6 aspect-square h-25 w-auto rounded-full border-3 object-cover p-1"
-        style={{ borderColor: dog.color ?? '#9ca3af' }} // fallback to gray
-      />
-      {/* Bottom-right: DOB */}
-      <p className="absolute right-4 bottom-3 text-xs text-gray-500">DOB: {dobFormatted}</p>
+    <>
+      <Card className="relative min-h-40 w-full">
+        <CardHeader className="pb-2">
+          <div className="flex items-start justify-between gap-3">
+            <div className="min-w-0">
+              <div className="flex items-center gap-2">
+                <CardTitle className="truncate text-base font-semibold">
+                  {dog.name}
+                </CardTitle>
 
-      {/* Modal (headless, dependency-free) */}
-      {open && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/30"
-          role="dialog"
-          aria-modal="true"
-        >
-          <div className="w-full max-w-md rounded-xl bg-white p-4 shadow-lg">
-            <div className="mb-2 flex items-center justify-between">
-              <h3 className="text-base font-semibold">Edit Dog</h3>
-              <button
-                className="rounded-md p-1 text-gray-500 hover:bg-gray-100"
-                onClick={() => setOpen(false)}
-                aria-label="Close"
-              >
-                ✕
-              </button>
-            </div>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  onClick={openEditor}
+                  aria-label={`Edit ${dog.name}`}
+                  className="h-5 w-5 p-0 mb-1 text-muted-foreground hover:text-foreground"
+                >
+                  <Pencil className="h-1 w-1" />
+                </Button>
+              </div>
 
-            <div className="space-y-3">
-              <label className="block">
-                <span className="text-sm text-gray-700">Name</span>
-                <input
-                  className="mt-1 w-full rounded-md border px-3 py-2 text-sm"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="e.g., Bolt"
-                />
-              </label>
-
-              <label className="block">
-                <span className="text-sm text-gray-700">Breed</span>
-                <input
-                  className="mt-1 w-full rounded-md border px-3 py-2 text-sm"
-                  value={breed ?? ''}
-                  onChange={(e) => setBreed(e.target.value)}
-                  placeholder="e.g., Labrador"
-                />
-              </label>
-
-              <label className="block">
-                <span className="text-sm text-gray-700">Date of Birth</span>
-                <input
-                  type="date"
-                  className="mt-1 w-full rounded-md border px-3 py-2 text-sm"
-                  value={dob ?? ''}
-                  onChange={(e) => setDob(e.target.value)}
-                />
-              </label>
-
-              <label className="block">
-                <span className="text-sm text-gray-700">Color</span>
-                <div className="mt-1 flex items-center gap-2">
-                  <input
-                    className="w-full rounded-md border px-3 py-2 text-sm"
-                    value={color ?? ''}
-                    onChange={(e) => setColor(e.target.value)}
-                    placeholder="#7f8c8d or 'Brown'"
-                  />
-                  <input
-                    type="color"
-                    aria-label="Pick color"
-                    className="h-9 w-10 rounded-md border"
-                    value={
-                      /^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6})$/.test(color || '')
-                        ? (color as string)
-                        : '#7f8c8d'
-                    }
-                    onChange={(e) => setColor(e.target.value)}
-                  />
-                </div>
-              </label>
-            </div>
-
-            <div className="mt-4 flex justify-end gap-2">
-              <button
-                className="rounded-md border px-3 py-2 text-sm"
-                onClick={() => setOpen(false)}
-                disabled={busy}
-              >
-                Cancel
-              </button>
-              <button
-                className="bg-primary rounded-md px-3 py-2 text-sm text-white disabled:opacity-50"
-                onClick={handleSave}
-                disabled={busy}
-              >
-                {busy ? 'Saving…' : 'Save changes'}
-              </button>
+              <CardDescription className="truncate">
+                {dog.breed || "—"}
+              </CardDescription>
             </div>
           </div>
-        </div>
-      )}
-      {successMsg && (
-        <div className="fixed bottom-4 left-1/2 w-auto max-w-md -translate-x-1/2 rounded border border-green-400 bg-green-100 px-4 py-2 text-green-700 shadow-md">
-          {successMsg}
-        </div>
-      )}
-    </div>
-  );
+        </CardHeader>
+
+        <CardContent className="pt-0">
+          <p className="absolute bottom-3 right-4 text-xs text-muted-foreground">
+            DOB: {dobFormatted}
+          </p>
+        </CardContent>
+
+        <img
+          src={`/profile_picture/dogs/${dog.image_url}`}
+          alt={dog.name}
+          className="absolute right-4 top-4 h-25 w-25 rounded-full border-4 bg-muted object-cover"
+          style={{ borderColor: safeBorderColor(dog.color) }}
+        />
+      </Card>
+
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent className="sm:max-w-md bg-card/95 backdrop-blur-sm">
+          <DialogHeader>
+            <DialogTitle>Edit dog</DialogTitle>
+          </DialogHeader>
+
+          <div className="grid gap-4">
+            <div className="grid gap-2">
+              <Label htmlFor="dog-name">Name</Label>
+              <Input
+                id="dog-name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="e.g., Bolt"
+                disabled={busy}
+              />
+            </div>
+
+            <div className="grid gap-2">
+              <Label htmlFor="dog-breed">Breed</Label>
+              <Input
+                id="dog-breed"
+                value={breed}
+                onChange={(e) => setBreed(e.target.value)}
+                placeholder="e.g., Labrador"
+                disabled={busy}
+              />
+            </div>
+
+            <div className="grid gap-2">
+              <Label htmlFor="dog-dob">Date of birth</Label>
+              <Input
+                id="dog-dob"
+                type="date"
+                value={dob}
+                onChange={(e) => setDob(e.target.value)}
+                disabled={busy}
+              />
+            </div>
+
+            <div className="grid gap-2">
+              <Label htmlFor="dog-color">Color</Label>
+              <div className="flex items-center gap-2">
+                <Input
+                  id="dog-color"
+                  value={color}
+                  onChange={(e) => setColor(e.target.value)}
+                  placeholder="#7f8c8d"
+                  disabled={busy}
+                />
+                <Input
+                  type="color"
+                  aria-label="Pick color"
+                  className="h-9 w-11 p-1"
+                  value={safeBorderColor(color)}
+                  onChange={(e) => setColor(e.target.value)}
+                  disabled={busy}
+                />
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Tip: use color picker or enter hex (e.g. #7f8c8d) for consistent UI.
+              </p>
+            </div>
+          </div>
+
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button type="button" variant="ghost" onClick={() => setOpen(false)} disabled={busy}>
+              Cancel
+            </Button>
+            <Button type="button" onClick={handleSave} disabled={busy}>
+              {busy ? "Saving…" : "Save changes"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
+  )
 }
