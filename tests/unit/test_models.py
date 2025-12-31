@@ -27,11 +27,10 @@ from datetime import datetime, date, timedelta
 from src.utils import calculation_helpers as ch
 
 @pytest.fixture
-def activity_entry(JC):
-    #dog=models.Dog("Luna",datetime(2017,4,18),models.Kennel("Team Running Huskies"))
+def activity_entry(Obelix):
     training_entry= Activity (
         timestamp = datetime.now(),
-        runner = JC,
+        runner = Obelix,
         sport = Sport(name= 'Canicross', type= 'dryland', display_mode = 'pace'),
         location = Location(id= 4, name = 'Christie'),
         distance = 2.4,
@@ -39,10 +38,10 @@ def activity_entry(JC):
         speed = 18,
         dogs = [ActivityDogs(
             dog = Dog(
-            name = 'Luna',
-            date_of_birth= date(2017,4,18), 
-            kennel = Kennel(name = "Team Running Husky"),
-            breed = 'Husky'),
+            name = 'Fido',
+            date_of_birth= date(2020,7,1), 
+            kennel = Kennel(name = "Les Gaulois"),
+            breed = 'Golden Retriever'),
             rating = 8
         )]
     )
@@ -65,43 +64,43 @@ def activity_create_entry():
     )
 
 @pytest.fixture
-def Luna():
+def Fido():
     return Dog(
-        name = 'Luna',
-        date_of_birth= date(2017,4,18), 
-        kennel = Kennel(name = "Team Running Husky"),
-        breed = 'Husky')
+        name = 'Fido',
+        date_of_birth= date(2020,7,1), 
+        kennel = Kennel(name = "Les Gaulois"),
+        breed = 'Golden Retriever')
 
 @pytest.fixture
-def JC():
+def Obelix():
     return Runner(
-        name = 'JC', 
-        kennel = Kennel(name = "Team Running Husky")
+        name = 'Obelix', 
+        kennel = Kennel(name = "Les Gaulois")
     )    
 
-def test_calculate_dog_age(Luna): 
-    as_of_date = date(2023, 4, 18)
-    assert int(Luna.calculate_dog_age(as_of_date)*100)/100 == 6.00
+def test_calculate_dog_age(Fido): 
+    as_of_date = date(2023, 1, 1)
+    assert int(Fido.calculate_dog_age(as_of_date)*100)/100 == 2.50
     as_of_date = date(2024,5,20)
-    assert int(Luna.calculate_dog_age(as_of_date)*100)/100 == 7.08
+    assert int(Fido.calculate_dog_age(as_of_date)*100)/100 == 3.88
 
-def test_calculate_dog_age_before_birth_raises(Luna):
+def test_calculate_dog_age_before_birth_raises(Fido):
     as_of_date = date(2015,1,1)
     with pytest.raises(ValueError):
-        Luna.calculate_dog_age(as_of_date)
+        Fido.calculate_dog_age(as_of_date)
 
-def test_same_dogs(Luna):
-    assert Luna == Luna
+def test_same_dogs(Fido):
+    assert Fido == Fido
 
-def test_dog_weight_calculate_dog_age(Luna):
-    weight_entry=DogWeightEntry(dog = Luna, date = date(2023, 3, 27), weight = 35)
-    assert int(weight_entry.age*100)/100 == 5.93
+def test_dog_weight_calculate_dog_age(Fido):
+    weight_entry=DogWeightEntry(dog = Fido, date = date(2023, 3, 27), weight = 35)
+    assert int(weight_entry.age*100)/100 == 2.73
 
 
-def test_dog_weight_recalculate_dog_age(Luna):
+def test_dog_weight_recalculate_dog_age(Fido):
     # Make sure that age gets recalculated even if specified in the input
-    weight_entry=DogWeightEntry(dog = Luna, date = date(2023, 3, 27), weight = 35, age = 1)
-    assert int(weight_entry.age*100)/100 == 5.93
+    weight_entry=DogWeightEntry(dog = Fido, date = date(2023, 3, 27), weight = 35, age = 1)
+    assert int(weight_entry.age*100)/100 == 2.73
 
 def test_dog_weight_update():
     weight_update = DogWeightUpdate(
@@ -124,30 +123,30 @@ def test_activity_calculates_pace_automatically(activity_entry):
     assert activity_entry.pace == '03:20'
     
 
-def test_activity_calculate_pace_for_all_sports(JC, Luna):
+def test_activity_calculate_pace_for_all_sports(Obelix, Fido):
     bike_activity = Activity (
         timestamp = datetime.now(),
-        runner = JC,
+        runner = Obelix,
         sport = Sport(name= 'Bikejoring', type= 'dryland', display_mode= 'speed'),
         speed = 21.9,
         location = Location(id= 4, name = 'Christie'),
         distance = 2.4,
         workout = False,
         dogs = [ActivityDogs(
-            dog = Luna,
+            dog = Fido,
             rating = 8
 
         )]
     )    
     assert bike_activity.pace is not None
 
-def test_no_speed_pace_raises_ValError(JC,Luna):
+def test_no_speed_pace_raises_ValError(Obelix,Fido):
     with pytest.raises(ValueError, match = 'must be provided the activity'):
         training_entry= Activity (
         timestamp = datetime.now(),
-        runner = JC,
+        runner = Obelix,
         dogs = [ActivityDogs(
-            dog = Luna,
+            dog = Fido,
             rating = 8
         )],
         sport = Sport(name= 'Canicross', type= 'dryland', display_mode = 'pace'),
@@ -156,7 +155,7 @@ def test_no_speed_pace_raises_ValError(JC,Luna):
         workout = False
     )
 
-def test_no_speed_pace_raises_ValError_activity_create(JC,Luna):
+def test_no_speed_pace_raises_ValError_activity_create(Obelix,Fido):
     with pytest.raises(ValueError, match = 'must be provided the activity'):
         training_entry= ActivityCreate (
             timestamp = datetime.now(),
@@ -176,13 +175,13 @@ def test_activity_create_calculates_speed(activity_create_entry):
     assert activity_create_entry.speed == 18
 
         
-def test_activity_workout_without_lap_raise(Luna, JC):
+def test_activity_workout_without_lap_raise(Fido, Obelix):
     with pytest.raises(ValueError, match = 'Laps cannot be None'):
         training_entry= Activity (
         timestamp = datetime.now(),
-        runner = JC,
+        runner = Obelix,
         dogs = [ActivityDogs(
-            dog = Luna,
+            dog = Fido,
             rating = 8
 
         )],
@@ -194,17 +193,17 @@ def test_activity_workout_without_lap_raise(Luna, JC):
         laps=[]
     )
         
-def test_activity_with_pace_no_speed(JC, Luna):
+def test_activity_with_pace_no_speed(Obelix, Fido):
     bike_activity = Activity (
         timestamp = datetime.now(),
-        runner = JC,
+        runner = Obelix,
         sport = Sport(name= 'Bikejoring', type= 'dryland', display_mode= 'speed'),
         pace = "02:44",
         location = Location(id= 4, name = 'Christie'),
         distance = 2.4,
         workout = False,
         dogs = [ActivityDogs(
-            dog = Luna,
+            dog = Fido,
             rating = 8
 
         )]
@@ -273,10 +272,10 @@ def test_activity_lap_with_time_distance():
     assert activitylap.lap_time_delta == timedelta(minutes=3)
 
 
-def test_activity_workout_with_lap(JC, Luna):
+def test_activity_workout_with_lap(Obelix, Fido):
     workout = Activity (
         timestamp = datetime.now(),
-        runner = JC,
+        runner = Obelix,
         sport = Sport(name= 'Canicross', type= 'dryland', display_mode='pace'),
         location = Location(id= 4, name = 'Christie'),
         distance = 2.4,
@@ -295,7 +294,7 @@ def test_activity_workout_with_lap(JC, Luna):
             )
         ],
         dogs = [ActivityDogs(
-            dog = Luna,
+            dog = Fido,
             rating = 8
         )]
     )

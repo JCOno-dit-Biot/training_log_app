@@ -33,7 +33,7 @@ def default_activity_row():
         "dogs": [
             {
             "id": 10,
-            "name": "Bolt",
+            "name": "Balto",
             "breed": "Husky",
             "date_of_birth": "2021-05-14",
             "rating": 9,
@@ -152,7 +152,7 @@ def test_activity_parser(default_activity_row):
     assert len(activity.dogs) == 2
     assert activity.runner.name == 'Alice Monroe'
     assert activity.sport.name == 'Canicross'
-    assert activity.dogs[0].dog.name == 'Bolt'
+    assert activity.dogs[0].dog.name == 'Balto'
     assert activity.laps[1].lap_number == 2
     assert round(activity.laps[1].speed,1) == 20.1
     assert activity.comment_count == 3
@@ -325,7 +325,7 @@ def test_parse_dog_calendar_deduplicates():
 def test_parse_summary_from_rows():
     rows = [{
         'dog_id': 1,
-        'name': 'Luna',
+        'name': 'Fido',
         'total_distance_km': 20,
         'total_duration_hours': 0.5,
         'session_count': 3,
@@ -335,7 +335,7 @@ def test_parse_summary_from_rows():
     },
     {
         'dog_id': 2,
-        'name': 'Bolt',
+        'name': 'Idefix',
         'total_distance_km': 10,
         'total_duration_hours': 0.3,
         'session_count': 2,
