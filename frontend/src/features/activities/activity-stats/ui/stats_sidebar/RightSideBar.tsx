@@ -28,40 +28,42 @@ export function RightSidebar({ dogs, filters, setFilters }: SidebarProps) {
   const dogColors = new Map(Array.from(dogs.entries()).map(([id, dog]) => [id, dog.color]));
 
   return (
-    <div className="bg-primary fixed top-0 right-0 h-screen w-[350px] overflow-y-auto border-l p-4 shadow-md">
-      <StatsCalendar
-        data={monthlyDogDay}
-        dogColors={dogColors}
-        selectedDate={
-          filters.start_date
-            ? new Date(filters.start_date + 'T00:00:00') // convert back to Date in local time
-            : selectedDate
-        }
-        onDateChange={(date) => {
-          const start = format(
-            new Date(date.getFullYear(), date.getMonth(), date.getDate()),
-            'yyyy-MM-dd',
-          );
-          const end = format(
-            new Date(date.getFullYear(), date.getMonth(), date.getDate() + 1),
-            'yyyy-MM-dd',
-          );
-          console.log(start);
-          setFilters((f) => ({
-            ...f,
-            start_date: start,
-            end_date: end,
-            __trigger: 'calendar', // set meta data
-          }));
-          setSelectedDate(date);
-        }}
-        visibleMonth={visibleMonth}
-        onMonthChange={setVisibleMonth}
-      />
-      {weeklyStats?.map((stat) => {
-        const dog = dogs.get(stat.dog_id);
-        return dog ? <DogStatsCard key={stat.dog_id} data={stat} dog={dog} /> : null;
-      })}
+    <div className="sticky top-0 h-screen">
+      <div className="h-full overflow-y-auto bg-primary p-4 shadow-md">
+        <StatsCalendar
+          data={monthlyDogDay}
+          dogColors={dogColors}
+          selectedDate={
+            filters.start_date
+              ? new Date(filters.start_date + 'T00:00:00') // convert back to Date in local time
+              : selectedDate
+          }
+          onDateChange={(date) => {
+            const start = format(
+              new Date(date.getFullYear(), date.getMonth(), date.getDate()),
+              'yyyy-MM-dd',
+            );
+            const end = format(
+              new Date(date.getFullYear(), date.getMonth(), date.getDate() + 1),
+              'yyyy-MM-dd',
+            );
+            console.log(start);
+            setFilters((f) => ({
+              ...f,
+              start_date: start,
+              end_date: end,
+              __trigger: 'calendar', // set meta data
+            }));
+            setSelectedDate(date);
+          }}
+          visibleMonth={visibleMonth}
+          onMonthChange={setVisibleMonth}
+        />
+        {weeklyStats?.map((stat) => {
+          const dog = dogs.get(stat.dog_id);
+          return dog ? <DogStatsCard key={stat.dog_id} data={stat} dog={dog} /> : null;
+        })}
+      </div>
     </div>
   );
 }

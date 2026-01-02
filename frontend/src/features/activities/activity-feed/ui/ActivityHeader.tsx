@@ -23,8 +23,8 @@ export function ActivityHeader({
   return (
     <header
       className={`sticky top-0 z-50 transition-colors duration-200 ${atTop
-          ? 'bg-gray' // solid when at top
-          : 'bg-white/70 backdrop-blur supports-[backdrop-filter]:bg-white/60'
+        ? 'bg-neutral-25' // solid when at top
+        : 'bg-neutral-25/70 backdrop-blur supports-[backdrop-filter]:bg-neutral-25/60'
         } ${className}`}
       role="region"
       aria-label="Activity header"

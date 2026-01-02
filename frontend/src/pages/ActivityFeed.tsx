@@ -106,83 +106,93 @@ export default function ActivityFeed() {
   };
 
   return (
-    <section className="relative flex">
-      <main className="relative flex-1 space-y-4 pr-[345px]">
-        <ActivityHeader
-          onOpenCreate={() => setShowModal(true)}
-          onOpenFilter={() => setShowFilters((v) => !v)}
-        />
-        <div className="relative">
-          <Transition
-            show={showFilters}
-            enter="transition ease-out duration-150"
-            enterFrom="opacity-0 scale-95"
-            enterTo="opacity-100 scale-100"
-            leave="transition ease-in duration-100"
-            leaveFrom="opacity-100 scale-100"
-            leaveTo="opacity-0 scale-95"
-          >
-            <div
-              ref={panelRef}
-              className="border-stone absolute top-full right-0 z-10 mt-2 w-72 rounded-lg border bg-white p-4 shadow-lg"
-            >
-              <ActivityFilterPanel
-                filters={filters}
-                setFilters={setFilters}
-                runners={runners}
-                dogs={dogs}
-                sports={sports}
-                onApply={applyFilters}
-                onClear={() => {
-                  setFilters({});
-                }}
+    <section className="w-full">
+      <div className="mx-auto w-full max-w-[1600px] px-4 lg:px-6">
+        <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px] xl:grid-cols-[minmax(0,1fr)_400px]">
+          <main className="min-w-0">
+            <div className="mx-auto w-full max-w-3xl space-y-4">
+              <ActivityHeader
+                onOpenCreate={() => setShowModal(true)}
+                onOpenFilter={() => setShowFilters((v) => !v)}
               />
+              <div className="relative">
+                <Transition
+                  show={showFilters}
+                  enter="transition ease-out duration-150"
+                  enterFrom="opacity-0 scale-95"
+                  enterTo="opacity-100 scale-100"
+                  leave="transition ease-in duration-100"
+                  leaveFrom="opacity-100 scale-100"
+                  leaveTo="opacity-0 scale-95"
+                >
+                  <div
+                    ref={panelRef}
+                    className="border-stone absolute top-full right-0 z-10 mt-2 w-72 rounded-lg border bg-white p-4 shadow-lg"
+                  >
+                    <ActivityFilterPanel
+                      filters={filters}
+                      setFilters={setFilters}
+                      runners={runners}
+                      dogs={dogs}
+                      sports={sports}
+                      onApply={applyFilters}
+                      onClear={() => {
+                        setFilters({});
+                      }}
+                    />
+                  </div>
+                </Transition>
+              </div>
+              <div className="w-full mx-auto max-w-2xl space-y-4">
+                {activities.map((activity) => (
+                  <ActivityCard
+                    key={activity.id}
+                    activity={activity}
+                    onDelete={handleDelete}
+                    onSuccess={reloadActivities}
+                    onEdit={openEditModal}
+                  />
+                ))}
+
+                <Pagination
+                  total={page?.total_count ?? 0}
+                  limit={page?.limit ?? limit}
+                  offset={page?.offset ?? offset}
+                  onPageChange={(newOffset) => setOffset(newOffset)}
+                />
+              </div>
+
+              {showModal && (
+                <div className="bg-primary/80 fixed inset-0 z-50 flex items-center justify-center">
+                  <div className="relative max-h-[95vh] w-full max-w-xl overflow-y-auto rounded-md bg-white p-6">
+                    <button
+                      onClick={() => {
+                        setShowModal(false);
+                        setEditActivity(null);
+                      }}
+                      className="absolute top-2 right-2 text-gray-600 hover:text-black"
+                    >
+                      ✖
+                    </button>
+                    <AddActivityForm
+                      initialData={editActivity}
+                      onSuccess={reloadActivities}
+                      onClose={() => {
+                        setEditActivity(null);
+                        setShowModal(false);
+                      }}
+                    />
+                  </div>
+                </div>
+              )}
             </div>
-          </Transition>
+          </main>
+
+          <aside className="hidden lg:block -mr-4 lg:-mr-6">
+            <RightSidebar dogs={dogs} filters={filters} setFilters={setFilters} />
+          </aside>
         </div>
-
-        {activities.map((activity) => (
-          <ActivityCard
-            key={activity.id}
-            activity={activity}
-            onDelete={handleDelete}
-            onSuccess={reloadActivities}
-            onEdit={openEditModal}
-          />
-        ))}
-
-        <Pagination
-          total={page?.total_count ?? 0}
-          limit={page?.limit ?? limit}
-          offset={page?.offset ?? offset}
-          onPageChange={(newOffset) => setOffset(newOffset)}
-        />
-
-        {showModal && (
-          <div className="bg-primary/80 fixed inset-0 z-50 flex items-center justify-center">
-            <div className="relative max-h-[95vh] w-full max-w-xl overflow-y-auto rounded-md bg-white p-6">
-              <button
-                onClick={() => {
-                  setShowModal(false);
-                  setEditActivity(null);
-                }}
-                className="absolute top-2 right-2 text-gray-600 hover:text-black"
-              >
-                ✖
-              </button>
-              <AddActivityForm
-                initialData={editActivity}
-                onSuccess={reloadActivities}
-                onClose={() => {
-                  setEditActivity(null);
-                  setShowModal(false);
-                }}
-              />
-            </div>
-          </div>
-        )}
-      </main>
-      <RightSidebar dogs={dogs} filters={filters} setFilters={setFilters} />
-    </section>
+      </div>
+    </section >
   );
 }
