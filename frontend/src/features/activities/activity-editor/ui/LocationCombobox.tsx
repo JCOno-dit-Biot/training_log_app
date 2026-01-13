@@ -25,7 +25,7 @@ type Props = {
     disabled?: boolean;
 
     allowCreateOption?: boolean;
-    onCreateNew?: (name: string) => Promise<boolean>;
+    onCreateNew?: (name: string) => Promise<{ ok: boolean }>;
     maxResults?: number;
 };
 
@@ -83,9 +83,13 @@ export function LocationCombobox({
         }
     }
 
-    // Limit render count if map is big; Command does filtering internally,
-    // but rendering 1000+ items can still feel heavy.
-    const renderLocations = allLocations.slice(0, maxResults);
+    const filtered = useMemo(() => {
+        const q = query.trim().toLowerCase();
+        const base = q
+            ? allLocations.filter((l) => l.name.toLowerCase().includes(q))
+            : allLocations;
+        return base.slice(0, maxResults);
+    }, [allLocations, query, maxResults]);
 
     return (
         <Popover open={open} onOpenChange={setOpen}>
@@ -104,14 +108,12 @@ export function LocationCombobox({
             </PopoverTrigger>
 
             <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
-                <Command shouldFilter>
+                <Command shouldFilter={false}>
                     <CommandInput
                         placeholder={placeholder}
                         value={query}
                         onValueChange={(v) => {
                             setQuery(v);
-                            // optional: if user starts typing, clear selection immediately
-                            // (matches your existing behavior)
                             if (value != null) onChange(null);
                         }}
                     />
@@ -119,7 +121,7 @@ export function LocationCombobox({
                         <CommandEmpty>No matches</CommandEmpty>
 
                         <CommandGroup>
-                            {renderLocations.map((loc) => (
+                            {filtered.map((loc) => (
                                 <CommandItem
                                     key={loc.id}
                                     value={loc.name}

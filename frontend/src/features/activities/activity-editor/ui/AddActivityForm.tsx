@@ -21,7 +21,7 @@ import { validateActivityForm } from '../util/validateActivityForm';
 
 import DogSelector from './DogSelector';
 import LapEditor from './LapEditor';
-import LocationAutocomplete from './LocationAutocomplete';
+import { LocationCombobox } from './LocationCombobox';
 
 type AddActivityFormProps = {
   onClose: () => void;
@@ -76,7 +76,7 @@ export default function AddActivityForm({ onClose, onSuccess, initialData }: Add
   const { byId: sports } = useSports();
   const { byId: dogs } = useDogs();
   const { byId: runners } = useRunners();
-  const { list: locations } = useLocations();
+  const { byId: locations, list: locationsList } = useLocations();
 
   // create and update hook
   const createMutation = useCreateActivity();
@@ -143,7 +143,10 @@ export default function AddActivityForm({ onClose, onSuccess, initialData }: Add
       } else {
         setFormData((prev) => ({ ...prev, [field]: '' }));
       }
-    } else {
+    } else if (field === 'location_id') {
+      setFormData((prev) => ({ ...prev, location_id: value ?? undefined }));
+    }
+    else {
       setFormData((prev) => ({ ...prev, [field]: value }));
     }
   };
@@ -153,7 +156,7 @@ export default function AddActivityForm({ onClose, onSuccess, initialData }: Add
     if (!name) return { ok: false };
 
     // 1) preflight de-dup using current cache
-    const existing = locations.find((l) => l.name.toLowerCase() === name.toLowerCase());
+    const existing = locationsList.find((l) => l.name.toLowerCase() === name.toLowerCase());
     if (existing) {
       handleInputChange('location_id', existing.id);
       setBanner({ type: 'info', msg: `Selected existing "${existing.name}".` });
@@ -434,9 +437,9 @@ export default function AddActivityForm({ onClose, onSuccess, initialData }: Add
         <label htmlFor="location" className="block text-gray-700">
           Location
         </label>
-        <LocationAutocomplete
+        <LocationCombobox
           locations={locations}
-          value={formData.location_id}
+          value={formData.location_id ?? null}
           onChange={(id) => handleInputChange('location_id', id)}
           allowCreateOption
           onCreateNew={handleCreateLocation}
