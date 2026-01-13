@@ -176,19 +176,11 @@ export default function ActivityFilterPanel({
       <div className="space-y-2">
         <Label>Location</Label>
         <LocationCombobox
-          locations={locations ?? []}
+          locations={locations}
           value={filters.location_id ?? null}
           onChange={(id) => setFilters((f) => ({ ...f, location_id: id ?? undefined }))}
           placeholder={isLocationsLoading ? "Loading..." : "Search a location…"}
           disabled={isLocationsLoading}
-        // optional:
-        // allowCreateOption
-        // onCreateNew={async (name) => {
-        //   const ok = await createLocation(name) // your API
-        //   // if API returns created id, you can immediately select it:
-        //   // setFilters((f) => ({ ...f, location_id: newId }))
-        //   return ok
-        // }}
         />
       </div>
 
