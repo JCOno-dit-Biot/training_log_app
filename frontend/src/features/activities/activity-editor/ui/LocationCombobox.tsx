@@ -100,7 +100,7 @@ export function LocationCombobox({
                     role="combobox"
                     aria-expanded={open}
                     disabled={disabled}
-                    className="w-full justify-between"
+                    className="w-full justify-between font-normal"
                 >
                     {selected ? selected.name : placeholder}
                     <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />

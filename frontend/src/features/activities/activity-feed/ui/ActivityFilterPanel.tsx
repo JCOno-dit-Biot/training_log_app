@@ -248,7 +248,7 @@ export default function ActivityFilterPanel({
 
       {/* Actions */}
       <div className="flex justify-end gap-2 pt-1">
-        <Button type="button" variant="outline" onClick={onClear}>
+        <Button type="button" variant="ghost" onClick={onClear}>
           Clear
         </Button>
         <Button type="button" onClick={onApply}>
