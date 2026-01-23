@@ -2,6 +2,7 @@ import React from 'react';
 import { Trash2 } from 'lucide-react';
 
 import type { Lap } from '@entities/activities/model';
+import { Button } from "@/shared/ui/button";
 
 interface LapEditorProps {
   laps: Lap[];
@@ -93,13 +94,15 @@ const LapEditor: React.FC<LapEditorProps> = ({ laps, setLaps }) => {
         ))}
       </div>
 
-      <button
+      <Button
         type="button"
         onClick={() => addLap()}
-        className="mt-3 bg-white text-sm text-blue-600 hover:underline"
+        variant="ghost"
+        className="mt-3 text-sm"
+
       >
         + Add Lap
-      </button>
+      </Button>
     </div>
   );
 };
