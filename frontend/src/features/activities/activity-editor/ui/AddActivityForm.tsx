@@ -1,5 +1,5 @@
 // components/AddActivityForm.tsx
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import type { Activity, ActivityForm } from '@entities/activities/model';
 import type { WeatherForm } from '@entities/activities/model';
@@ -12,6 +12,19 @@ import { useCreateLocation } from '@features/activities/activity-editor/model/us
 import { useDogs } from '@features/dogs/model/useDogs';
 import { useRunners } from '@features/runners/model/useRunners';
 import { useSports } from '@features/sports/model/useSports';
+import { Alert, AlertDescription, AlertTitle } from "@/shared/ui/alert";
+import { Button } from "@/shared/ui/button";
+import { Card, CardContent, CardFooter } from "@/shared/ui/card";
+import { Input } from "@/shared/ui/input";
+import { Label } from "@/shared/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/shared/ui/select";
+import { Switch } from "@/shared/ui/switch";
 import { combineLocalDateTimeToUTCISO } from '@/shared/util/dates';
 
 import { activityToPayload, convertToFormData } from '../util/convertToFormData';
@@ -31,8 +44,13 @@ type AddActivityFormProps = {
 
 const pad2 = (n: number) => n.toString().padStart(2, '0');
 
+function FieldError({ msg }: { msg?: string }) {
+  if (!msg) return null;
+  return <p className="mt-1 text-xs text-destructive">{msg}</p>;
+}
+
 export default function AddActivityForm({ onClose, onSuccess, initialData }: AddActivityFormProps) {
-  const formRef = useRef<HTMLFormElement>(null);
+
 
   const [_error, setError] = useState<string | null>(null);
   const isEdit = !!initialData;
@@ -76,7 +94,7 @@ export default function AddActivityForm({ onClose, onSuccess, initialData }: Add
   const { byId: sports } = useSports();
   const { byId: dogs } = useDogs();
   const { byId: runners } = useRunners();
-  const { byId: locations, list: locationsList } = useLocations();
+  const { byId: locationsById, list: locationsList } = useLocations();
 
   // create and update hook
   const createMutation = useCreateActivity();
@@ -144,7 +162,7 @@ export default function AddActivityForm({ onClose, onSuccess, initialData }: Add
         setFormData((prev) => ({ ...prev, [field]: '' }));
       }
     } else if (field === 'location_id') {
-      setFormData((prev) => ({ ...prev, location_id: value ?? undefined }));
+      setFormData((prev) => ({ ...prev, location_id: value ?? null }));
     }
     else {
       setFormData((prev) => ({ ...prev, [field]: value }));
@@ -229,295 +247,239 @@ export default function AddActivityForm({ onClose, onSuccess, initialData }: Add
 
   const selectedSport = formData.sport_id ? sports.get(formData.sport_id) : null;
 
+  const bannerVariant = banner?.type === "success" ? "default" : banner?.type === "info" ? "default" : "destructive";
+
   return (
-    <form ref={formRef} onSubmit={handleSubmit} className="space-y-4">
-      <h2 className="text-charcoal text-xl font-bold">
-        {initialData ? 'Edit Activity' : 'Add New Activity'}
-      </h2>
-
-      {validationMsg && (
-        <div className="mt-2 rounded bg-red-100 px-3 py-2 text-sm text-red-800">
-          {validationMsg}
-        </div>
-      )}
-      <div className="mb-2 flex gap-4">
-        <div className="flex-1">
-          <label htmlFor="date" className="block text-gray-700">
-            Date
-          </label>
-          <input
-            id="date"
-            type="date"
-            className={`w-full rounded border p-2 ${fieldErrors.timestamp ? 'border-red-500' : ''}`}
-            value={dateStr}
-            onChange={(e) => setDateStr(e.target.value)} // no parsing here
-            aria-invalid={!!fieldErrors.timestamp}
-            aria-describedby={fieldErrors.timestamp ? 'timestamp-error' : undefined}
-          />
-        </div>
-        <div className="flex-1">
-          <label htmlFor="time" className="block text-gray-700">
-            Time
-          </label>
-          <input
-            id="time"
-            type="time"
-            className={`w-full rounded border p-2 ${fieldErrors.timestamp ? 'border-red-500' : ''}`}
-            value={timeStr}
-            onChange={(e) => setTimeStr(e.target.value)} // no parsing here
-            aria-invalid={!!fieldErrors.timestamp}
-            aria-describedby={fieldErrors.timestamp ? 'timestamp-error' : undefined}
-          />
-        </div>
-      </div>
-      {fieldErrors.timestamp && (
-        <p id="timestamp-error" className="mt-1 text-sm text-red-600">
-          {fieldErrors.timestamp}
-        </p>
-      )}
-
-      <div className="mb-2">
-        {/* Sport selection dropdown */}
-        <label htmlFor="sport" className="block text-gray-700">
-          Sport
-        </label>
-        <select
-          id="sport"
-          className={`w-full rounded border p-2 ${fieldErrors.sport_id ? 'border-red-500' : ''}`}
-          value={formData.sport_id ?? ''}
-          onChange={(e) => handleInputChange('sport_id', Number(e.target.value))}
-          aria-invalid={!!fieldErrors.sport_id}
-          aria-describedby={fieldErrors.sport_id ? 'sport-error' : undefined}
-        >
-          <option value="">Select Sport</option>
-          {[...sports.entries()].map(([id, sport]) => (
-            <option key={id} value={id}>
-              {sport.name}
-            </option>
-          ))}
-        </select>
-        {fieldErrors.sport_id && (
-          <p id="sport-error" className="mt-1 text-sm text-red-600">
-            {fieldErrors.sport_id}
-          </p>
-        )}
-      </div>
-      <div className="mb-2">
-        <label htmlFor="runner" className="block text-gray-700">
-          Runner
-        </label>
-        <select
-          id="runner"
-          className={`w-full rounded border p-2 ${fieldErrors.runner_id ? 'border-red-500' : ''}`}
-          value={formData.runner_id ?? ''}
-          onChange={(e) => handleInputChange('runner_id', Number(e.target.value))}
-          aria-invalid={!!fieldErrors.runner_id}
-          aria-describedby={fieldErrors.runner_id ? 'runner-error' : undefined}
-        >
-          <option value="">Select Runner</option>
-          {[...runners.entries()].map(([id, runner]) => (
-            <option key={id} value={id}>
-              {runner.name}
-            </option>
-          ))}
-        </select>
-        {fieldErrors.runner_id && (
-          <p id="runner-error" className="mt-1 text-sm text-red-600">
-            {fieldErrors.runner_id}
-          </p>
-        )}
-      </div>
-
-      <DogSelector
-        selectedDogs={formData.dogs}
-        setSelectedDogs={(dogs) => handleInputChange('dogs', dogs)}
-        dogs={dogs}
-      />
-      {fieldErrors.dogs && <p className="mt-1 text-sm text-red-600">{fieldErrors.dogs}</p>}
-
-      <div className="mb-2 flex gap-4">
-        <div className="flex-2">
-          <label htmlFor="distance" className="block text-gray-700">
-            Distance (km)
-          </label>
-          <input
-            id="distance"
-            type="number"
-            step="0.1"
-            className={`w-full rounded border p-2 ${fieldErrors.distance ? 'border-red-500' : ''}`}
-            value={formData.distance === 0 ? '' : formData.distance.toString()}
-            onChange={(e) => handleInputChange('distance', parseFloat(e.target.value))}
-            aria-invalid={!!fieldErrors.distance}
-            aria-describedby={fieldErrors.distance ? 'distance-error' : undefined}
-          />
-          {fieldErrors.distance && (
-            <p id="distance-error" className="mt-1 text-sm text-red-600">
-              {fieldErrors.distance}
-            </p>
+    <Card className="w-full max-w-2xl border-none bg-card/0">
+      <form onSubmit={handleSubmit}>
+        <CardContent className="space-y-6 pt-0">
+          {validationMsg && (
+            <Alert variant="destructive">
+              <AlertTitle>Please fix the highlighted fields</AlertTitle>
+            </Alert>
           )}
-        </div>
-        {selectedSport?.display_mode === 'pace' ? (
-          <div className="flex-2">
-            <label htmlFor="distance" className="block text-gray-700">
-              Pace
-            </label>
-            <input
-              id="pace"
-              type="text"
-              className={`w-full rounded border p-2 ${formData.pace ? 'text-black' : 'text-gray-400'} ${fieldErrors.pace ? 'border-red-500' : ''}`}
-              placeholder="MM:SS"
-              value={formData.pace}
-              onChange={(e) => handlePaceChange(e.target.value)}
-              aria-invalid={!!fieldErrors.pace}
-              aria-describedby={fieldErrors.pace ? 'pace-error' : undefined}
-            />
-            {fieldErrors.distance && (
-              <p id="pace-error" className="mt-1 text-sm text-red-600">
-                {fieldErrors.pace}
-              </p>
-            )}
+
+          {banner && (
+            <Alert variant={bannerVariant}>
+              <AlertDescription>{banner.msg}</AlertDescription>
+            </Alert>
+          )}
+
+          {/* Date & Time */}
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div className="space-y-2">
+              <Label htmlFor="date">Date</Label>
+              <Input
+                id="date"
+                type="date"
+                value={dateStr}
+                onChange={(e) => setDateStr(e.target.value)}
+                aria-invalid={!!fieldErrors.timestamp}
+              />
+              <FieldError msg={fieldErrors.timestamp} />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="time">Time</Label>
+              <Input
+                id="time"
+                type="time"
+                value={timeStr}
+                onChange={(e) => setTimeStr(e.target.value)}
+                aria-invalid={!!fieldErrors.timestamp}
+              />
+            </div>
           </div>
-        ) : (
-          <div className="flex-2">
-            <label htmlFor="speed" className="block text-gray-700">
-              Speed (km/h)
-            </label>
-            <input
-              id="speed"
-              type="number"
-              step="0.1"
-              className={`w-full rounded border p-2 ${fieldErrors.speed ? 'border-red-500' : ''}`}
-              value={formData.speed ?? ''}
-              onChange={(e) => handleInputChange('speed', parseFloat(e.target.value))}
-              aria-invalid={!!fieldErrors.speed}
-              aria-describedby={fieldErrors.speed ? 'speed-error' : undefined}
-            />
-            {fieldErrors.speed && (
-              <p id="speed-error" className="mt-1 text-sm text-red-600">
-                {fieldErrors.speed}
-              </p>
-            )}
+
+          {/* Sport */}
+          <div className="space-y-2">
+            <Label>Sport</Label>
+            <Select
+              value={formData.sport_id ? String(formData.sport_id) : ""}
+              onValueChange={(v) => handleInputChange("sport_id", v ? Number(v) : null)}
+            >
+              <SelectTrigger aria-invalid={!!fieldErrors.sport_id}>
+                <SelectValue placeholder="Select sport" />
+              </SelectTrigger>
+              <SelectContent>
+                {[...sports.entries()].map(([id, sport]) => (
+                  <SelectItem key={id} value={String(id)}>
+                    {sport.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <FieldError msg={fieldErrors.sport_id} />
           </div>
-        )}
 
-        <div className="mb-4 flex flex-1 flex-col items-center gap-2">
-          <label htmlFor="workout" className="flex-1 font-medium text-gray-700">
-            Workout
-            <input
-              id="workout"
-              type="checkbox"
-              checked={formData.workout}
-              className="peer flex-1 appearance-none"
-              onChange={(e) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  workout: e.target.checked,
-                  laps: e.target.checked ? [{ lap_number: 0, lap_distance: 0, lap_time: '' }] : [],
-                }))
-              }
+          {/* Runner */}
+          <div className="space-y-2">
+            <Label>Runner</Label>
+            <Select
+              value={formData.runner_id ? String(formData.runner_id) : ""}
+              onValueChange={(v) => handleInputChange("runner_id", v ? Number(v) : null)}
+            >
+              <SelectTrigger aria-invalid={!!fieldErrors.runner_id}>
+                <SelectValue placeholder="Select runner" />
+              </SelectTrigger>
+              <SelectContent>
+                {[...runners.entries()].map(([id, runner]) => (
+                  <SelectItem key={id} value={String(id)}>
+                    {runner.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <FieldError msg={fieldErrors.runner_id} />
+          </div>
+
+          {/* Dogs */}
+          <div className="space-y-2">
+            <DogSelector
+              selectedDogs={formData.dogs}
+              setSelectedDogs={(next) => handleInputChange("dogs", next)}
+              dogs={dogs}
             />
-            <span className="peer-checked:bg-success mt-1 ml-1 flex h-8 w-14 flex-shrink-0 items-center rounded-full bg-gray-300 p-1 duration-300 ease-in-out after:h-6 after:w-6 after:rounded-full after:bg-white after:shadow-md after:duration-300 peer-checked:after:translate-x-6"></span>
-          </label>
-        </div>
-      </div>
-      {formData.workout && (
-        <>
-          <LapEditor
-            laps={formData.laps}
-            setLaps={(laps) => setFormData((prev) => ({ ...prev, laps }))}
-          />
-          {fieldErrors.laps && (
-            <p id="laps-error" className="mt-1 text-sm text-red-600">
-              {fieldErrors.laps}
-            </p>
-          )}
-        </>
-      )}
-      <div className="mb-2">
-        <label htmlFor="location" className="block text-gray-700">
-          Location
-        </label>
-        <LocationCombobox
-          locations={locations}
-          value={formData.location_id ?? null}
-          onChange={(id) => handleInputChange('location_id', id)}
-          allowCreateOption
-          onCreateNew={handleCreateLocation}
-          disabled={creatingLoc}
-        />
-        {fieldErrors.location_id && (
-          <p className="mt-1 text-sm text-red-600">{fieldErrors.location_id}</p>
-        )}
-      </div>
-      {banner && (
-        <div
-          className={`mt-2 rounded px-3 py-2 text-sm ${banner.type === 'success'
-            ? 'bg-green-100 text-green-800'
-            : banner.type === 'info'
-              ? 'bg-blue-100 text-blue-800'
-              : 'bg-red-100 text-red-800'
-            }`}
-        >
-          {banner.msg}
-        </div>
-      )}
+            <FieldError msg={fieldErrors.dogs} />
+          </div>
 
-      <div className="mb-2 flex gap-4">
-        <div className="flex-2">
-          <label className="block text-gray-700">Conditions</label>
-          <input
-            type="text"
-            className="w-full rounded border p-2"
-            value={formData.weather?.condition ?? ''}
-            onChange={(e) => handleWeatherChange('condition', e.target.value)}
-          />
-        </div>
-        <div className="flex-1">
-          <label htmlFor="temperature" className="block text-gray-700">
-            T (°C)
-          </label>
-          <input
-            id="temperature"
-            type="number"
-            className={`w-full rounded border p-2 ${fieldErrors.temperature ? 'border-red-500' : ''}`}
-            value={formData.weather?.temperature ?? ''}
-            onChange={(e) => handleWeatherChange('temperature', e.target.value)}
-            aria-invalid={!!fieldErrors.temperature}
-            aria-describedby={fieldErrors.temperature ? 'temperature-error' : undefined}
-          />
-          {fieldErrors.temperature && (
-            <p className="mt-1 text-sm text-red-600">{fieldErrors.temperature}</p>
-          )}
-        </div>
-        <div className="flex-1">
-          <label htmlFor="humidity" className="block text-gray-700">
-            Humidity (%)
-          </label>
-          <input
-            id="humidity"
-            type="number"
-            step="1"
-            className={`w-full rounded border p-2 ${fieldErrors.humidity ? 'border-red-500' : ''}`}
-            value={
-              formData.weather?.humidity ?? ''
-            }
-            onChange={(e) => handleWeatherChange('humidity', e.target.value)}
-            aria-invalid={!!fieldErrors.humidity}
-            aria-describedby={fieldErrors.humidity ? 'humidity-error' : undefined}
-          />
-          {fieldErrors.humidity && (
-            <p className="mt-1 text-sm text-red-600">{fieldErrors.humidity}</p>
-          )}
-        </div>
-      </div>
+          {/* Distance / Speed or Pace */}
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+            <div className="space-y-2 sm:col-span-1">
+              <Label htmlFor="distance">Distance (km)</Label>
+              <Input
+                id="distance"
+                type="number"
+                step="0.1"
+                value={formData.distance === 0 ? "" : String(formData.distance)}
+                onChange={(e) => handleInputChange("distance", e.target.value)}
+                aria-invalid={!!fieldErrors.distance}
+              />
+              <FieldError msg={fieldErrors.distance} />
+            </div>
 
-      <button
-        type="submit"
-        className="bg-primary hover:bg-opacity-90 mt-2 rounded px-4 py-2 text-white"
-        disabled={saving}
-      >
-        {saving ? 'Saving...' : 'Save Activity'}
-      </button>
-    </form>
+            {selectedSport?.display_mode === "pace" ? (
+              <div className="space-y-2 sm:col-span-1">
+                <Label htmlFor="pace">Pace</Label>
+                <Input
+                  id="pace"
+                  type="text"
+                  placeholder="MM:SS"
+                  value={formData.pace}
+                  onChange={(e) => handlePaceChange(e.target.value)}
+                  aria-invalid={!!fieldErrors.pace}
+                />
+                <FieldError msg={fieldErrors.pace} />
+              </div>
+            ) : (
+              <div className="space-y-2 sm:col-span-1">
+                <Label htmlFor="speed">Speed (km/h)</Label>
+                <Input
+                  id="speed"
+                  type="number"
+                  step="0.1"
+                  value={formData.speed ?? ""}
+                  onChange={(e) => handleInputChange("speed", e.target.value)}
+                  aria-invalid={!!fieldErrors.speed}
+                />
+                <FieldError msg={fieldErrors.speed} />
+              </div>
+            )}
+
+            <div className="flex items-center justify-between rounded-md border p-3 sm:col-span-1">
+              <div className="space-y-0.5">
+                <Label htmlFor="workout" className="text-sm">
+                  Workout
+                </Label>
+                <p className="text-xs text-muted-foreground">Enable laps editor</p>
+              </div>
+              <Switch
+                id="workout"
+                checked={formData.workout}
+                onCheckedChange={(checked) => {
+                  setFormData((prev) => ({
+                    ...prev,
+                    workout: checked,
+                    laps: checked ? [{ lap_number: 0, lap_distance: 0, lap_time: "" }] : [],
+                  }));
+                }}
+              />
+            </div>
+          </div>
+
+          {formData.workout && (
+            <div className="space-y-2">
+              <LapEditor
+                laps={formData.laps}
+                setLaps={(laps) => setFormData((prev) => ({ ...prev, laps }))}
+              />
+              <FieldError msg={fieldErrors.laps} />
+            </div>
+          )}
+
+          {/* Location */}
+          <div className="space-y-2">
+            <Label>Location</Label>
+            <LocationCombobox
+              locations={locationsById} // Map
+              value={formData.location_id ?? null}
+              onChange={(id) => handleInputChange("location_id", id)}
+              allowCreateOption
+              onCreateNew={handleCreateLocation}
+              disabled={creatingLoc}
+            />
+            <FieldError msg={fieldErrors.location_id} />
+          </div>
+
+          {/* Weather */}
+          <div className="space-y-3">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+              <div className="space-y-2 sm:col-span-1">
+                <Label>Conditions</Label>
+                <Input
+                  type="text"
+                  value={formData.weather?.condition ?? ""}
+                  onChange={(e) => handleWeatherChange("condition", e.target.value)}
+                />
+              </div>
+
+              <div className="space-y-2 sm:col-span-1">
+                <Label htmlFor="temperature">T (°C)</Label>
+                <Input
+                  id="temperature"
+                  type="number"
+                  value={formData.weather?.temperature ?? ""}
+                  onChange={(e) => handleWeatherChange("temperature", e.target.value)}
+                  aria-invalid={!!fieldErrors.temperature}
+                />
+                <FieldError msg={fieldErrors.temperature} />
+              </div>
+
+              <div className="space-y-2 sm:col-span-1">
+                <Label htmlFor="humidity">Humidity (%)</Label>
+                <Input
+                  id="humidity"
+                  type="number"
+                  step="1"
+                  value={formData.weather?.humidity ?? ""}
+                  onChange={(e) => handleWeatherChange("humidity", e.target.value)}
+                  aria-invalid={!!fieldErrors.humidity}
+                />
+                <FieldError msg={fieldErrors.humidity} />
+              </div>
+            </div>
+          </div>
+        </CardContent>
+
+        <CardFooter className="flex items-center justify-end gap-2 mt-4">
+          <Button type="button" variant="ghost" onClick={onClose} disabled={saving}>
+            Cancel
+          </Button>
+          <Button type="submit" disabled={saving}>
+            {saving ? "Saving..." : "Save Activity"}
+          </Button>
+        </CardFooter>
+      </form>
+    </Card>
   );
 }
