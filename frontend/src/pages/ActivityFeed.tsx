@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { useClickAway } from 'react-use';
 
 // optional for clean click-out
 import Pagination from '@shared/ui/Pagination';
@@ -23,6 +22,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/shared/ui/dialog";
+//import { useClickAway } from 'react-use';
+import { useClickAwayIgnoringRadix } from '@/shared/util/useClickAwayIgnoreRadix';
 
 import { Transition } from '@headlessui/react';
 import { useQueryClient } from '@tanstack/react-query';
@@ -39,7 +40,7 @@ export default function ActivityFeed() {
   const limit = 10;
   const [offset, setOffset] = useState<number>(0);
 
-  useClickAway(panelRef, () => setShowFilters(false));
+  useClickAwayIgnoringRadix(panelRef, () => setShowFilters(false), showFilters);
 
   const { byId: sports } = useSports();
   const { byId: dogs } = useDogs();
