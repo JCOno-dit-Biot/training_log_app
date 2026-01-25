@@ -57,12 +57,12 @@ const LapEditor: React.FC<LapEditorProps> = ({ laps, setLaps }) => {
         {/* Lap rows */}
         {laps.map((lap, index) => (
           <React.Fragment key={index}>
-            <div className="flex h-[40px] items-center text-sm text-gray-700">Lap {index + 1}</div>
+            <div className="flex h-[40px] items-center text-sm text-muted-foreground">Lap {index + 1}</div>
 
             <input
               type="number"
               step="0.1"
-              className="w-full rounded border p-2 text-sm"
+              className="w-full rounded border border-neutral-500 bg-background p-2 text-sm"
               value={
                 lap.lap_distance != null && lap.lap_distance !== 0
                   ? lap.lap_distance.toString()
@@ -74,7 +74,7 @@ const LapEditor: React.FC<LapEditorProps> = ({ laps, setLaps }) => {
             <input
               type="text"
               placeholder="MM:SS"
-              className="w-full rounded border p-2 text-sm"
+              className="w-full rounded border border-neutral-500 bg-background p-2 text-sm"
               value={lap.lap_time}
               onChange={(e) => handleTimeChange(index, e.target.value)}
             />
@@ -84,7 +84,7 @@ const LapEditor: React.FC<LapEditorProps> = ({ laps, setLaps }) => {
                 <button
                   type="button"
                   onClick={() => removeLap(index)}
-                  className="text-error bg-white hover:text-red-700"
+                  className="text-error bg-bard/95 hover:text-red-700"
                 >
                   <Trash2 size={18} />
                 </button>
