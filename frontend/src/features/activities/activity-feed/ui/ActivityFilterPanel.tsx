@@ -196,12 +196,13 @@ export default function ActivityFilterPanel({
                 variant="outline"
                 className={cn("w-full justify-start text-left font-normal", !startDate && "text-muted-foreground")}
               >
-                <CalendarIcon className="mr-2 h-4 w-4" />
+                <CalendarIcon className="h-4 w-4" />
                 {startDate ? format(startDate, "PPP") : "Pick a date"}
               </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" align="start">
+            <PopoverContent className="w-[92vw] max-w-[200px] p-0" align="start">
               <Calendar
+                className="w-full [--cell-size:2.5rem]"
                 mode="single"
                 selected={startDate}
                 onSelect={(d) =>
@@ -225,12 +226,13 @@ export default function ActivityFilterPanel({
                 variant="outline"
                 className={cn("w-full justify-start text-left font-normal", !endDate && "text-muted-foreground")}
               >
-                <CalendarIcon className="mr-2 h-4 w-4" />
+                <CalendarIcon className="h-4 w-4" />
                 {endDate ? format(endDate, "PPP") : "Pick a date"}
               </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" align="start">
+            <PopoverContent className="max-w-[200px] p-0" align="end">
               <Calendar
+                className="w-full [--cell-size:2.5rem]"
                 mode="single"
                 selected={endDate}
                 onSelect={(d) =>

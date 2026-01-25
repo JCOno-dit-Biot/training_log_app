@@ -127,6 +127,7 @@ export function DateRangeControl() {
                         </div>
 
                         <Calendar
+                            className="w-full bg-card/95"
                             mode="range"
                             selected={calendarValue}
                             onSelect={(val) => {
