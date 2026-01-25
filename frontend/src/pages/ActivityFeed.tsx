@@ -144,7 +144,7 @@ export default function ActivityFeed() {
                 >
                   <div
                     ref={panelRef}
-                    className="absolute top-full right-0 z-10 mt-2 w-72 rounded-lg border border-neutral-500 bg-card p-4 shadow-lg"
+                    className="absolute top-full right-0 z-10 w-72 rounded-lg border border-neutral-500 bg-card p-4 shadow-lg"
                   >
                     <ActivityFilterPanel
                       filters={filters}
