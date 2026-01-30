@@ -2,6 +2,7 @@ import { useMemo } from "react";
 import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts";
 
 import { type SportType, TYPE_BASE, TYPE_SHADES } from "@/entities/sports/model/Sport";
+import { Skeleton } from "@/shared/ui/skeleton";
 
 import type { SportDistribution } from "../../model/useSportDistribution";
 import { buildSportColorMap } from "../../utils/donutColorUtils";
@@ -109,7 +110,8 @@ export function SportDistributionDonut({
             }));
     }, [data]);
 
-    if (loading) return <div className="h-full w-full animate-pulse rounded-md bg-muted" />;
+    if (loading) return <Skeleton className="h-full w-full" />
+    // <div className="h-full w-full animate-pulse rounded-md bg-muted" />;
     if (!data || (data.outer?.length ?? 0) === 0) {
         return <div className="text-sm text-muted-foreground text-center">No activities in this range</div>;
     }
