@@ -1,4 +1,5 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import type { DateRange as DayPickerRange } from "react-day-picker";
 import { format } from 'date-fns';
 import { Calendar as CalendarIcon } from 'lucide-react';
 
@@ -6,7 +7,7 @@ import { cn } from '@/shared/lib/utils';
 import { Button } from '@/shared/ui/button';
 import { Calendar } from '@/shared/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/shared/ui/popover';
-import { parseYMD } from '@/shared/util/dates';
+import { parseYMD, toYMD } from '@/shared/util/dates';
 
 import { type DateRange, type PresetKey } from '../model/DateRangeContext';
 import { getPresetRange } from '../model/DateRangeContext';
@@ -34,13 +35,20 @@ export function DateRangeControl() {
     const [open, setOpen] = useState(false);
     const [mode, setMode] = useState<'presets' | 'custom'>('presets');
 
+
     // Calendar uses Date objects
     const calendarValue = useMemo(() => {
         return {
             from: parseYMD(range.startDate),
-            to: parseYMD(range.endDate),
+            to: range.endDate ? parseYMD(range.endDate) : undefined,
         };
     }, [range.startDate, range.endDate]);
+
+    const [draft, setDraft] = useState<DayPickerRange>(calendarValue);
+
+    useEffect(() => {
+        if (mode === "custom") setDraft(calendarValue);
+    }, [mode, calendarValue]);
 
     const triggerLabel = labelForRange(preset, range);
 
@@ -50,6 +58,9 @@ export function DateRangeControl() {
         setOpen(false);
         setMode('presets');
     }
+
+    const draftIsValid = !!draft?.from && !!draft?.to;
+
     return (
         <Popover
             open={open}
@@ -62,7 +73,7 @@ export function DateRangeControl() {
                 </Button>
             </PopoverTrigger>
 
-            <PopoverContent align="end" className="w-[320px] z-10 p-2">
+            <PopoverContent align="end" className="w-[400px] z-10 p-2">
                 {mode === 'presets' ? (
                     <div className="flex flex-col">
                         <div className="px-2 py-2 text-sm font-medium text-muted-foreground">
@@ -97,8 +108,9 @@ export function DateRangeControl() {
                             Custom…
                         </Button>
                         <div className="px-2 pt-2 text-xs text-muted-foreground">
-                            {format(parseYMD(range.startDate), 'MMM d, yyyy')} –{' '}
-                            {format(parseYMD(range.endDate), 'MMM d, yyyy')}
+                            {range.startDate && range.endDate
+                                ? `${format(parseYMD(range.startDate), "MMM d, yyyy")} – ${format(parseYMD(range.endDate), "MMM d, yyyy")}`
+                                : "Select a start and end date"}
                         </div>
                     </div>
                 ) : (
@@ -116,11 +128,18 @@ export function DateRangeControl() {
                             <Button
                                 type="button"
                                 size="sm"
-                                onClick={() => setOpen(false)}
-                                className={cn(
-                                    // disabled if invalid
-                                    !range.startDate || !range.endDate ? 'pointer-events-none opacity-50' : ''
-                                )}
+                                onClick={() => {
+                                    if (!draft?.from) return;
+
+                                    // If user picked only one day, treat it as a 1-day range
+                                    const from = draft.from;
+                                    const to = draft.to ?? draft.from;
+
+                                    setPreset("custom");
+                                    setRange({ startDate: toYMD(from), endDate: toYMD(to) });
+                                    setOpen(false);
+                                }}
+                                className={cn(!draft?.from ? "pointer-events-none opacity-50" : "")}
                             >
                                 Done
                             </Button>
@@ -129,25 +148,21 @@ export function DateRangeControl() {
                         <Calendar
                             className="w-full bg-card/95"
                             mode="range"
-                            selected={calendarValue}
+                            selected={draft}
+                            onDayClick={(day) => {
+                                if (draft?.from && draft?.to) {
+                                    setDraft({ from: day, to: undefined });
+                                }
+                            }}
                             onSelect={(val) => {
                                 if (!val?.from) return;
-
-                                const from = val.from;
-                                const to = val.to ?? val.from;
-
-                                setPreset('custom');
-                                setRange({
-                                    startDate: `${from.getFullYear()}-${String(from.getMonth() + 1).padStart(2, '0')}-${String(from.getDate()).padStart(2, '0')}`,
-                                    endDate: `${to.getFullYear()}-${String(to.getMonth() + 1).padStart(2, '0')}-${String(to.getDate()).padStart(2, '0')}`,
-                                });
+                                setDraft(val);
                             }}
                             numberOfMonths={2}
                         />
-
                         <div className="px-2 pt-2 text-xs text-muted-foreground">
-                            {format(parseYMD(range.startDate), 'MMM d, yyyy')} –{' '}
-                            {format(parseYMD(range.endDate), 'MMM d, yyyy')}
+                            {draft?.from ? format(draft.from, "MMM d, yyyy") : "—"} –{" "}
+                            {draft?.to ? format(draft.to, "MMM d, yyyy") : "—"}
                         </div>
                     </div>
                 )}
