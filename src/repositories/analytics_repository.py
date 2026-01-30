@@ -209,6 +209,12 @@ class analytics_repository():
                 ) AS days
                 JOIN activity_locations al
                     ON al.id = days.location_id
+                -- filter out any location that does not have gps coords
+                WHERE
+                    al.latitude IS NOT NULL
+                    AND al.longitude IS NOT NULL
+                    AND al.latitude BETWEEN -90 AND 90
+                    AND al.longitude BETWEEN -180 AND 180
                 GROUP BY
                     days.location_id,
                     al.name,
