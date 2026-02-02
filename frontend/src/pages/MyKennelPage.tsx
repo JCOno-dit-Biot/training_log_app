@@ -4,13 +4,6 @@ import { useDogs } from '@/features/dogs/model/useDogs';
 import { useRunners } from '@/features/runners/model/useRunners';
 
 export default function MyKennelPage() {
-  // const [runners, setRunners] = useState<Runner[]>([]);
-  // const [dogs, setDogs] = useState<Dog[]>([]);
-
-  // useEffect(() => {
-  //   getRunners().then(setRunners).catch(console.error);
-  //   getDogs().then(setDogs).catch(console.error);
-  // }, []);
 
   const { list: dogs } = useDogs();
   const { list: runners } = useRunners();
@@ -19,42 +12,34 @@ export default function MyKennelPage() {
     (a, b) => new Date(a.date_of_birth).getTime() - new Date(b.date_of_birth).getTime(),
   );
   return (
-    <div className="max-w-full space-y-20">
-      {/* Runners Section */}
-      <section className="mt-4 w-full max-w-full item-center">
-        <h2 className="text-center text-neutral-100 bg-primary mb-4 rounded p-1 text-2xl font-bold">
-          Runners
-        </h2>
-        <div className="scroll-snap-x max-w-full overflow-x-auto scroll-smooth">
-          <div className="flex snap-x snap-mandatory gap-3 pb-2">
-            {runners.map((runner) => (
-              <div
-                key={runner.id}
-                className="w-[80%] flex-shrink-0 snap-start sm:w-[50%] md:w-[33%] lg:w-[25%]"
-              >
-                <RunnerCard key={runner.id} runner={runner} />
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+    <div className="min-h-screen w-full bg-neutral-25">
+      <div className="mx-auto w-full space-y-12 px-0 py-2">
+        {/* Runners Section */}
+        <section className="space-y-4">
+          <h2 className="rounded bg-primary p-2 text-center text-2xl font-bold text-neutral-100">
+            Runners
+          </h2>
 
-      {/* Dogs Section */}
-      <section className="w-full max-w-full">
-        <h2 className="text-center text-neutral-100 bg-primary mb-4 rounded p-1 text-2xl font-bold">Dogs</h2>
-        <div className="scroll-snap-x max-w-full overflow-x-auto scroll-smooth">
-          <div className="flex snap-x snap-mandatory gap-3 pb-2">
-            {sortedDogs.map((dog) => (
-              <div
-                key={dog.id}
-                className="w-[80%] flex-shrink-0 snap-start sm:w-[50%] md:w-[33%] lg:w-[25%]"
-              >
-                <DogCard dog={dog} />
-              </div>
+          <div className="grid grid-cols-1 gap-3 lg:grid-cols-2 xl:grid-cols-4">
+            {runners.map((runner) => (
+              <RunnerCard key={runner.id} runner={runner} />
             ))}
           </div>
-        </div>
-      </section>
+        </section>
+
+        {/* Dogs Section */}
+        <section className="space-y-4">
+          <h2 className="rounded bg-primary p-2 text-center text-2xl font-bold text-neutral-100">
+            Dogs
+          </h2>
+
+          <div className="grid grid-cols-1 gap-3 lg:grid-cols-2 xl:grid-cols-4">
+            {sortedDogs.map((dog) => (
+              <DogCard key={dog.id} dog={dog} />
+            ))}
+          </div>
+        </section>
+      </div>
     </div>
-  );
+  )
 }

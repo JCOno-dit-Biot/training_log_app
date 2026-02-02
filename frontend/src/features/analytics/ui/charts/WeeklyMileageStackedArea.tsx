@@ -10,12 +10,12 @@ import {
 } from "recharts";
 
 import type { Dog } from "@/entities/dogs/model";
+import { Skeleton } from "@/shared/ui/skeleton";
 
 import { type WeeklyMileageSeries } from "../../model/useWeeklyMileage";
 import type { Row } from "../../utils/rollingAverage";
 
 import { MileageTooltip } from "./MileageChartTooltip";
-
 
 function dogKey(id: number) {
     return `dog_${id}`;
@@ -146,7 +146,7 @@ export function WeeklyMileageStackedArea({
 
     const visibleDogs = dogs.filter((d) => !hidden.has(d.key));
 
-    if (loading) return <div className="h-full w-full animate-pulse rounded-md bg-muted" />;
+    if (loading) return <Skeleton className="h-full w-full" />
     if (!data || rows.length === 0) return <div className="text-sm text-muted-foreground text-center">No activities in this range</div>;
 
     return (

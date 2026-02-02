@@ -6,15 +6,14 @@ import { AnalyticsHeader } from "@/features/analytics/ui/AnalyticsHeader";
 import { SportDistributionDonut } from "@/features/analytics/ui/charts/DistributionSportDonut";
 import { WeeklyMileageStackedArea } from "@/features/analytics/ui/charts/WeeklyMileageStackedArea";
 import { LocationBubbleClusterMap } from "@/features/analytics/ui/maps/LocationBubbleClusterMap";
+import { InlineTrend, StatCard } from "@/features/analytics/ui/StatCard";
 import { computeMetricTrend } from "@/features/analytics/utils/computeMetricTrend";
 import { DateRangeProvider } from "@/features/dateRangeFilter/model/DateRangeProvider";
 import { useDateRange } from "@/features/dateRangeFilter/model/useDateRange";
 import { getComparisonRange } from "@/features/dateRangeFilter/utils/getComparisonRange";
 import { useDogs } from "@/features/dogs/model/useDogs";
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
-import { StatCard } from "@/shared/ui/StatCard";
-import { InlineTrend } from "@/shared/ui/StatCard";
-
+import { Skeleton } from "@/shared/ui/skeleton";
 
 export default function AnalyticsPage() {
     return (
@@ -108,7 +107,8 @@ function AnalyticsPageInner() {
                     </Card>
                     <div className="lg:col-span-2">
                         {isMapLoading ? (
-                            <div className="h-[360px] rounded-md border bg-neutral-50" />
+                            <Skeleton className="h-full w-full rounded-md border" />
+                            // <div className="h-[360px] rounded-md border bg-neutral-50" />
                         ) : (
                             <LocationBubbleClusterMap data={locationPoints} />
                         )}

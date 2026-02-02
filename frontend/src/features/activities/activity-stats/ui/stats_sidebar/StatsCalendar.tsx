@@ -40,7 +40,7 @@ export function StatsCalendar({
   };
 
   return (
-    <div className="mb-4 rounded-lg bg-white p-2 shadow-sm">
+    <div className="mb-4 rounded-lg bg-card p-2 shadow-sm">
       <Calendar
         calendarType="iso8601"
         value={selectedDate}

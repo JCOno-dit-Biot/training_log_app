@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Plus, SlidersHorizontal } from 'lucide-react';
 
+import { Button } from '@/shared/ui/button';
+
 type ActivityHeaderProps = {
   onOpenCreate: () => void; // opens your existing "create activity" modal
   onOpenFilter: () => void; // opens your filter UI (sheet/modal)
@@ -23,8 +25,8 @@ export function ActivityHeader({
   return (
     <header
       className={`sticky top-0 z-50 transition-colors duration-200 ${atTop
-          ? 'bg-gray' // solid when at top
-          : 'bg-white/70 backdrop-blur supports-[backdrop-filter]:bg-white/60'
+        ? 'bg-neutral-25' // solid when at top
+        : 'bg-neutral-25/70 backdrop-blur supports-[backdrop-filter]:bg-neutral-25/60'
         } ${className}`}
       role="region"
       aria-label="Activity header"
@@ -34,14 +36,14 @@ export function ActivityHeader({
         <div className="grid w-full grid-cols-3 items-center">
           {/* Left: Add new activity */}
           <div className="flex items-center">
-            <button
+            <Button
               onClick={onOpenCreate}
-              className="bg-primary text-neutral-100 inline-flex items-center gap-2 rounded-full px-3.5 py-2 shadow transition hover:shadow-md active:scale-[.98]"
+              variant="default"
             >
               <Plus className="h-4 w-4" />
               <span className="hidden sm:inline">Add new activity</span>
               <span className="sm:hidden">Add</span>
-            </button>
+            </Button>
           </div>
 
           {/* Center: title */}
@@ -51,13 +53,13 @@ export function ActivityHeader({
 
           {/* Right: Filter */}
           <div className="flex justify-end">
-            <button
+            <Button
               onClick={onOpenFilter}
-              className="border-stone inline-flex items-center gap-2 rounded border px-4 py-2 hover:bg-gray-100"
+              variant="default"
             >
               <SlidersHorizontal className="h-4 w-4" />
               <span className="hidden sm:inline">Filter</span>
-            </button>
+            </Button>
           </div>
         </div>
       </div>

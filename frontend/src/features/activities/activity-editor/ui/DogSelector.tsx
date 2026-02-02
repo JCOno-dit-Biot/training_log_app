@@ -33,7 +33,7 @@ const DogSelector: React.FC<DogSelectorProps> = ({ selectedDogs, setSelectedDogs
           return (
             <div
               key={dog.id}
-              className={`cursor-pointer rounded border p-2 ${selected ? 'border-success' : 'border-gray-300'}`}
+              className={`cursor-pointer bg-background rounded-lg border p-2 ${selected ? 'border-success' : 'border-neutral-500 hover:bg-accent'}`}
               onClick={() => handleDogToggle(dog.id)}
             >
               <img
@@ -66,12 +66,11 @@ const DogSelector: React.FC<DogSelectorProps> = ({ selectedDogs, setSelectedDogs
                       return rest;
                     });
                   }}
-                  className={`mt-1 w-full [appearance:textfield] appearance-none rounded border text-center text-sm [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none ${
-                    editingRatings[dog.id] !== undefined &&
+                  className={`mt-1 w-full bg-background [appearance:textfield] appearance-none rounded border text-center text-sm [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none ${editingRatings[dog.id] !== undefined &&
                     (Number(editingRatings[dog.id]) < 0 || Number(editingRatings[dog.id]) > 10)
-                      ? 'border-red-500'
-                      : ''
-                  }`}
+                    ? 'border-red-500'
+                    : ''
+                    }`}
                 />
               )}
             </div>

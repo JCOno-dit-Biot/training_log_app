@@ -3,8 +3,7 @@ import { ArrowDown, ArrowUp, Minus } from 'lucide-react';
 
 import type { MetricTrend } from '@/features/analytics/utils/computeMetricTrend';
 import { cn } from '@/shared/lib/utils';
-
-import { Spinner } from './Spinner';
+import { Spinner } from '@/shared/ui/Spinner';
 
 function formatPct(p: number) {
     const sign = p > 0 ? '+' : '';
