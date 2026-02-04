@@ -39,7 +39,7 @@ def test_build_conditions_with_activity_filter(activity_query_filter):
     assert "a.sport_id = %s" in clause
     assert "a.runner_id = %s" in clause
     assert "a.workout = %s" in clause
-    assert "a.location ILIKE %s" in clause
+    assert "l.name ILIKE %s" in clause
     assert values == [
         2,
         1,
