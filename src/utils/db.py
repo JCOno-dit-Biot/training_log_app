@@ -48,7 +48,7 @@ def build_conditions(filters: WeightQueryFilter | ActivityQueryFilters):
 
         # case insensitive and partial match
         if filters.location:
-            conditions.append("a.location ILIKE %s")
+            conditions.append("l.name ILIKE %s")
             values.append(f"%{filters.location}%") 
 
         if filters.start_date:
@@ -60,6 +60,7 @@ def build_conditions(filters: WeightQueryFilter | ActivityQueryFilters):
             values.append(filters.end_date)
 
     where_clause = " AND ".join(conditions) if conditions else "TRUE"
+
     return where_clause, values
 
 def build_time_window_clause(filters: Filter, table_key: str, table_column: str):

@@ -65,6 +65,27 @@ def test_get_all_with_filters(activity_repo):
     assert len(activity.dogs) == 2
     assert activity.weather.temperature == 10.4
 
+@pytest.mark.parametrize("test_location_str, expected", [
+    ('City Park', 'City park'),
+    ('par', 'City park'),
+    ('CiTY', 'City park'),
+    ('ty Pa', 'City park')
+])
+def test_get_all_with_location_filters(activity_repo, test_location_str, expected):
+    filter = ActivityQueryFilters(
+        location = test_location_str
+    )
+    activities =activity_repo.get_all(kennel_id = 2, filters = filter)
+    assert len(activities) == 5
+    print(activities)
+    activity = activities[0]
+    assert activity.runner.id == 2
+    assert activity.location.name == expected
+    assert len(activity.dogs) == 1
+    assert activity.dogs[0].dog.kennel.id == 2
+
+
+
 @pytest.mark.parametrize("filter,expected_count",[
     (ActivityQueryFilters(), 8),
     (ActivityQueryFilters(
