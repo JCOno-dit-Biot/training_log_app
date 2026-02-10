@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 
 // optional for clean click-out
-import Pagination from '@shared/ui/Pagination';
+import Pagination from '@shared/ui/pagination';
 import type { Activity, ActivityFilter } from '@entities/activities/model';
 import { useDeleteActivity } from '@features/activities/activity-editor/model/useActivitiesMutations';
 import AddActivityForm from '@features/activities/activity-editor/ui/AddActivityForm';
