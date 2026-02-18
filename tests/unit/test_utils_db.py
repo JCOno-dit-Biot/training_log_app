@@ -20,7 +20,7 @@ def activity_query_filter():
         sport_id = 2,
         runner_id = 1,
         workout = False,
-        location = 'Park'
+        location_id = 3
     )
 
 # Define the tests
@@ -39,13 +39,13 @@ def test_build_conditions_with_activity_filter(activity_query_filter):
     assert "a.sport_id = %s" in clause
     assert "a.runner_id = %s" in clause
     assert "a.workout = %s" in clause
-    assert "l.name ILIKE %s" in clause
+    assert "l.id = %s" in clause
     assert values == [
         2,
         1,
         False,
         1,
-        "%Park%",
+        3,
         date(2025, 1, 1),
         date(2025, 1, 30)
     ]
