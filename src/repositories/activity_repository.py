@@ -18,7 +18,10 @@ class activity_repository(abstract_repository):
     
     def get_all(self, kennel_id: int, filters, limit: int = 10, offset: int = 0) -> List[Runner]:
 
+        print(filters)
         where_clause, values = build_conditions(filters)
+
+        print(where_clause)
         try:
             with self._connection.cursor(cursor_factory= RealDictCursor) as cur:
                 query = f""" 
@@ -144,6 +147,7 @@ class activity_repository(abstract_repository):
                 SELECT COUNT(DISTINCT a.id) FROM activities a
                 JOIN runners r ON a.runner_id = r.id
                 LEFT JOIN activity_dogs ad ON a.id = ad.activity_id
+                LEFT JOIN activity_locations l ON a.location_id = l.id
                 WHERE r.kennel_id = %s AND {where_clause};
                 """
                 values.insert(0, kennel_id)
