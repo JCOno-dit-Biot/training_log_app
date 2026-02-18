@@ -18,7 +18,7 @@ class ActivityQueryFilters(Filter):
     dog_id: Optional[int] = Query( default = None)
     runner_id:Optional[int] = Query( default = None)
     sport_id: Optional[int] = Query( default = None)
-    location: Optional[str] =  Query( default = None)
+    location_id: Optional[int] =  Query( default = None)
     workout: Optional[bool] = Query( default = None)
     
 class WeightQueryFilter(Filter):
