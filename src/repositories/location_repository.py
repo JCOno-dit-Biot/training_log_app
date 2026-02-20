@@ -1,4 +1,4 @@
-from src.models.location import Location
+from src.models.location import Location, LocationWithUsage
 #from src.parsers.runner_parser import parse_runner_from_row
 from .abstract_repository import abstract_repository
 from typing import List, Optional
@@ -30,27 +30,63 @@ class location_repository(abstract_repository):
             return sport
         return None
 
-    def get_all(self, kennel_id: int) -> List[Location]:
+    def get_all(self, kennel_id: int, search: Optional[str] = None) -> List[Location]:
         with self._connection.cursor(cursor_factory= RealDictCursor) as cur:
             query = """ 
                        SELECT 
                             id,
-                            name
+                            name,
+                            NULLIF(latitude, 'NaN'::float8) AS latitude,
+                            NULLIF(longitude, 'NaN'::float8) AS longitude
                         FROM 
                             activity_locations
                         WHERE
                             kennel_id = %s
-                        ORDER BY 
-                            name ASC;
                     """
-            cur.execute(query, (kennel_id,))
-            sports = []
-            for row in cur.fetchall():
-                sport = Location(**row)
-                sports.append(sport)
-
-            return sports
             
+            params = [kennel_id]
+
+            if search:
+                query += " AND name ILIKE %s"
+                params.append(f"%{search}%")
+
+            query += " ORDER BY name ASC;"
+
+            cur.execute(query, params)
+            rows = cur.fetchall()
+            
+            return [Location(**row) for row in rows]
+    
+    def get_all_with_usage(self, kennel_id: int, search: Optional[str] = None) -> List[Location]:
+        with self._connection.cursor(cursor_factory= RealDictCursor) as cur:
+            query = """ 
+                       SELECT 
+                            al.id,
+                            al.name,
+                            NULLIF(latitude, 'NaN'::float8) AS latitude,
+                            NULLIF(longitude, 'NaN'::float8) AS longitude,
+                            COALESCE(COUNT(a.id), 0) AS usage_count
+                        FROM 
+                            activity_locations al
+                        LEFT JOIN activities a
+                            ON a.location_id = al.id
+                        WHERE
+                            kennel_id = %s
+                    """
+            
+            params = [kennel_id]
+
+            if search:
+                query += " AND name ILIKE %s"
+                params.append(f"%{search}%")
+
+            query += " GROUP BY al.id ORDER BY name ASC;"
+
+            cur.execute(query, params)
+            rows = cur.fetchall()
+            
+            return [LocationWithUsage(**row) for row in rows]
+        
     def get_by_id(self, id: int, kennel_id: int) -> Optional[Location]:
         with self._connection.cursor(cursor_factory= RealDictCursor) as cur:
             query = """ SELECT 
