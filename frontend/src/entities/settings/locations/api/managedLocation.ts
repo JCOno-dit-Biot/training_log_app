@@ -1,6 +1,6 @@
 import axios from '@shared/api/axios';
 
-import type { ManagedLocation } from '../model/ManagedLocation';
+import type { LocationPatch, ManagedLocation } from '../model/ManagedLocation';
 
 export const getManagedLocations = async (search: string): Promise<ManagedLocation[]> => {
     const params = new URLSearchParams()
@@ -8,3 +8,8 @@ export const getManagedLocations = async (search: string): Promise<ManagedLocati
     const res = await axios.get(`/locations/manage?${params.toString()}`);
     return res.data;
 };
+
+export async function patchLocation(id: number, patch: LocationPatch) {
+    const res = await axios.patch(`/locations/${id}`, patch)
+    return res.data
+}

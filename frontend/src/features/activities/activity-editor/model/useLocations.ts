@@ -3,6 +3,7 @@ import { useMemo } from 'react';
 import { qk } from '@shared/api/keys';
 import { createLocation, getLocations } from '@entities/activities/api/locations';
 import type { Location } from '@entities/activities/model';
+import type { LocationCreate } from '@/entities/activities/model';
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
@@ -35,14 +36,14 @@ export function useCreateLocation({ sortByName = true }: { sortByName?: boolean 
     return sortByName ? [...next].sort((a, b) => a.name.localeCompare(b.name)) : next;
   };
 
-  return useMutation<Location, any, string, { prev?: Location[]; tempId?: number }>({
-    mutationFn: (name: string) => createLocation(name.trim()), // MUST return {id, name}
+  return useMutation<Location, any, LocationCreate, { prev?: Location[]; tempId?: number }>({
+    mutationFn: (input) => createLocation({ ...input, name: input.name.trim() }), // MUST return {id, name}
 
-    onMutate: async (rawName) => {
+    onMutate: async (input) => {
       await qc.cancelQueries({ queryKey: key });
 
       const prev = qc.getQueryData<Location[]>(key);
-      const name = rawName.trim();
+      const name = input.name.trim();
       const tempId = -Date.now(); // unique negative id
 
       const optimistic: Location = { id: tempId, name };
@@ -66,6 +67,9 @@ export function useCreateLocation({ sortByName = true }: { sortByName?: boolean 
     onSettled: () => {
       // keep server as source of truth for ordering / dedup w.r.t other clients
       qc.invalidateQueries({ queryKey: key, refetchType: 'active' });
+
+      // also invalidate managed locations 
+      qc.invalidateQueries({ queryKey: ['managed-locations'], refetchType: 'active' });
     },
   });
 }

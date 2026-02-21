@@ -2,6 +2,7 @@
 import { useState } from "react"
 import { MapPin, MapPinOff, MoreHorizontal } from "lucide-react"
 
+import type { ManagedLocation } from "@/entities/settings/locations/model/ManagedLocation"
 import { useDebouncedValue } from "@/shared/hooks/useDebouncedValue"
 import { cn } from "@/shared/lib/utils"
 import { Button } from "@/shared/ui/button"
@@ -23,12 +24,18 @@ import {
 import { formatLocationLabel } from "@/shared/util/formatLocationLabel"
 
 import { useManagedLocations } from "../model/useManagedLocations"
+
+import { UpsertLocationModal } from "./upsertLocationsModal"
 function fmtCoord(v: number | null) {
   if (v === null || Number.isNaN(v)) return "—"
   return v.toFixed(6)
 }
 
 export function LocationsSettingsTab() {
+
+  const [open, setOpen] = useState(false)
+  const [editing, setEditing] = useState<ManagedLocation | null>(null)
+
 
   const [search, setSearch] = useState("")
   const debouncedSearch = useDebouncedValue(search, 300)
@@ -47,7 +54,7 @@ export function LocationsSettingsTab() {
           />
         </div>
 
-        <Button onClick={() => alert("TODO: open create location modal")}>
+        <Button onClick={() => { setEditing(null); setOpen(true) }}>
           Add location
         </Button>
       </div>
@@ -125,7 +132,7 @@ export function LocationsSettingsTab() {
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={() => alert(`TODO: edit ${loc.id}`)}>
+                          <DropdownMenuItem onClick={() => { setEditing(loc); setOpen(true) }}>
                             Edit
                           </DropdownMenuItem>
                           <DropdownMenuItem
@@ -149,6 +156,13 @@ export function LocationsSettingsTab() {
           </TableBody>
         </Table>
       </div>
-    </div>
+      <UpsertLocationModal
+        open={open}
+        onOpenChange={setOpen}
+        initial={editing}
+      />
+    </div >
+
+
   )
 }
