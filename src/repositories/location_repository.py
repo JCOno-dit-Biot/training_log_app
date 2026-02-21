@@ -102,14 +102,14 @@ class location_repository(abstract_repository):
 
         return Location(**row)
     
-    def create(self, location_name: str, kennel_id: int):
+    def create(self, location_name: str, kennel_id: int, latitude: Optional[float] = None, longitude: Optional[float] = None,):
          with self._connection.cursor(cursor_factory= RealDictCursor) as cur:
             try:
-                query = """ INSERT INTO activity_locations(name, kennel_id) VALUES (%s, %s) RETURNING id;"""
-                cur.execute(query, (location_name.lower(), kennel_id))
-                location_id = cur.fetchone()['id']
+                query = """ INSERT INTO activity_locations(name, kennel_id, latitude, longitude) VALUES (%s, %s, %s, %s) RETURNING id;"""
+                cur.execute(query, (location_name.lower(), kennel_id, latitude, longitude))
+                row=cur.fetchone()
                 self._connection.commit()
-                new_loc = Location(id = location_id, name = location_name)
+                new_loc = Location(**row)
                 return new_loc
             except UniqueViolation:
                 self._connection.rollback()
