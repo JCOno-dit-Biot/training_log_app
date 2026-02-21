@@ -7,6 +7,7 @@ import MyKennelPage from '@pages/MyKennelPage';
 // import RegisterPage from './pages/RegisterPage' the registration is disabled for now
 import { RequireAuth } from '@/app/auth/require-auth';
 import AnalyticsPage from '@/pages/AnalyticsPage';
+import { SettingsPage } from '@/pages/SettingsPage';
 import WeightsPage from '@/pages/WeightPage';
 
 import { AfterAuthWarmup } from './auth/warmup';
@@ -48,6 +49,8 @@ export default function App() {
               <Route path="/weight" element={<Layout><WeightsPage />
               </Layout>} />
               <Route path="analytics" element={<Layout><AnalyticsPage />
+              </Layout>} />
+              <Route path="/settings" element={<Layout><SettingsPage />
               </Layout>} />
             </Route>
           </Routes>
