@@ -29,7 +29,12 @@ class LocationController:
     def create_location(self, request: Request, location: Location):
         kennel_id = request.state.kennel_id
         try:
-            loc = self.repo.create(location.name, kennel_id)
+            loc = self.repo.create(
+            name=location.name,
+            kennel_id=kennel_id,
+            latitude=location.latitude,
+            longitude=location.longitude,
+        )
             return loc  # {id, name}
         except DuplicateLocationError as e:
             # Return 409 and a clear message. Optionally include the existing resource info if you fetch it.
