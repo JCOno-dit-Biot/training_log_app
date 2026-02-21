@@ -30,7 +30,7 @@ class LocationController:
         kennel_id = request.state.kennel_id
         try:
             loc = self.repo.create(
-            name=location.name,
+            location_name=location.name,
             kennel_id=kennel_id,
             latitude=location.latitude,
             longitude=location.longitude,
