@@ -23,6 +23,7 @@ import {
 } from "@/shared/ui/table"
 import { formatLocationLabel } from "@/shared/util/formatLocationLabel"
 
+import { useDeleteLocation } from "../model/useDeleteLocations"
 import { useManagedLocations } from "../model/useManagedLocations"
 
 import { UpsertLocationModal } from "./upsertLocationsModal"
@@ -41,6 +42,7 @@ export function LocationsSettingsTab() {
   const debouncedSearch = useDebouncedValue(search, 300)
 
   const { data, isLoading, error } = useManagedLocations(debouncedSearch)
+  const deleteMut = useDeleteLocation()
 
   return (
     <div className="space-y-4">
@@ -59,7 +61,7 @@ export function LocationsSettingsTab() {
         </Button>
       </div>
 
-      <div className="rounded-xl border bg-background">
+      <div className="rounded-xl border bg-card ">
         <Table>
           <TableHeader>
             <TableRow>
@@ -102,7 +104,7 @@ export function LocationsSettingsTab() {
               data.map((loc) => {
                 const hasGps = loc.latitude !== null && loc.longitude !== null
                 return (
-                  <TableRow key={loc.id}>
+                  <TableRow key={loc.id} className="text-card-foreground">
                     <TableCell className="font-medium">{formatLocationLabel(loc.name)}</TableCell>
 
                     <TableCell>
@@ -137,15 +139,10 @@ export function LocationsSettingsTab() {
                           </DropdownMenuItem>
                           <DropdownMenuItem
                             className="text-destructive"
-                            onClick={() => {
-                              if (loc.usage_count > 0) {
-                                alert("TODO: archive (used by activities)")
-                              } else {
-                                alert("TODO: delete (unused)")
-                              }
-                            }}
+                            disabled={loc.usage_count > 0}
+                            onClick={() => deleteMut.mutate({ id: loc.id })}
                           >
-                            {loc.usage_count > 0 ? "Archive" : "Delete"}
+                            Delete {loc.usage_count > 0 ? `(${loc.usage_count} uses)` : ""}
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>

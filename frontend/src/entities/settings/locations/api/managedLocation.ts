@@ -13,3 +13,8 @@ export async function patchLocation(id: number, patch: LocationPatch) {
     const res = await axios.patch(`/locations/${id}`, patch)
     return res.data
 }
+
+export async function deleteLocation(id: number) {
+    const res = await axios.delete(`/locations/${id}`)
+    return res.data
+}
