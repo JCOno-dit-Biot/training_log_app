@@ -35,7 +35,7 @@ export function BaseModal({
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent
                 className={cn(
-                    "sm:max-w-[560px] rounded-2xl",
+                    "sm:max-w-[560px] rounded-2xl bg-card/95 backdrop-blur-sm",
                     contentClassName
                 )}
             >
