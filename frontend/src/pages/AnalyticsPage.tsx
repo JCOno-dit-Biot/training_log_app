@@ -56,7 +56,7 @@ function AnalyticsPageInner() {
     const trendLoading = isSummaryLoading || isPrevSummaryLoading;
 
     return (
-        <div className="min-h-screen flex flex-col gap-4 p-4">
+        <div className="min-h-screen flex flex-col gap-4 p-6">
             <AnalyticsHeader crumbs={[{ label: 'Analytics', to: '/analytics' }]} scopeLabel="Kennel" />
             <div className="flex-1 flex flex-col gap-4">
                 <div className="grid grid-cols-1 gap-4 lg:grid-cols-3 lg:auto-rows-fr lg:flex-1">

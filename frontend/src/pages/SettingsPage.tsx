@@ -3,8 +3,11 @@ import { LocationsSettingsTab } from "@/features/settings/locations/ui/Locations
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/tabs"
 
 export function SettingsPage() {
+    const activeSecondary =
+        "data-[state=active]:bg-secondary data-[state=active]:text-secondary-foreground data-[state=active]:shadow-none"
+
     return (
-        <div className="mx-auto w-full max-w-6xl space-y-6 p-6">
+        <div className="mx-auto w-full space-y-6 p-6 bg-neutral-25">
             <div className="space-y-1">
                 <h1 className="text-2xl font-semibold">Settings</h1>
                 <p className="text-sm text-muted-foreground">
@@ -14,8 +17,8 @@ export function SettingsPage() {
 
             <Tabs defaultValue="locations" className="w-full">
                 <TabsList>
-                    <TabsTrigger value="locations">Locations</TabsTrigger>
-                    <TabsTrigger value="account">Account</TabsTrigger>
+                    <TabsTrigger className={`${activeSecondary}`} value="locations">Locations</TabsTrigger>
+                    <TabsTrigger className={`${activeSecondary}`} value="account">Account</TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="locations" className="pt-4">

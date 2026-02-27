@@ -12,7 +12,7 @@ export default function MyKennelPage() {
     (a, b) => new Date(a.date_of_birth).getTime() - new Date(b.date_of_birth).getTime(),
   );
   return (
-    <div className="min-h-screen w-full bg-neutral-25">
+    <div className="min-h-screen w-full bg-neutral-25 p-6">
       <div className="mx-auto w-full space-y-12 px-0 py-2">
         {/* Runners Section */}
         <section className="space-y-4">
