@@ -51,21 +51,28 @@ def test_get_locations_called(test_app, mock_repo):
     assert len(response.json()) == 3
     assert Location(**response.json()[0]).name == "Mock Location"
     mock_repo.get_all.assert_called_once()
-    mock_repo.get_all.assert_called_with(2)
+    # search param is set to none
+    mock_repo.get_all.assert_called_with(2, None)
 
 
 def test_create_location(test_app, mock_repo):
     client = TestClient(test_app)
 
     payload = {
-            "name": "Inserted location"
+            "name": "Inserted location",
+            "latitude": 30.00,
+            "longitude": 60.00
         }
     
     response = client.post(url="/locations", json = payload)
     assert response.status_code == 200
     assert Location(**response.json()).id == 4
     mock_repo.create.assert_called_once()
-    mock_repo.create.assert_called_with("Inserted location",2)
+    mock_repo.create.assert_called_with(
+        location_name= "Inserted location",
+        kennel_id= 2,
+        latitude= 30.00,
+        longitude= 60.00)
 
 
 def test_delete_location(test_app, mock_repo):
@@ -89,7 +96,7 @@ def test_update_locations(test_app, mock_repo):
         "name": "updated location"
     }
     location = Location(**payload)
-    response = client.put("/locations/2", json =location.model_dump())
+    response = client.patch("/locations/2", json =location.model_dump())
     mock_repo.update.assert_called_once()
     assert response.status_code == 200
     assert response.json() == {"success": True}
@@ -103,7 +110,7 @@ def test_update_location_update_fails(test_app, mock_repo):
         "name": "updated location"
     }
     location = Location(**payload)
-    response = client.put("/locations/2", json=location.model_dump())
+    response = client.patch("/locations/2", json=location.model_dump())
 
     assert response.status_code == 200
     assert response.json() == {"success": False}

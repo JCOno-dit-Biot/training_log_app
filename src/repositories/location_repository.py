@@ -105,7 +105,7 @@ class location_repository(abstract_repository):
     def create(self, location_name: str, kennel_id: int, latitude: Optional[float] = None, longitude: Optional[float] = None,):
          with self._connection.cursor(cursor_factory= RealDictCursor) as cur:
             try:
-                query = """ INSERT INTO activity_locations(name, kennel_id, latitude, longitude) VALUES (%s, %s, %s, %s) RETURNING id;"""
+                query = """ INSERT INTO activity_locations(name, kennel_id, latitude, longitude) VALUES (%s, %s, %s, %s) RETURNING *;"""
                 cur.execute(query, (location_name.lower(), kennel_id, latitude, longitude))
                 row=cur.fetchone()
                 self._connection.commit()
