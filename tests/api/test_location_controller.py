@@ -1,4 +1,5 @@
 import pytest
+from psycopg2.errors import ForeignKeyViolation
 from unittest.mock import Mock
 from fastapi import FastAPI, Request, Depends
 from fastapi.testclient import TestClient
@@ -88,6 +89,14 @@ def test_delete_location_wrong_kennel(test_app, mock_repo):
     response = client.delete('/locations/3')
     assert response.status_code == 404
     assert 'Location could not be deleted' in response.json()["detail"]
+
+def test_delete_location_used_raise_409(test_app, mock_repo):
+    client = TestClient(test_app)
+    mock_repo.delete.side_effect = ForeignKeyViolation
+    #with pytest.raises(ForeignKeyViolation):
+    response = client.delete('/locations/2')
+    assert response.status_code == 409
+    assert 'Location is used by activities and cannot be deleted.' in response.json()["detail"]
 
 def test_update_locations(test_app, mock_repo):
     client = TestClient(test_app)

@@ -1,4 +1,5 @@
 import pytest
+from psycopg2.errors import ForeignKeyViolation
 from src.repositories.location_repository import location_repository, DuplicateLocationError
 from src.models import Location, LocationUpdate, LocationWithUsage
 from datetime import datetime
@@ -116,6 +117,9 @@ def test_update_gps_coord(location_repo):
     assert result[-1] == -114.5
     assert result[-2] == 53.5005
 
+def test_delete_location_fail_fkviolation(location_repo):
+    with pytest.raises(ForeignKeyViolation):
+        location_repo.delete(3,2)
 
 def test_delete_location(location_repo):
     res = location_repo.delete(4, 2)

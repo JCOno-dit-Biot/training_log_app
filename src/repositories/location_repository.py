@@ -3,7 +3,7 @@ from src.models.location import Location, LocationWithUsage
 from .abstract_repository import abstract_repository
 from typing import List, Optional
 from psycopg2.extras import RealDictCursor
-from psycopg2.errors import UniqueViolation
+from psycopg2.errors import UniqueViolation, ForeignKeyViolation
 
 class DuplicateLocationError(Exception):
     pass
@@ -125,6 +125,9 @@ class location_repository(abstract_repository):
                 cur.execute(query, (id,kennel_id,))
                 self._connection.commit()
                 return cur.rowcount > 0
+            except ForeignKeyViolation:
+                self._connection.rollback()
+                raise
             except Exception as e:
                 self._connection.rollback()
                 return False

@@ -6,6 +6,7 @@ from src.models.location import Location, LocationUpdate, LocationWithUsage
 from src.deps import (
     get_location_repo
 )
+from psycopg2.errors import ForeignKeyViolation
 from src.repositories.location_repository import DuplicateLocationError
 
 router = APIRouter()
@@ -53,8 +54,11 @@ class LocationController:
     @router.delete("/locations/{location_id}")
     def delete_location(self, request: Request, location_id: int):
         kennel_id = request.state.kennel_id
-        res = self.repo.delete(location_id, kennel_id)
-        if not res:
+        try:
+            deleted = self.repo.delete(location_id, kennel_id)
+        except ForeignKeyViolation:
+            raise HTTPException(status_code=409, detail="Location is used by activities and cannot be deleted.")
+        if not deleted:
             raise HTTPException(status_code=404, detail="Location could not be deleted")
         else:
             return {"success": True}
