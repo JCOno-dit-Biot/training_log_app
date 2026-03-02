@@ -1,6 +1,6 @@
 import pytest
 from src.repositories.location_repository import location_repository, DuplicateLocationError
-from src.models import Location, LocationUpdate
+from src.models import Location, LocationUpdate, LocationWithUsage
 from datetime import datetime
 
 @pytest.fixture
@@ -27,6 +27,32 @@ def test_get_all(location_repo):
     locations = location_repo.get_all(kennel_id = 1)
     assert len(locations) == 2
     assert all([isinstance(location, Location) for location in locations])
+
+@pytest.mark.parametrize("search, expected",
+    [
+        ('LoO', 'Forest Loop'),
+        ('ooP', 'Forest Loop'),
+        ('Forest', 'Forest Loop')
+    ]
+)
+def test_get_all_with_search(location_repo, search, expected):
+    locations=location_repo.get_all(kennel_id=1, search=search)
+    assert len(locations) == 1
+    assert locations[0].name == expected
+    assert all([isinstance(location, Location) for location in locations])
+
+def test_get_all_with_usage(location_repo):
+    locations = location_repo.get_all_with_usage(kennel_id = 1)
+    assert len(locations) == 2
+    assert locations[1].usage_count==3
+    assert all([isinstance(location, LocationWithUsage) for location in locations])
+
+def test_get_all_with_usage_and_search(location_repo):
+    locations = location_repo.get_all_with_usage(kennel_id = 1, search='Loop')
+    assert len(locations) == 1
+    assert locations[0].usage_count==3
+    assert all([isinstance(location, LocationWithUsage) for location in locations])
+
 
 def test_get_by_id(location_repo):
     loc = location_repo.get_by_id(1, kennel_id = 1)

@@ -14,8 +14,15 @@ interface DogActivityRead {
 export interface Location {
   id: number;
   name: string;
+  latitude?: number;
+  longitude?: number;
 }
 
+export interface LocationCreate {
+  name: string;
+  latitude?: number;
+  longitude?: number;
+}
 export interface Activity {
   id: number;
   timestamp: string;

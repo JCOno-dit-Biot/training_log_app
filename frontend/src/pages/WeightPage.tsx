@@ -62,7 +62,7 @@ export default function WeightsPage() {
 
     return (
         <div className="h-screen w-full bg-neutral-25">
-            <div className="mx-auto flex h-full w-full flex-col gap-3 px-4 py-6">
+            <div className="mx-auto flex h-full w-full flex-col gap-3 p-6">
                 {/* Row 1: Latest cards */}
                 <LatestGrid latest={latest} dogs={sortedDogs} unit={unit} params={params} />
 

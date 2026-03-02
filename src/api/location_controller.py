@@ -1,7 +1,8 @@
 from fastapi import Depends, APIRouter, Request, HTTPException
 from fastapi_utils.cbv import cbv
+from typing import Optional
 from src.repositories.location_repository import location_repository
-from src.models.location import Location, LocationUpdate
+from src.models.location import Location, LocationUpdate, LocationWithUsage
 from src.deps import (
     get_location_repo
 )
@@ -15,23 +16,35 @@ class LocationController:
         self.repo = comment_repo
 
     @router.get("/locations", response_model=list[Location])
-    def list_comments(self, request: Request):
+    def list_location(self, request: Request, search: Optional[str] = None):
         kennel_id = request.state.kennel_id
-        return self.repo.get_all(kennel_id)
+        return self.repo.get_all(kennel_id, search)
+    
+    @router.get("/locations/manage", response_model=list[LocationWithUsage])
+    def list_location_with_usage(self, request: Request, search: Optional[str] = None):
+        kennel_id = request.state.kennel_id
+        return self.repo.get_all_with_usage(kennel_id, search)
 
     @router.post("/locations")
     def create_location(self, request: Request, location: Location):
         kennel_id = request.state.kennel_id
         try:
-            loc = self.repo.create(location.name, kennel_id)
+            loc = self.repo.create(
+            location_name=location.name,
+            kennel_id=kennel_id,
+            latitude=location.latitude,
+            longitude=location.longitude,
+        )
             return loc  # {id, name}
         except DuplicateLocationError as e:
             # Return 409 and a clear message. Optionally include the existing resource info if you fetch it.
             raise HTTPException(status_code=409, detail=str(e))
 
-    @router.put("/locations/{location_id}")
+    @router.patch("/locations/{location_id}")
     def update_location(self, location: LocationUpdate, location_id: int):
         updated_fields = location.model_dump(exclude_none=True)
+        if not updated_fields:
+            return {"success": True, "updated": 0}
         if location_id is not None:
             res = self.repo.update(fields = updated_fields, id=location_id)
         return {"success": res}

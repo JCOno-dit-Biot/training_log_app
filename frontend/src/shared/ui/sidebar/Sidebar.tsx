@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { Bike, ChartNoAxesCombined, LogOut, PawPrint, Weight } from 'lucide-react';
+import { Bike, ChartNoAxesCombined, LogOut, PawPrint, Settings, Weight } from 'lucide-react';
 
 import { useAuth } from '@/app/auth/auth-context';
 
@@ -10,7 +10,8 @@ const tabs = [
   { path: '/kennel', label: 'My Kennel', icon: <PawPrint size={20} /> },
   { path: '/activities', label: 'Activities', icon: <Bike size={20} /> },
   { path: '/weight', label: 'Weight', icon: <Weight size={20} /> },
-  { path: '/analytics', label: 'Analytics', icon: <ChartNoAxesCombined size={20} /> }
+  { path: '/analytics', label: 'Analytics', icon: <ChartNoAxesCombined size={20} /> },
+  { path: '/settings', label: 'Settings', icon: <Settings size={20} /> }
 ];
 
 export default function Sidebar() {

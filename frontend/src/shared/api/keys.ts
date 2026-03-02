@@ -12,6 +12,8 @@ export const qk = {
   locations: () => ['location'] as const,
   // Individual location
   location: (id: number) => ['location', id] as const,
+  // List of locations with usage
+  managedLocations: (search: string) => ['managed-locations', search] as const,
   // Activity lists are keyed by filters + page/limit so we can page and filter independently
   activities: (filters: ActivityFilter, page: number, limit: number) =>
     ['activities', { filters, page, limit }] as const,

@@ -4,6 +4,7 @@ export type {
   ActivityForm,
   ActivityPayload,
   Location,
+  LocationCreate,
   PaginatedActivities,
 } from './Activity';
 export type { Comment } from './Comment';
