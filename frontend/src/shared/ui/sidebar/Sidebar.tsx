@@ -1,18 +1,12 @@
 import { useNavigate } from 'react-router-dom';
-import { Bike, ChartNoAxesCombined, LogOut, PawPrint, Settings, Weight } from 'lucide-react';
+import { LogOut } from 'lucide-react';
 
 import { useAuth } from '@/app/auth/auth-context';
+import { NAV_TABS } from "@/app/nav/tabs";
 
 import { Button } from '../button';
 import SidebarItem from '../sidebar/SidebarItem';
 
-const tabs = [
-  { path: '/kennel', label: 'My Kennel', icon: <PawPrint size={20} /> },
-  { path: '/activities', label: 'Activities', icon: <Bike size={20} /> },
-  { path: '/weight', label: 'Weight', icon: <Weight size={20} /> },
-  { path: '/analytics', label: 'Analytics', icon: <ChartNoAxesCombined size={20} /> },
-  { path: '/settings', label: 'Settings', icon: <Settings size={20} /> }
-];
 
 export default function Sidebar() {
   const navigate = useNavigate();
@@ -32,8 +26,8 @@ export default function Sidebar() {
     <div className="bg-primary text-neutral-100 fixed top-0 left-0 flex h-screen w-50 flex-col p-0">
       <h1 className="text-l mb-6 mt-2 text-center font-bold">PackTrack</h1>
       <nav className="flex flex-col space-y-1">
-        {tabs.map((tab) => (
-          <SidebarItem key={tab.path} to={tab.path} label={tab.label} icon={tab.icon} />
+        {NAV_TABS.map((tab) => (
+          <SidebarItem key={tab.path} to={tab.path} label={tab.label} icon={<tab.Icon />} />
         ))}
       </nav>
 
