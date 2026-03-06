@@ -178,7 +178,7 @@ export default function ActivityFilterPanel({
         <LocationCombobox
           locations={locations}
           value={filters.location_id ?? null}
-          onChange={(name) => setFilters((f) => ({ ...f, location_id: name ?? undefined }))}
+          onChange={(id) => setFilters((f) => ({ ...f, location_id: id ?? undefined }))}
           placeholder={isLocationsLoading ? "Loading..." : "Search a location…"}
           disabled={isLocationsLoading}
         />
