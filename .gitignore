@@ -131,6 +131,12 @@ data/
 secret/
 *.csv
 
+#certificates/keys
+*.pem
+
+#connect bash
+connect.sh
+sync_vm.sh
 
 # Environments
 config/

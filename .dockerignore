@@ -4,3 +4,10 @@ tests/
 .pytest_cache
 .github
 auth
+
+secret
+*.pem
+
+
+connect.sh
+sync_vm.sh
