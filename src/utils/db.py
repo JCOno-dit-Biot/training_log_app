@@ -47,9 +47,9 @@ def build_conditions(filters: WeightQueryFilter | ActivityQueryFilters):
             values.append(filters.dog_id)
 
         # case insensitive and partial match
-        if filters.location:
-            conditions.append("l.name ILIKE %s")
-            values.append(f"%{filters.location}%") 
+        if filters.location_id:
+            conditions.append("l.id = %s")
+            values.append(filters.location_id) 
 
         if filters.start_date:
             conditions.append("a.timestamp >= %s")
