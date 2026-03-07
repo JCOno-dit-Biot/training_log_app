@@ -44,8 +44,8 @@ def test_get_runner_by_id(runner_repo):
 
 def test_get_all_runners(runner_repo):
     runner_list = runner_repo.get_all(2)
-    print(runner_list)
     assert len(runner_list) == 2
+    assert runner_list[0].image_url == 'runner2-active.jpg'
 
 def test_get_all_runners_empty(runner_repo):
     runner_empty_list = runner_repo.get_all(100)

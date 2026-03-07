@@ -50,8 +50,10 @@ def test_get_dog_by_id(dog_repo):
     assert dog.kennel.name== 'Les Gaulois'
 
 def test_get_all_dogs(dog_repo):
-    dog_list = dog_repo.get_all(2)
-    assert len(dog_list) == 2
+    dog_list = dog_repo.get_all(1)
+    assert len(dog_list) == 1
+    assert dog_list[0].image_url == 'dog3-new.jpg'
+
 
 def test_get_all_dogs_empty(dog_repo):
     dog_empty_list = dog_repo.get_all(100)
