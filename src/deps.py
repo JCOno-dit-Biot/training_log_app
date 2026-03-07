@@ -12,6 +12,9 @@ from src.repositories import (
     analytics_repository,
     location_repository
 )
+from src.services.profile_image_service import ProfileImageService
+from src.services.s3_image_storage import S3ImageStorage
+
 from .config import settings
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="http://localhost:8001/auth/token")
@@ -57,3 +60,24 @@ async def verify_jwt(request: Request, token: str = Depends(oauth2_scheme)):
             return res.json()
     except httpx.HTTPStatusError:
         raise HTTPException(status_code=401, detail="Invalid token")
+    
+def get_profile_image_service(connection, settings) -> ProfileImageService:
+    dog_repository = dog_repository(connection)
+    runner_repository = runner_repository(connection)
+    image_repository = image_repository(connection)
+
+    image_storage = S3ImageStorage(
+        bucket_name=settings.AWS_S3_BUCKET_NAME,
+        region=settings.AWS_REGION,
+        public_base_url=settings.AWS_S3_PUBLIC_BASE_URL,
+        aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
+        aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
+    )
+
+    return ProfileImageService(
+        connection=connection,
+        dog_repository=dog_repository,
+        runner_repository=runner_repository,
+        image_repository=image_repository,
+        image_storage=image_storage,
+    )
