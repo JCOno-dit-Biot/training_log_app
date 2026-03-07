@@ -1,15 +1,28 @@
 from src.models.dog import Dog
 from src.models.kennel import Kennel
 from src.parsers.dog_parser import parse_dog_from_row
-from .abstract_repository import abstract_repository
+from .abstract_repository import EntityRepository
 from typing import List, Optional
 from psycopg2.extras import RealDictCursor
 
-class dog_repository(abstract_repository):
+class dog_repository(EntityRepository):
 
     def __init__(self, connection):
         self._connection = connection
 
+    def exists_for_kennel(self, dog_id: int, kennel_id: int) -> bool:
+        with self._connection.cursor() as cur:
+            cur.execute(
+                """
+                SELECT 1
+                FROM dogs
+                WHERE id = %s
+                  AND kennel_id = %s;
+                """,
+                (dog_id, kennel_id),
+            )
+            return cur.fetchone() is not None
+        
     # dog names are unique per kennel in the database but this method could return multiple dogs
     def get_by_name(self, dog_name: str) -> List[Dog]:
         with self._connection.cursor(cursor_factory= RealDictCursor) as cur:

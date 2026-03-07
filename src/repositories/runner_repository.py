@@ -1,14 +1,27 @@
 from src.models.runner import Runner
 from src.parsers.runner_parser import parse_runner_from_row
-from .abstract_repository import abstract_repository
+from .abstract_repository import EntityRepository
 from typing import List, Optional
 from psycopg2.extras import RealDictCursor
 
-class runner_repository(abstract_repository):
+class runner_repository(EntityRepository):
 
     def __init__(self, connection):
         self._connection = connection
 
+    def exists_for_kennel(self, runner_id: int, kennel_id: int) -> bool:
+        with self._connection.cursor() as cur:
+            cur.execute(
+                """
+                SELECT 1
+                FROM runners
+                WHERE id = %s
+                  AND kennel_id = %s;
+                """,
+                (runner_id, kennel_id),
+            )
+            return cur.fetchone() is not None
+        
     def get_by_name(self, runner_name: str) -> Optional[Runner]:
         with self._connection.cursor(cursor_factory= RealDictCursor) as cur:
             query = """ SELECT 
