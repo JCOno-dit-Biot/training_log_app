@@ -1,5 +1,6 @@
 import pytest
-from unittest.mock import Mock
+from unittest.mock import Mock, AsyncMock
+from io import BytesIO
 from fastapi import FastAPI, Request, Depends
 from fastapi.testclient import TestClient
 from datetime import date
@@ -7,6 +8,7 @@ from src.api.runner_controller import router as runner_router
 from src.repositories.runner_repository import runner_repository
 from src.models.runner import Runner
 from src.models.kennel import Kennel
+from src.models.images import ImageResponse
 
 @pytest.fixture
 def mock_repo():
@@ -18,7 +20,23 @@ def mock_repo():
     return mock
 
 @pytest.fixture
-def test_app(mock_repo):
+def mock_service():
+    mock_service = Mock()
+    mock_service.upload_runner_image = AsyncMock(
+        return_value=ImageResponse(
+            id=1,
+            image_path="profile-pictures/runners/10/abc.jpg",
+            image_url="https://cdn.example.com/profile-pictures/runners/10/abc.jpg",
+            runner_id=10,
+            dog_id=None,
+            is_active=True,
+            created_at="2026-03-07T12:00:00Z",
+        )
+    )
+    return mock_service
+
+@pytest.fixture
+def test_app(mock_repo, mock_service):
     app = FastAPI()
 
     async def fake_jwt_verify(request: Request):
@@ -28,10 +46,14 @@ def test_app(mock_repo):
     def override_repo():
         return mock_repo
     
-    from src.deps import get_runner_repo, verify_jwt
+    def override_get_profile_image_service():
+        return mock_service
+    
+    from src.deps import get_runner_repo, verify_jwt, get_profile_image_service
     app.dependency_overrides[get_runner_repo] = override_repo
     app.dependency_overrides[verify_jwt] = fake_jwt_verify
     app.include_router(runner_router, dependencies=[Depends(verify_jwt)])
+    app.dependency_overrides[get_profile_image_service] = override_get_profile_image_service
     
     return app
 
@@ -67,3 +89,17 @@ def test_create_runner(test_app, mock_repo):
     assert Runner(**response.json()) == returned_runner
     mock_repo.create.assert_called_once_with(Runner(**input_data))
 
+def test_upload_runner_image_route_calls_service(test_app, mock_service):
+
+    client = TestClient(test_app)
+
+    response = client.post(
+        "/runners/10/image",
+        files={"image": ("runner.jpg", BytesIO(b"fake-image-bytes"), "image/jpeg")},
+    )
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["runner_id"] == 10
+    assert body["image_url"] == "https://cdn.example.com/profile-pictures/runners/10/abc.jpg"
+    mock_service.upload_runner_image.assert_awaited_once()
