@@ -7,7 +7,8 @@ INSERT INTO "dogs"("name", "date_of_birth", "breed", "kennel_id")
 VALUES
     ('Milou', '2023-01-01', 'Terrier', 2),
     ('Fido', '2020-07-01', 'Golden Retriever', 2),
-    ('Idefix', '2022-04-01', 'Terrier', 1);
+    ('Idefix', '2022-04-01', 'Terrier', 1),
+    ('Rex', '2021-05-01', 'Golden Retriever', 2);
 
 INSERT INTO "runners"("name", "kennel_id")
 VALUES
@@ -27,7 +28,6 @@ INSERT INTO "images" ("runner_id","image_path", "is_active")
 VALUES
     (1, 'runner1.jpg', 'TRUE'),
     (2, 'runner2-inactive.jpg', 'FALSE'),
-    (3, 'runner3.jpg', 'TRUE'),
     (2, 'runner2-active.jpg', 'TRUE');
 
 -- insert dog pictures path

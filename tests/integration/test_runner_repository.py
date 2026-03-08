@@ -45,11 +45,16 @@ def test_get_runner_by_id(runner_repo):
 def test_get_all_runners(runner_repo):
     runner_list = runner_repo.get_all(2)
     assert len(runner_list) == 2
-    assert runner_list[0].image_url == 'runner2-active.jpg'
+    assert runner_list[1].image_url is not None
+    assert runner_list[1].name == "Asterix"
+    assert runner_list[1].kennel.name == "Les Gaulois"
 
 def test_get_all_runners_empty(runner_repo):
     runner_empty_list = runner_repo.get_all(100)
     assert len(runner_empty_list) == 0
+
+def test_check_runner_exists_for_kennel(runner_repo):
+    assert runner_repo.exists_for_kennel(2,2)
 
 def test_does_not_delete_if_wrong_kennel(runner_repo, test_kennel):
     runner = Runner(

@@ -28,7 +28,7 @@ def test_create_dog(dog_repo, test_kennel):
         results = cur.fetchall()
 
     assert dog.id is None
-    assert id == 4
+    assert id == 5
     #update dog
     dog.id = id
     assert dog.id is not None
@@ -58,6 +58,10 @@ def test_get_all_dogs(dog_repo):
 def test_get_all_dogs_empty(dog_repo):
     dog_empty_list = dog_repo.get_all(100)
     assert len(dog_empty_list) == 0
+
+
+def test_check_dog_exists_for_kennel(dog_repo):
+    assert dog_repo.exists_for_kennel(4,2)
 
 # Not ideal as this means tests depend on each other but it prevents issues when running 
 # tests multiple times
