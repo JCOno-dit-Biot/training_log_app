@@ -1,0 +1,63 @@
+services:
+  app:
+    build:
+      context: ../
+      dockerfile: ./docker/Dockerfile.app
+    container_name: app
+    restart: unless-stopped
+    env_file:
+      - ../config/.env.cloud
+    networks:
+      - app_network
+    depends_on:
+      - postgres-db
+      # not directly exposed, only accessible on private network
+
+  postgres-db:
+    build:
+      context: ../
+      dockerfile: ./docker/Dockerfile
+    container_name: db
+    restart: unless-stopped
+    env_file:
+      - ../config/.env.cloud
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    networks:
+      - app_network
+    # not directly exposed, only accessible on private network
+
+  auth:
+    build:
+      context: ../auth
+      dockerfile: Dockerfile
+    container_name: auth
+    restart: unless-stopped
+    env_file:
+      - ../config/.env.cloud
+    networks:
+      - app_network
+    depends_on:
+      - postgres-db
+    # not directly exposed, only accessible on private network
+
+  frontend:
+    build:
+      context: ../
+      dockerfile: ./frontend/Dockerfile
+    container_name: frontend
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8080:80"
+    depends_on:
+      - app
+      - fastapi-auth
+    networks:
+      - app_network
+
+volumes:
+  pg_data:
+
+networks:
+  app_network:
+    driver: bridge
