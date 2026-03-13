@@ -14,9 +14,7 @@ services:
       # not directly exposed, only accessible on private network
 
   postgres-db:
-    build:
-      context: ../
-      dockerfile: ./docker/Dockerfile
+    image: postgres:18
     container_name: db
     restart: unless-stopped
     env_file:
@@ -51,7 +49,7 @@ services:
       - "127.0.0.1:8080:80"
     depends_on:
       - app
-      - fastapi-auth
+      - auth
     networks:
       - app_network
 
