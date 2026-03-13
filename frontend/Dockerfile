@@ -17,4 +17,5 @@ COPY --from=build /app/dist /usr/share/nginx/html
 
 # Optional: smaller image, enable gzip module already in nginx-alpine
 EXPOSE 80
+# exposing in dockerfile is "documentation", the true port mapping is done in docker compose file
 CMD ["nginx", "-g", "daemon off;"]

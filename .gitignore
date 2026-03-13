@@ -124,6 +124,7 @@ frontend/public/
 #include the shadcn lib folder
 !frontend/src/shared/lib/
 !frontend/src/shared/lib/**
+*.tsbuildinfo
 
 # Exclude certain data files
 db_backups
@@ -142,6 +143,7 @@ sync_vm.sh
 config/
 .docker.env
 .env
+.env.*
 .venv
 env/
 venv/
