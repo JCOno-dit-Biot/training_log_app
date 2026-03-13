@@ -20,7 +20,7 @@ services:
     env_file:
       - ../config/.env.cloud
     volumes:
-      - pg_data:/var/lib/postgresql/data
+      - pg_data:/var/lib/postgresql
     networks:
       - app_network
     # not directly exposed, only accessible on private network
@@ -40,9 +40,7 @@ services:
     # not directly exposed, only accessible on private network
 
   frontend:
-    build:
-      context: ../
-      dockerfile: ./frontend/Dockerfile
+    image: <your-repo/frontend:tag>
     container_name: frontend
     restart: unless-stopped
     ports:
