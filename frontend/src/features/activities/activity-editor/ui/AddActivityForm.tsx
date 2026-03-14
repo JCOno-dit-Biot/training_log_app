@@ -353,6 +353,7 @@ export default function AddActivityForm({ onClose, onSuccess, initialData }: Add
                 step="0.1"
                 value={formData.distance === 0 ? "" : String(formData.distance)}
                 onChange={(e) => handleInputChange("distance", e.target.value)}
+                onWheel={(e) => e.currentTarget.blur()}
                 aria-invalid={!!fieldErrors.distance}
               />
               <FieldError msg={fieldErrors.distance} />
@@ -367,6 +368,7 @@ export default function AddActivityForm({ onClose, onSuccess, initialData }: Add
                   placeholder="MM:SS"
                   value={formData.pace}
                   onChange={(e) => handlePaceChange(e.target.value)}
+                  onWheel={(e) => e.currentTarget.blur()}
                   aria-invalid={!!fieldErrors.pace}
                 />
                 <FieldError msg={fieldErrors.pace} />
@@ -380,6 +382,7 @@ export default function AddActivityForm({ onClose, onSuccess, initialData }: Add
                   step="0.1"
                   value={formData.speed ?? ""}
                   onChange={(e) => handleInputChange("speed", e.target.value)}
+                  onWheel={(e) => e.currentTarget.blur()}
                   aria-invalid={!!fieldErrors.speed}
                 />
                 <FieldError msg={fieldErrors.speed} />
