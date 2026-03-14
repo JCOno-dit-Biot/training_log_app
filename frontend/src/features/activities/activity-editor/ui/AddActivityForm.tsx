@@ -183,7 +183,7 @@ export default function AddActivityForm({ onClose, onSuccess, initialData }: Add
 
     // 2) create with optimistic update
     try {
-      const created = await createLoc(name); // resolves to server {id,name}
+      const created = await createLoc({ name: name }); // resolves to server {id,name}
       handleInputChange('location_id', created.id);
       setBanner({ type: 'success', msg: `Added "${created.name}".` });
       return { ok: true };
