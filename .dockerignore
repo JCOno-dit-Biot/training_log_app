@@ -4,6 +4,11 @@ tests/
 .pytest_cache
 .github
 auth
+**/.env
+**/.env.*
+config/.env*
+
+*.tsbuildinfo
 
 secret
 *.pem
@@ -11,3 +16,7 @@ secret
 
 connect.sh
 sync_vm.sh
+
+.git
+.gitignore
+
