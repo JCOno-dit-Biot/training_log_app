@@ -66,7 +66,7 @@ class ProfileImageService:
                 detail="Failed to save image record",
             ) from exc
 
-        created["image_url"] = self._image_storage.get_public_url(created["image_path"])
+        created["image_url"] = self._image_storage.get_presigned_url(created["image_path"])
         return ImageResponse(**created)
 
     async def upload_runner_image(
@@ -114,5 +114,5 @@ class ProfileImageService:
                 detail="Failed to save image record",
             ) from exc
 
-        created["image_url"] = self._image_storage.get_public_url(created["image_path"])
+        created["image_url"] = self._image_storage.get_presigned_url(created["image_path"])
         return ImageResponse(**created)

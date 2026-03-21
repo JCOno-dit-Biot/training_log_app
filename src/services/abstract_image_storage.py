@@ -15,7 +15,7 @@ class ImageStorage(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def get_public_url(self, storage_key: str) -> str:
+    def get_presigned_url(self, storage_key: str) -> str:
         raise NotImplementedError
 
     @abstractmethod

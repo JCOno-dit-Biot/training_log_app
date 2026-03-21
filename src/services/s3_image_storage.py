@@ -42,8 +42,15 @@ class S3ImageStorage:
         )
         return key
 
-    def get_public_url(self, storage_key: str) -> str:
-        return f"{self._public_base_url}/{storage_key}"
+    def get_presigned_url(self, storage_key: str, expires_in: int = 3600) -> str:
+        return self._client.generate_presigned_url(
+            "get_object",
+            Params={
+                "Bucket": self._bucket_name,
+                "Key": storage_key,
+            },
+            ExpiresIn=expires_in,
+        )
 
     def delete(self, storage_key: str) -> None:
         self._client.delete_object(
