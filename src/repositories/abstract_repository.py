@@ -31,3 +31,10 @@ class abstract_repository(abc.ABC):
     @abc.abstractmethod
     def delete(self, id: int):
         pass
+
+
+class EntityRepository(abstract_repository):
+
+    @abc.abstractmethod
+    def exists_for_kennel(self, entity_id: int , kennel_id: int):
+        raise NotImplementedError

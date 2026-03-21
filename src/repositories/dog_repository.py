@@ -1,15 +1,28 @@
 from src.models.dog import Dog
 from src.models.kennel import Kennel
 from src.parsers.dog_parser import parse_dog_from_row
-from .abstract_repository import abstract_repository
+from .abstract_repository import EntityRepository
 from typing import List, Optional
 from psycopg2.extras import RealDictCursor
 
-class dog_repository(abstract_repository):
+class dog_repository(EntityRepository):
 
     def __init__(self, connection):
         self._connection = connection
 
+    def exists_for_kennel(self, dog_id: int, kennel_id: int) -> bool:
+        with self._connection.cursor() as cur:
+            cur.execute(
+                """
+                SELECT 1
+                FROM dogs
+                WHERE id = %s
+                  AND kennel_id = %s;
+                """,
+                (dog_id, kennel_id),
+            )
+            return cur.fetchone() is not None
+        
     # dog names are unique per kennel in the database but this method could return multiple dogs
     def get_by_name(self, dog_name: str) -> List[Dog]:
         with self._connection.cursor(cursor_factory= RealDictCursor) as cur:
@@ -32,8 +45,8 @@ class dog_repository(abstract_repository):
                             ON images.dog_id = dogs.id
                         WHERE 
                             dogs.name = %s
-                        ORDER BY images.created_at DESC 
-                        LIMIT 1;
+                        AND 
+                            images.is_active=True 
                         """
             cur.execute(query, (dog_name,))
             dogs = []
@@ -64,8 +77,8 @@ class dog_repository(abstract_repository):
                             ON images.dog_id = dogs.id
                         WHERE 
                             dogs.id = %s
-                        ORDER BY images.created_at DESC 
-                        LIMIT 1;
+                        AND 
+                            images.is_active=True 
                         """
             cur.execute(query, (id,))
             row = cur.fetchone()
@@ -76,12 +89,6 @@ class dog_repository(abstract_repository):
     def get_all(self, kennel_id: int) -> List[Dog]:
         with self._connection.cursor(cursor_factory= RealDictCursor) as cur:
             query = """ 
-                        WITH latest_images AS (
-                            SELECT *,
-                                    ROW_NUMBER() OVER (PARTITION BY dog_id ORDER BY created_at DESC) AS rn
-                            FROM images
-                            WHERE dog_id IS NOT NULL
-                        )
                         SELECT 
                             dogs.id,
                             dogs.name,
@@ -90,17 +97,17 @@ class dog_repository(abstract_repository):
                             color,
                             k.id as kennel_id,
                             k.name as kennel_name,
-                            latest_images.image_path as image_url
+                            images.image_path as image_url
                         FROM 
                             dogs 
                         JOIN 
                             kennels k
                         ON
                             dogs.kennel_id = k.id
-                        LEFT JOIN latest_images
-                            ON latest_images.dog_id = dogs.id AND latest_images.rn = 1
+                        LEFT JOIN images
+                            ON images.dog_id = dogs.id
                         WHERE 
-                            kennel_id = %s;
+                            kennel_id = %s AND images.is_active=True;
                         """
             cur.execute(query, (kennel_id,))
             dogs = []
