@@ -5,7 +5,8 @@ from src.models.dog import Dog, DogUpdate
 from src.models.images import ImageResponse
 from src.deps import (
     get_dog_repo,
-    get_profile_image_service
+    get_profile_image_service,
+    get_dog_service
 )
 
 router = APIRouter()
@@ -16,9 +17,9 @@ class DogController:
         self.repo = dog_repo
 
     @router.get("/dogs", response_model=list[Dog])
-    def list_dogs(self, request: Request):
+    def list_dogs(self, request: Request, service=Depends(get_dog_service)):
         kennel_id = request.state.kennel_id
-        return self.repo.get_all(kennel_id)
+        return service.get_all(kennel_id)
 
     @router.post("/dogs")
     def create_dog(self, dog: Dog):
