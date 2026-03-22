@@ -13,9 +13,6 @@ export const baseURL =
 
 const api = axios.create({
   baseURL,
-  headers: {
-    'Content-Type': 'application/json',
-  },
 });
 
 // Attach token on every request
