@@ -135,7 +135,7 @@ export default function DogCard({ dog }: DogCardProps) {
         </CardContent>
 
         <img
-          src={`/profile_picture/dogs/${dog.image_url}`}
+          src={dog.image_url}
           alt={dog.name}
           className="absolute right-4 top-4 h-25 w-25 rounded-full border-4 bg-muted object-cover"
           style={{ borderColor: safeBorderColor(dog.color) }}

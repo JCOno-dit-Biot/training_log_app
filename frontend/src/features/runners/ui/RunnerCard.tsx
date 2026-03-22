@@ -10,7 +10,7 @@ export default function RunnerCard({ runner }: RunnerCardProps) {
   const DEFAULT_AVATAR = 'https://img.icons8.com/ios-filled/100/cccccc/user-male-circle.png';
 
   const avatarSrc = runner.image_url
-    ? `/profile_picture/runners/${runner.image_url}`
+    ? runner.image_url
     : DEFAULT_AVATAR
 
   return (
