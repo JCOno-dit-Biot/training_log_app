@@ -10,7 +10,8 @@ from src.repositories import (
     sport_repository,
     comment_repository,
     analytics_repository,
-    location_repository
+    location_repository,
+    ImageRepository
 )
 from src.services.dog_service import DogService
 from src.services.profile_image_service import ProfileImageService
@@ -47,6 +48,9 @@ def get_analytics_repo(db=Depends(get_db)):
 def get_location_repo(db=Depends(get_db)):
     return location_repository(db)
 
+def get_image_repo(db=Depends(get_db)):
+    return ImageRepository(db)
+
 async def verify_jwt(request: Request, token: str = Depends(oauth2_scheme)):
     if not token:
         raise HTTPException(status_code=401, detail="Missing token")
@@ -62,10 +66,12 @@ async def verify_jwt(request: Request, token: str = Depends(oauth2_scheme)):
     except httpx.HTTPStatusError:
         raise HTTPException(status_code=401, detail="Invalid token")
     
-def get_profile_image_service(db=Depends(get_db)) -> ProfileImageService:
-    dog_repository = dog_repository(db)
-    runner_repository = runner_repository(db)
-    image_repository = image_repository(db)
+def get_profile_image_service(
+        connection= Depends(get_db),
+        dog_repository = Depends(get_dog_repo),
+        runner_repository = Depends(get_runner_repo),
+        image_repository = Depends(get_image_repo)
+    ) -> ProfileImageService:
 
     image_storage = S3ImageStorage(
         bucket_name=settings.AWS_S3_BUCKET_NAME,
@@ -76,7 +82,7 @@ def get_profile_image_service(db=Depends(get_db)) -> ProfileImageService:
     )
 
     return ProfileImageService(
-        connection=db,
+        connection=connection,
         dog_repository=dog_repository,
         runner_repository=runner_repository,
         image_repository=image_repository,

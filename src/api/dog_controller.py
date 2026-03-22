@@ -27,8 +27,9 @@ class DogController:
     
     @router.post("/dogs/{dog_id}/image", response_model=ImageResponse)
     async def upload_dog_image(
-        dog_id: int,
+        self,
         request: Request,
+        dog_id: int,
         image: UploadFile = File(...),
         service=Depends(get_profile_image_service),
     ):
