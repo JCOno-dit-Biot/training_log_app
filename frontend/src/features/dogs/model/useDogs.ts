@@ -68,12 +68,6 @@ export function useUploadDogPicture() {
   return useMutation({
     mutationFn: ({ id, file }: { id: number, file: File }) => uploadDogImage(id, file),
 
-    onError: (_err, vars, ctx) => {
-      // rollback on error
-      if (ctx?.prevList) qc.setQueryData(qk.dogs(), ctx.prevList);
-      if (ctx?.prevDetail) qc.setQueryData(qk.dog(vars.id), ctx.prevDetail);
-    },
-
     onSuccess: (_ok, vars) => {
       qc.invalidateQueries({ queryKey: qk.dogs(), refetchType: 'active' });
       qc.invalidateQueries({ queryKey: qk.dog(vars.id) });
