@@ -7,3 +7,6 @@ class Runner(BaseModel):
     name: str
     kennel: Optional[Kennel] = None
     image_url: Optional[str] = ""
+
+class RunnerUpdate(BaseModel):
+    name: Optional[str] = None

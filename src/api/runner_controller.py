@@ -1,7 +1,7 @@
 from fastapi_utils.cbv import cbv
-from fastapi import APIRouter, UploadFile, File
+from fastapi import APIRouter, HTTPException, UploadFile, File
 from src.repositories.runner_repository import runner_repository
-from src.models.runner import Runner
+from src.models.runner import Runner, RunnerUpdate
 from src.models.images import ImageResponse
 from fastapi import Depends, Request
 from src.deps import (
@@ -37,3 +37,12 @@ class RunnerController:
             kennel_id=request.state.kennel_id,
             image=image
         )
+    
+    @router.put("/runners/{runner_id}")
+    def update_runner(self, runner: RunnerUpdate, runner_id: int):
+        updated_fields = runner.model_dump(exclude_none=True)
+        if not updated_fields:
+            raise HTTPException(status_code=400, detail="No data to update")
+
+        self.repo.update(updated_fields, runner_id)
+        return {"success": True}

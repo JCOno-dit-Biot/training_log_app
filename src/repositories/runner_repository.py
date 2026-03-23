@@ -3,6 +3,7 @@ from src.parsers.runner_parser import parse_runner_from_row
 from .abstract_repository import EntityRepository
 from typing import List, Optional
 from psycopg2.extras import RealDictCursor
+from src.constants import UPDATE_ALLOWED_FIELDS_RUNNER
 
 class runner_repository(EntityRepository):
 
@@ -126,8 +127,35 @@ class runner_repository(EntityRepository):
             self._connection.commit()
 
 
-    def update(self, obj):
-        return super().update(obj)
+    def update(self, fields: dict, runner_id: int):
+
+        # Sanitize data entry at repo level
+        fields = {k: v for k, v in fields.items() if k in UPDATE_ALLOWED_FIELDS_RUNNER}
+
+        if not fields:
+            return False
+        
+        keys = list(fields.keys())
+        values = list(fields.values())
+
+        set_clause = ", ".join([f"{key} = %s" for key in keys])
+
+        query = f"""
+            UPDATE dogs
+            SET {set_clause}
+            WHERE id = %s
+        """
+
+        values.append(runner_id)
+        try:
+            with self._connection.cursor(cursor_factory= RealDictCursor) as cur:
+                cur.execute(query, values)
+                self._connection.commit()
+                return cur.rowcount > 0
+        except Exception as e:
+            print(e)
+            self._connection.rollback()
+            return False
     
     def get_total_count(self):
         return super().get_total_count()
