@@ -13,9 +13,12 @@ from src.repositories import (
     location_repository,
     ImageRepository
 )
-from src.services.dog_service import DogService
-from src.services.profile_image_service import ProfileImageService
-from src.services.s3_image_storage import S3ImageStorage
+from src.services import (
+    DogService,
+    RunnerService,
+    ProfileImageService,
+    S3ImageStorage
+)
 
 from .config import settings
 
@@ -101,5 +104,20 @@ def get_dog_service(dog_repository = Depends(get_dog_repo)):
 
     return DogService(
         dog_repository=dog_repository,
+        image_storage=image_storage
+    )
+
+def get_runner_service(runner_repository = Depends(get_runner_repo)):
+
+    image_storage = S3ImageStorage(
+        bucket_name=settings.AWS_S3_BUCKET_NAME,
+        region=settings.AWS_REGION,
+        public_base_url=settings.AWS_S3_PUBLIC_BASE_URL,
+        aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
+        aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
+    )
+
+    return RunnerService(
+        runner_repository=runner_repository,
         image_storage=image_storage
     )

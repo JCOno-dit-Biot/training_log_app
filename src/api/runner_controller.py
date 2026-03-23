@@ -17,9 +17,9 @@ class RunnerController:
         self.repo = repo
 
     @router.get("/runners", response_model=list[Runner])
-    def list_runners(self, request: Request):
+    def list_runners(self, request: Request, service=Depends(get_runner_service)):
         kennel_id = request.state.kennel_id
-        return self.repo.get_all(kennel_id)
+        return service.get_all(kennel_id)
 
     @router.post("/runners")
     def create_runner(self, runner: Runner):
