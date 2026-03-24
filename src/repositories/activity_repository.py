@@ -7,6 +7,7 @@ from typing import List, Optional
 from psycopg2.extras import RealDictCursor
 from src.utils.pagination import paginate_results
 from src.utils.db import build_conditions
+from src.constants import UPDATE_ALLOWED_FIELDS_ACTIVITY
 
 class activity_repository(abstract_repository):
 
@@ -239,6 +240,12 @@ class activity_repository(abstract_repository):
         dogs = fields.pop("dogs", None)
         pace = fields.pop("pace", None) # pace is not directly saved in the db
 
+        # Sanitize data entry at repo level
+        fields = {k: v for k, v in fields.items() if k in UPDATE_ALLOWED_FIELDS_ACTIVITY}
+
+        if not fields:
+            return False
+        
         keys = list(fields.keys())
         values = list(fields.values())
 

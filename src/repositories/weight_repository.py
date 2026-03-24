@@ -5,6 +5,7 @@ from src.repositories.abstract_repository import abstract_repository
 from psycopg2.extras import RealDictCursor
 from src.parsers.weight_parser import parse_weight_from_row
 from src.utils.db import build_conditions
+from src.constants import UPDATE_ALLOWED_FIELDS_WEIGHT
 
 class weight_repository(abstract_repository):
 
@@ -140,19 +141,27 @@ class weight_repository(abstract_repository):
                 
 
     def update(self, id, fields: dict):
+
+        # Sanitize data entry at repo level
+        fields = {k: v for k, v in fields.items() if k in UPDATE_ALLOWED_FIELDS_WEIGHT}
+
+        if not fields:
+            return False
+        
+        keys = list(fields.keys())
+        values = list(fields.values())
+
+        set_clause = ", ".join([f"{key} = %s" for key in keys])
+        
+        #add entry id
+        values.append(id)
+
         with self._connection.cursor(cursor_factory= RealDictCursor) as cur:
             try:
-                keys = list(fields.keys())
-                values = list(fields.values())
-
-                set_clause = ", ".join([f"{key} = %s" for key in keys])
-
                 query = f"""UPDATE weight_entries 
                                 SET {set_clause}
                                 WHERE id = %s"""
                 
-                #add entry id
-                values.append(id)
                 cur.execute(query, values)
                 self._connection.commit()
                 return cur.rowcount > 0
