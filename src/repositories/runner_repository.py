@@ -19,7 +19,7 @@ class runner_repository(EntityRepository):
                 WHERE id = %s
                   AND kennel_id = %s;
                 """,
-                (runner_id, kennel_id),
+                (runner_id, kennel_id)
             )
             return cur.fetchone() is not None
         
@@ -141,7 +141,7 @@ class runner_repository(EntityRepository):
         set_clause = ", ".join([f"{key} = %s" for key in keys])
 
         query = f"""
-            UPDATE dogs
+            UPDATE runners
             SET {set_clause}
             WHERE id = %s
         """

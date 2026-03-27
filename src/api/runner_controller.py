@@ -6,7 +6,8 @@ from src.models.images import ImageResponse
 from fastapi import Depends, Request
 from src.deps import (
     get_runner_repo,
-    get_profile_image_service
+    get_profile_image_service,
+    get_runner_service
 )
 
 router = APIRouter()
@@ -27,6 +28,7 @@ class RunnerController:
 
     @router.post("/runners/{runner_id}/image", response_model=ImageResponse)
     async def upload_runner_image(
+        self,
         runner_id: int,
         request: Request,
         image: UploadFile = File(...),
