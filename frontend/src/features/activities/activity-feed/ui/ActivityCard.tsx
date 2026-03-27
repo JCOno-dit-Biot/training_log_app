@@ -109,13 +109,13 @@ export default function ActivityCard({
     }) ?? "—"
 
   const runnerImageUrl = runners.get(activity.runner.id)
-    ? `/profile_picture/runners/${runners.get(activity.runner.id)?.image_url}`
+    ? runners.get(activity.runner.id)?.image_url
     : DEFAULT_AVATAR;
 
 
   const dogElements = activity.dogs.map((dog) => {
     const cachedDog = dogs.get(dog.dog.id);
-    const dogImageUrl = cachedDog ? `/profile_picture/dogs/${cachedDog.image_url}` : DEFAULT_AVATAR;
+    const dogImageUrl = cachedDog ? cachedDog.image_url : DEFAULT_AVATAR;
     return (
       <div key={dog.dog.id} className="flex items-center gap-5">
         <img
@@ -125,7 +125,7 @@ export default function ActivityCard({
         />
         <div className='leading-tight'>
           <div className="text-neutral-900 text-lg font-semibold">{dog.dog.name}</div>
-          <div className={`font-semibold ${getRatingColor(dog.rating)}`}>{dog.rating}</div>
+          <div className={`font - semibold ${getRatingColor(dog.rating)} `}>{dog.rating}</div>
         </div>
       </div>
     );
@@ -135,9 +135,9 @@ export default function ActivityCard({
     if (!weather) return null
     const { temperature, humidity, condition } = weather
     const tempText = temperature == null ? "—°C" : `${temperature}°C`
-    const humidityText = humidity == null ? "—%" : `${Math.round(humidity * 100)}%`
+    const humidityText = humidity == null ? "—%" : `${Math.round(humidity * 100)}% `
     const conditionText = !condition ? "—" : condition
-    return `${tempText} • ${humidityText} • ${conditionText}`
+    return `${tempText} • ${humidityText} • ${conditionText} `
   }
 
   const weatherLine = formatWeather(activity.weather)

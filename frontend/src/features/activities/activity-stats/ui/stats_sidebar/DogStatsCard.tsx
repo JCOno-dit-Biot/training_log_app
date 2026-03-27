@@ -14,7 +14,7 @@ export function DogStatsCard({ data, dog }: { data: WeeklyStats; dog: Dog }) {
       <CardHeader className="pb-0 pt-0">
         <CardTitle className="flex items-center gap-3 text-sm font-semibold">
           <Avatar className="h-14 w-14 border">
-            <AvatarImage src={`/profile_picture/dogs/${dog.image_url}`} alt={dog.name} />
+            <AvatarImage src={dog.image_url} alt={dog.name} />
             <AvatarFallback>{dog.name?.slice(0, 2).toUpperCase()}</AvatarFallback>
           </Avatar>
           <span className="text-neutral-900">{dog.name}</span>

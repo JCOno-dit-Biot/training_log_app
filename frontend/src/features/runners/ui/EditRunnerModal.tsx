@@ -146,7 +146,7 @@ export default function EditRunnerModal({ runner, open, onOpenChange }: EditRunn
                     <Label>Profile picture</Label>
                     <div className="flex items-center gap-4">
                         <div
-                            className="h-20 w-20 overflow-hidden rounded-full border-4 bg-muted"
+                            className="h-20 w-20 overflow-hidden rounded-full border bg-muted"
                         >
                             {previewUrl ? (
                                 <img
