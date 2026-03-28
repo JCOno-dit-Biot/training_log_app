@@ -4,6 +4,7 @@ from src.parsers.dog_parser import parse_dog_from_row
 from .abstract_repository import EntityRepository
 from typing import List, Optional
 from psycopg2.extras import RealDictCursor
+from src.utils.db import sanitize_update_dict, build_update_set_clause
 from src.constants import UPDATE_ALLOWED_FIELDS_DOG
 
 class dog_repository(EntityRepository):
@@ -142,16 +143,13 @@ class dog_repository(EntityRepository):
     def update(self, fields: dict, dog_id: int):
 
         # Sanitize data entry at repo level
-        fields = {k: v for k, v in fields.items() if k in UPDATE_ALLOWED_FIELDS_DOG}
+        # Sanitize data entry at repo level
+        fields = sanitize_update_dict(fields, UPDATE_ALLOWED_FIELDS_DOG)
 
         if not fields:
             return False
         
-        keys = list(fields.keys())
-        values = list(fields.values())
-
-        set_clause = ", ".join([f"{key} = %s" for key in keys])
-
+        set_clause, values = build_update_set_clause(fields)
         query = f"""
             UPDATE dogs
             SET {set_clause}

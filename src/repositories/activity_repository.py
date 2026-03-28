@@ -7,6 +7,7 @@ from typing import List, Optional
 from psycopg2.extras import RealDictCursor
 from src.utils.pagination import paginate_results
 from src.utils.db import build_conditions
+from src.utils.db import sanitize_update_dict, build_update_set_clause
 from src.constants import UPDATE_ALLOWED_FIELDS_ACTIVITY
 
 class activity_repository(abstract_repository):
@@ -241,13 +242,12 @@ class activity_repository(abstract_repository):
         pace = fields.pop("pace", None) # pace is not directly saved in the db
 
         # Sanitize data entry at repo level
-        fields = {k: v for k, v in fields.items() if k in UPDATE_ALLOWED_FIELDS_ACTIVITY}
+        fields = sanitize_update_dict(fields, UPDATE_ALLOWED_FIELDS_ACTIVITY)
+        
+        set_clause=""
         
         if fields:
-            keys = list(fields.keys())
-            values = list(fields.values())
-
-            set_clause = ", ".join([f"{key} = %s" for key in keys])
+            set_clause, values = build_update_set_clause(fields)
 
             query = f"""
                 UPDATE activities
@@ -256,12 +256,10 @@ class activity_repository(abstract_repository):
             """
             
             values.append(activity_id)
-        else:
-            keys = None
 
         try:
             with self._connection.cursor(cursor_factory= RealDictCursor) as cur:
-                if keys:
+                if set_clause:
                     cur.execute(query, values)
 
                 # Workout laps update
