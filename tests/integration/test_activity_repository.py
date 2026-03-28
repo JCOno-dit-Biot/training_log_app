@@ -225,7 +225,6 @@ def test_update_all_components(activity_repo):
         assert lap["speed"] == 13.5
 
 
-
 def test_update_invalid_id(activity_repo):
     fields = {"location_id": 3}
     activity_repo.update(99999, fields)  # Should not fail, but shouldn't affect data
@@ -245,3 +244,13 @@ def update_activity_remove_weather_entry(activity_repo):
         result = cur.fetchone()
         assert result is None
 
+def test_update_activity_ignores_invalid_fields(activity_repo):
+
+    updated = activity_repo.update(2, {"not_a_real_column": '2025-04-02T16:00:00Z'})
+
+    with activity_repo._connection.cursor() as cur:
+        cur.execute("SELECT timestamp FROM activities WHERE id = %s", (2,))
+        result = cur.fetchone()
+
+    assert updated is False
+    assert result[0] == datetime(2025, 4, 2, 16, 00, tzinfo=timezone.utc)

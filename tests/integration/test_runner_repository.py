@@ -81,3 +81,25 @@ def test_delete_runner(runner_repo):
         results = cur.fetchall()
 
     assert len(results) == 0    
+
+def test_update_runner(runner_repo):
+
+    fields={'name': 'Asterix-updated'}
+
+    runner_repo.update(fields, 2)
+    with runner_repo._connection.cursor() as cur:
+        cur.execute(""" SELECT * FROM runners WHERE id=2 """)
+        results = cur.fetchone()
+    
+    assert results[1] == 'Asterix-updated'
+
+def test_update_runner_ignores_invalid_fields(runner_repo):
+
+    updated = runner_repo.update({"not_a_real_column": "Tintin-updated"}, 1)
+
+    with runner_repo._connection.cursor() as cur:
+        cur.execute("SELECT name FROM runners WHERE id = %s", (1,))
+        result = cur.fetchone()
+
+    assert updated is False
+    assert result[0] == "Tintin"

@@ -93,3 +93,14 @@ def test_update_dog(dog_repo):
     assert len(results) == 1
     assert results[0]['breed'] == "Updated Dog Breed" 
     assert results[0]['color'] == "#831E1E"
+
+def test_update_dog_ignores_invalid_fields(dog_repo):
+
+    updated = dog_repo.update({"not_a_real_column": "Milou-updated"}, 1)
+
+    with dog_repo._connection.cursor() as cur:
+        cur.execute("SELECT name FROM dogs WHERE id = %s", (1,))
+        result = cur.fetchone()
+
+    assert updated is False
+    assert result[0] == "Milou"
