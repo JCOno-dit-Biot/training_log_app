@@ -242,22 +242,22 @@ class activity_repository(abstract_repository):
 
         # Sanitize data entry at repo level
         fields = {k: v for k, v in fields.items() if k in UPDATE_ALLOWED_FIELDS_ACTIVITY}
-
-        if not fields:
-            return False
         
-        keys = list(fields.keys())
-        values = list(fields.values())
+        if fields:
+            keys = list(fields.keys())
+            values = list(fields.values())
 
-        set_clause = ", ".join([f"{key} = %s" for key in keys])
+            set_clause = ", ".join([f"{key} = %s" for key in keys])
 
-        query = f"""
-            UPDATE activities
-            SET {set_clause}
-            WHERE id = %s
-        """
-        
-        values.append(activity_id)
+            query = f"""
+                UPDATE activities
+                SET {set_clause}
+                WHERE id = %s
+            """
+            
+            values.append(activity_id)
+        else:
+            keys = None
 
         try:
             with self._connection.cursor(cursor_factory= RealDictCursor) as cur:
