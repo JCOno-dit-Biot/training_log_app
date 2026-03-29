@@ -137,7 +137,6 @@ class location_repository(abstract_repository):
     def update(self,fields: dict, id: int):
 
         # Sanitize data entry at repo level
-        # Sanitize data entry at repo level
         fields = sanitize_update_dict(fields, UPDATE_ALLOWED_FIELDS_LOCATION)
 
         if not fields:

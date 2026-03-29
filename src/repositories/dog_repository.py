@@ -143,7 +143,6 @@ class dog_repository(EntityRepository):
     def update(self, fields: dict, dog_id: int):
 
         # Sanitize data entry at repo level
-        # Sanitize data entry at repo level
         fields = sanitize_update_dict(fields, UPDATE_ALLOWED_FIELDS_DOG)
 
         if not fields:
