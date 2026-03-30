@@ -62,7 +62,7 @@ async def test_upload_dog_image_success(
     dog_repository.exists_for_kennel.return_value = True
     mock_validate.return_value = (b"normalized-bytes", "image/jpeg")
     image_storage.upload_profile_image.return_value = "profile-pictures/dogs/10/abc.jpg"
-    image_storage.get_public_url.return_value = "https://cdn.example.com/profile-pictures/dogs/10/abc.jpg"
+    image_storage.get_presigned_url.return_value = "https://cdn.example.com/profile-pictures/dogs/10/abc.jpg"
     image_repository.create_dog_image.return_value = {
         "id": 1,
         "image_path": "profile-pictures/dogs/10/abc.jpg",
@@ -186,7 +186,7 @@ async def test_upload_runner_image_success(
     runner_repository.exists_for_kennel.return_value = True
     mock_validate.return_value = (b"normalized-bytes", "image/jpeg")
     image_storage.upload_profile_image.return_value = "profile-pictures/runners/11/abc.jpg"
-    image_storage.get_public_url.return_value = "https://cdn.example.com/profile-pictures/runners/11/abc.jpg"
+    image_storage.get_presigned_url.return_value = "https://cdn.example.com/profile-pictures/runners/11/abc.jpg"
     image_repository.create_runner_image.return_value = {
         "id": 2,
         "image_path": "profile-pictures/runners/11/abc.jpg",

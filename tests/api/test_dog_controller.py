@@ -40,7 +40,20 @@ def mock_service():
     return mock_service
 
 @pytest.fixture
-def test_app(mock_repo, mock_service):
+def mock_dog_service():
+    mock_service = Mock()
+    mock_service.get_all.return_value = [Dog(
+        name='Fido',
+        breed='labrador',
+        date_of_birth=date(2024,1,1),
+        kennel = Kennel(name='test_kennel'),
+        image_url="https://cdn.example.com/profile-pictures/dogs/10/abc.jpg"
+    )]
+
+    return mock_service
+
+@pytest.fixture
+def test_app(mock_repo, mock_service, mock_dog_service):
     app = FastAPI()
 
     async def fake_jwt_verify(request: Request):
@@ -52,18 +65,22 @@ def test_app(mock_repo, mock_service):
 
     def override_get_profile_image_service():
         return mock_service
+    
+    def override_get_dog_service():
+        return mock_dog_service
 
 
-    from src.deps import get_dog_repo, verify_jwt, get_profile_image_service
+    from src.deps import get_dog_repo, verify_jwt, get_profile_image_service, get_dog_service
     app.dependency_overrides[get_dog_repo] = override_repo
     app.dependency_overrides[verify_jwt] = fake_jwt_verify
     app.include_router(dog_router, dependencies=[Depends(verify_jwt)])
     app.dependency_overrides[get_profile_image_service] = override_get_profile_image_service
+    app.dependency_overrides[get_dog_service] = override_get_dog_service
 
 
     return app
 
-def test_list_dogs_called(test_app, mock_repo):
+def test_list_dogs_called(test_app, mock_dog_service):
     client = TestClient(test_app)
 
     response = client.get("/dogs")
@@ -72,11 +89,12 @@ def test_list_dogs_called(test_app, mock_repo):
         name='Fido',
         breed='labrador',
         date_of_birth=date(2024,1,1),
-        kennel = Kennel(name='test_kennel')
+        kennel = Kennel(name='test_kennel'),
+        image_url="https://cdn.example.com/profile-pictures/dogs/10/abc.jpg"
     )
     assert response.status_code == 200
     assert Dog(**response.json()[0]) == expected_response
-    mock_repo.get_all.assert_called_once()
+    mock_dog_service.get_all.assert_called_once()
 
 def test_create_dog(test_app, mock_repo):
     client = TestClient(test_app)
