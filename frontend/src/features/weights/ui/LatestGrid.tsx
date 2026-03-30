@@ -44,7 +44,7 @@ export function LatestGrid({
                                 <div className="flex items-start justify-between gap-3">
                                     <div className="flex items-center gap-3 mt-1">
                                         <img
-                                            src={`/profile_picture/dogs/${d.image_url}`}
+                                            src={d.image_url}
                                             alt={d.name}
                                             className="h-20 w-20 rounded-full border-4 bg-muted object-cover mt-2"
                                             style={{ borderColor: d.color ?? "#9ca3af" }}

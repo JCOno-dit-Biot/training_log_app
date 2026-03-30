@@ -4,6 +4,8 @@ from .abstract_repository import abstract_repository
 from typing import List, Optional
 from psycopg2.extras import RealDictCursor
 from psycopg2.errors import UniqueViolation, ForeignKeyViolation
+from src.utils.db import sanitize_update_dict, build_update_set_clause
+from src.constants import UPDATE_ALLOWED_FIELDS_LOCATION
 
 class DuplicateLocationError(Exception):
     pass
@@ -133,10 +135,14 @@ class location_repository(abstract_repository):
                 return False
 
     def update(self,fields: dict, id: int):
-        keys = list(fields.keys())
-        values = list(fields.values())
 
-        set_clause = ", ".join([f"{key} = %s" for key in keys])
+        # Sanitize data entry at repo level
+        fields = sanitize_update_dict(fields, UPDATE_ALLOWED_FIELDS_LOCATION)
+
+        if not fields:
+            return False
+        
+        set_clause, values = build_update_set_clause(fields)
 
         values.append(id)
 

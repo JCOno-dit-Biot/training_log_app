@@ -108,3 +108,15 @@ def test_update_base_fields(weight_repo):
         result = cur.fetchone()
         assert result[0] == 30.4
         assert result[1] == date(2025, 6, 10)
+
+def test_update_weight_ignores_invalid_fields(weight_repo):
+
+    updated = weight_repo.update(3, {"not_a_real_column": 23.4})
+
+    with weight_repo._connection.cursor() as cur:
+        cur.execute("SELECT dog_id, weight FROM weight_entries WHERE id = %s", (3,))
+        result = cur.fetchone()
+
+    assert updated is False
+    assert result[0] == 1
+    assert result[1] == 19.8

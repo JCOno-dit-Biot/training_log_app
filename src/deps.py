@@ -10,8 +10,16 @@ from src.repositories import (
     sport_repository,
     comment_repository,
     analytics_repository,
-    location_repository
+    location_repository,
+    ImageRepository
 )
+from src.services import (
+    DogService,
+    RunnerService,
+    ProfileImageService,
+    S3ImageStorage
+)
+
 from .config import settings
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="http://localhost:8001/auth/token")
@@ -43,6 +51,9 @@ def get_analytics_repo(db=Depends(get_db)):
 def get_location_repo(db=Depends(get_db)):
     return location_repository(db)
 
+def get_image_repo(db=Depends(get_db)):
+    return ImageRepository(db)
+
 async def verify_jwt(request: Request, token: str = Depends(oauth2_scheme)):
     if not token:
         raise HTTPException(status_code=401, detail="Missing token")
@@ -57,3 +68,56 @@ async def verify_jwt(request: Request, token: str = Depends(oauth2_scheme)):
             return res.json()
     except httpx.HTTPStatusError:
         raise HTTPException(status_code=401, detail="Invalid token")
+    
+def get_profile_image_service(
+        connection= Depends(get_db),
+        dog_repository = Depends(get_dog_repo),
+        runner_repository = Depends(get_runner_repo),
+        image_repository = Depends(get_image_repo)
+    ) -> ProfileImageService:
+
+    image_storage = S3ImageStorage(
+        bucket_name=settings.AWS_S3_BUCKET_NAME,
+        region=settings.AWS_REGION,
+        public_base_url=settings.AWS_S3_PUBLIC_BASE_URL,
+        aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
+        aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
+    )
+
+    return ProfileImageService(
+        connection=connection,
+        dog_repository=dog_repository,
+        runner_repository=runner_repository,
+        image_repository=image_repository,
+        image_storage=image_storage,
+    )
+
+def get_dog_service(dog_repository = Depends(get_dog_repo)):
+
+    image_storage = S3ImageStorage(
+        bucket_name=settings.AWS_S3_BUCKET_NAME,
+        region=settings.AWS_REGION,
+        public_base_url=settings.AWS_S3_PUBLIC_BASE_URL,
+        aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
+        aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
+    )
+
+    return DogService(
+        dog_repository=dog_repository,
+        image_storage=image_storage
+    )
+
+def get_runner_service(runner_repository = Depends(get_runner_repo)):
+
+    image_storage = S3ImageStorage(
+        bucket_name=settings.AWS_S3_BUCKET_NAME,
+        region=settings.AWS_REGION,
+        public_base_url=settings.AWS_S3_PUBLIC_BASE_URL,
+        aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
+        aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
+    )
+
+    return RunnerService(
+        runner_repository=runner_repository,
+        image_storage=image_storage
+    )

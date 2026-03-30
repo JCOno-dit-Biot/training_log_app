@@ -117,6 +117,17 @@ def test_update_gps_coord(location_repo):
     assert result[-1] == -114.5
     assert result[-2] == 53.5005
 
+def test_update_location_ignores_invalid_fields(location_repo):
+
+    updated = location_repo.update({"not_a_real_column": 'new updated name'}, 2)
+
+    with location_repo._connection.cursor() as cur:
+        cur.execute("SELECT name FROM activity_locations WHERE id = %s", (2,))
+        result = cur.fetchone()
+
+    assert updated is False
+    assert result[0] == 'City park'
+
 def test_delete_location_fail_fkviolation(location_repo):
     with pytest.raises(ForeignKeyViolation):
         location_repo.delete(3,2)

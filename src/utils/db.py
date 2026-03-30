@@ -78,3 +78,15 @@ def build_time_window_clause(filters: Filter, table_key: str, table_column: str)
 
     where_clause = " AND ".join(conditions) if conditions else "TRUE"
     return where_clause, values
+
+def sanitize_update_dict(data, allowed_fields):
+    fields = {k: v for k, v in data.items() if k in allowed_fields}
+    return fields
+
+def build_update_set_clause(fields):
+    keys = list(fields.keys())
+    values = list(fields.values())
+
+    set_clause = ", ".join([f"{key} = %s" for key in keys])
+
+    return set_clause, values

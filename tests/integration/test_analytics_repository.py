@@ -75,16 +75,19 @@ def test_dog_running_per_day(analytics_repo):
 
 def test_weekly_stats(analytics_repo):
     weekly_stats = analytics_repo.get_weekly_stats(2, datetime(2025,4,7))
-    assert len(weekly_stats) == 2
+    print(weekly_stats)
+    assert len(weekly_stats) == 3
     dog_1 = weekly_stats[0]
     dog_2 = weekly_stats[1]
+    dog_3 = weekly_stats[2]
     assert dog_1.week_start == date(2025,4,7)
     assert dog_1.total_distance_km == 4.1
     assert dog_1.previous_week_distance_km == 36
     assert dog_1.trend_distance == Trend.down
     assert dog_2.average_rating == 8
     assert dog_2.trend_rating == Trend.up
-
+    assert dog_3.total_distance_km == 0
+    
 def test_weekly_mileage(analytics_repo):
     weekly_distance = analytics_repo.get_weekly_mileage(filters=Filter(), kennel_id = 2)
     assert len(weekly_distance) == 5

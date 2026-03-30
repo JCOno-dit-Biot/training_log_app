@@ -1,14 +1,29 @@
 from src.models.runner import Runner
 from src.parsers.runner_parser import parse_runner_from_row
-from .abstract_repository import abstract_repository
+from .abstract_repository import EntityRepository
 from typing import List, Optional
 from psycopg2.extras import RealDictCursor
+from src.utils.db import sanitize_update_dict, build_update_set_clause
+from src.constants import UPDATE_ALLOWED_FIELDS_RUNNER
 
-class runner_repository(abstract_repository):
+class runner_repository(EntityRepository):
 
     def __init__(self, connection):
         self._connection = connection
 
+    def exists_for_kennel(self, runner_id: int, kennel_id: int) -> bool:
+        with self._connection.cursor() as cur:
+            cur.execute(
+                """
+                SELECT 1
+                FROM runners
+                WHERE id = %s
+                  AND kennel_id = %s;
+                """,
+                (runner_id, kennel_id)
+            )
+            return cur.fetchone() is not None
+        
     def get_by_name(self, runner_name: str) -> Optional[Runner]:
         with self._connection.cursor(cursor_factory= RealDictCursor) as cur:
             query = """ SELECT 
@@ -27,8 +42,8 @@ class runner_repository(abstract_repository):
                             ON images.runner_id = runners.id
                         WHERE 
                             runners.name = %s
-                        ORDER BY images.created_at DESC 
-                        LIMIT 1;
+                        AND 
+                            images.is_active=True;
                         """
             cur.execute(query, (runner_name,))
             row = cur.fetchone()
@@ -40,28 +55,22 @@ class runner_repository(abstract_repository):
     def get_all(self, kennel_id: int) -> List[Runner]:
         with self._connection.cursor(cursor_factory= RealDictCursor) as cur:
             query = """ 
-                        WITH latest_images AS (
-                            SELECT *,
-                                    ROW_NUMBER() OVER (PARTITION BY runner_id ORDER BY created_at DESC) AS rn
-                            FROM images
-                            WHERE runner_id IS NOT NULL
-                        )
                         SELECT 
                             runners.id,
                             runners.name,
                             k.id as kennel_id,
                             k.name as kennel_name,
-                            latest_images.image_path as image_url
+                            images.image_path as image_url
                         FROM 
                             runners
                         JOIN 
                             kennels k
                         ON
                             runners.kennel_id = k.id
-                        LEFT JOIN latest_images
-                            ON latest_images.runner_id = runners.id AND latest_images.rn = 1
+                        LEFT JOIN images
+                            ON images.runner_id = runners.id
                         WHERE 
-                            kennel_id = %s
+                            kennel_id = %s AND images.is_active=True
                         """
             cur.execute(query, (kennel_id,))
             runners = []
@@ -89,8 +98,8 @@ class runner_repository(abstract_repository):
                             ON images.runner_id = runners.id
                         WHERE 
                             runners.id = %s
-                        ORDER BY images.created_at DESC 
-                        LIMIT 1;
+                        AND 
+                            images.is_active=True;
                         """
             cur.execute(query, (id,))
             row = cur.fetchone()
@@ -119,8 +128,32 @@ class runner_repository(abstract_repository):
             self._connection.commit()
 
 
-    def update(self, obj):
-        return super().update(obj)
+    def update(self, fields: dict, runner_id: int):
+
+        # Sanitize data entry at repo level
+        fields = sanitize_update_dict(fields, UPDATE_ALLOWED_FIELDS_RUNNER)
+
+        if not fields:
+            return False
+        
+        set_clause, values = build_update_set_clause(fields)
+
+        query = f"""
+            UPDATE runners
+            SET {set_clause}
+            WHERE id = %s
+        """
+
+        values.append(runner_id)
+        try:
+            with self._connection.cursor(cursor_factory= RealDictCursor) as cur:
+                cur.execute(query, values)
+                self._connection.commit()
+                return cur.rowcount > 0
+        except Exception as e:
+            print(e)
+            self._connection.rollback()
+            return False
     
     def get_total_count(self):
         return super().get_total_count()

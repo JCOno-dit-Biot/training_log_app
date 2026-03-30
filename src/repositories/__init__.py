@@ -6,3 +6,4 @@ from .sport_repository import sport_repository
 from .comment_repository import comment_repository
 from .analytics_repository import analytics_repository
 from .location_repository import location_repository
+from .image_repository import ImageRepository

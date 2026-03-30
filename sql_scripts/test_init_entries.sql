@@ -7,7 +7,8 @@ INSERT INTO "dogs"("name", "date_of_birth", "breed", "kennel_id")
 VALUES
     ('Milou', '2023-01-01', 'Terrier', 2),
     ('Fido', '2020-07-01', 'Golden Retriever', 2),
-    ('Idefix', '2022-04-01', 'Terrier', 1);
+    ('Idefix', '2022-04-01', 'Terrier', 1),
+    ('Rex', '2021-05-01', 'Golden Retriever', 2);
 
 INSERT INTO "runners"("name", "kennel_id")
 VALUES
@@ -23,22 +24,24 @@ VALUES
 
 
 -- insert runner pictures path
-INSERT INTO "images" ("runner_id","image_path")
+INSERT INTO "images" ("runner_id","image_path", "is_active")
 VALUES
-    (1, 'runner1.jpg'),
-    (2, 'runner2.jpg');
+    (1, 'runner1.jpg', 'TRUE'),
+    (2, 'runner2-inactive.jpg', 'FALSE'),
+    (2, 'runner2-active.jpg', 'TRUE');
 
--- insert runner pictures path
-INSERT INTO "images" ("dog_id", "image_path")
+-- insert dog pictures path
+INSERT INTO "images" ("dog_id", "image_path", "is_active")
 VALUES
-    (1, 'dog1.jpg'),
-    (2, 'dog2.jpg'),
-    (3, 'dog3.jpg');
+    (1, 'dog1.jpg', 'TRUE'),
+    (2, 'dog2.jpg', 'TRUE'),
+    (3, 'dog3.jpg', 'FALSE');
 
 -- insert image as "old" to check if query gets latest
-INSERT INTO "images" ( "dog_id", "image_path", "created_at")
+INSERT INTO "images" ( "dog_id", "image_path", "created_at", "is_active")
 VALUES
-    (3, 'dog3-old.jpg', '2024-11-01T12:00:00');
+    (3, 'dog3-old.jpg', '2024-11-01T12:00:00', 'False'),
+    (3, 'dog3-new.jpg', '2023-11-01T12:00:00', 'TRUE');
 
 -- add users as it is needed as a foreign key
 INSERT INTO users(username, password_hash, kennel_id) VALUES ('john@domain.com', 'hashpassword', 1);

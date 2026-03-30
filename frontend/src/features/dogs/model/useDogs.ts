@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 
 import { qk } from '@shared/api/keys';
-import { getDogs, updateDog as updateDogApi } from '@entities/dogs/api/dogs';
+import { getDogs, updateDog as updateDogApi, uploadDogImage } from '@entities/dogs/api/dogs';
 import type { Dog } from '@entities/dogs/model';
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -61,4 +61,17 @@ export function useUpdateDog({ revalidate = true }: { revalidate?: boolean } = {
       }
     },
   });
+}
+
+export function useUploadDogPicture() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, file }: { id: number, file: File }) => uploadDogImage(id, file),
+
+    onSuccess: (_ok, vars) => {
+      qc.invalidateQueries({ queryKey: qk.dogs(), refetchType: 'active' });
+      qc.invalidateQueries({ queryKey: qk.dog(vars.id) });
+    }
+  });
+
 }

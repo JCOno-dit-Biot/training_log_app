@@ -28,7 +28,7 @@ def test_create_dog(dog_repo, test_kennel):
         results = cur.fetchall()
 
     assert dog.id is None
-    assert id == 4
+    assert id == 5
     #update dog
     dog.id = id
     assert dog.id is not None
@@ -50,12 +50,18 @@ def test_get_dog_by_id(dog_repo):
     assert dog.kennel.name== 'Les Gaulois'
 
 def test_get_all_dogs(dog_repo):
-    dog_list = dog_repo.get_all(2)
-    assert len(dog_list) == 2
+    dog_list = dog_repo.get_all(1)
+    assert len(dog_list) == 1
+    assert dog_list[0].image_url == 'dog3-new.jpg'
+
 
 def test_get_all_dogs_empty(dog_repo):
     dog_empty_list = dog_repo.get_all(100)
     assert len(dog_empty_list) == 0
+
+
+def test_check_dog_exists_for_kennel(dog_repo):
+    assert dog_repo.exists_for_kennel(4,2)
 
 # Not ideal as this means tests depend on each other but it prevents issues when running 
 # tests multiple times
@@ -87,3 +93,14 @@ def test_update_dog(dog_repo):
     assert len(results) == 1
     assert results[0]['breed'] == "Updated Dog Breed" 
     assert results[0]['color'] == "#831E1E"
+
+def test_update_dog_ignores_invalid_fields(dog_repo):
+
+    updated = dog_repo.update({"not_a_real_column": "Milou-updated"}, 1)
+
+    with dog_repo._connection.cursor() as cur:
+        cur.execute("SELECT name FROM dogs WHERE id = %s", (1,))
+        result = cur.fetchone()
+
+    assert updated is False
+    assert result[0] == "Milou"
