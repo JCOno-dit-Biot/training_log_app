@@ -40,7 +40,7 @@ export function LatestGrid({
                     const sign = deltaDisplay != null && deltaDisplay > 0 ? '▲' : deltaDisplay != null && deltaDisplay < 0 ? '▼' : '';
                     return (
                         <Card key={d.id} className="relative w-full">
-                            <CardHeader className="pb-2">
+                            <CardHeader className="pb-0">
                                 <div className="flex items-start justify-between gap-3">
                                     <div className="flex items-center gap-3 mt-1">
                                         <img

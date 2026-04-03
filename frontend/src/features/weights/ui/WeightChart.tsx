@@ -135,7 +135,7 @@ export function WeightsMultiChart({
     const resetZoom = () => setXDomain(null);
 
     return (<>
-        <div className={`relative w-full h-full min-h-[280px] relative ${selecting ? "select-none cursor-col-resize" : ""}`}>
+        <div className={`relative w-full h-[270px] ${selecting ? "select-none cursor-col-resize" : ""}`}>
             <Button
                 type="button"
                 variant="ghost"

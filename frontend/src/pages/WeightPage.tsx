@@ -61,13 +61,13 @@ export default function WeightsPage() {
         "data-[state=active]:bg-secondary data-[state=active]:text-secondary-foreground data-[state=active]:shadow-none"
 
     return (
-        <div className="h-screen w-full bg-neutral-25">
-            <div className="mx-auto flex h-full w-full flex-col gap-3 p-6">
+        <div className="min-h-full w-full bg-neutral-25">
+            <div className="mx-auto flex w-full flex-col gap-3 p-6">
                 {/* Row 1: Latest cards */}
                 <LatestGrid latest={latest} dogs={sortedDogs} unit={unit} params={params} />
 
                 {/* Row 2: Filters + chart */}
-                <Card className="flex min-h-[450px] sm:min-h-[400px] h-full flex-1 flex-col">
+                <Card className="flex min-h-[360px] sm:min-h-[400px] flex-1 flex-col">
                     <CardHeader className="pb-2">
                         <div className="grid gap-3 sm:grid-cols-[1fr_auto] sm:items-end">
                             <CardTitle className="text-xl font-semibold leading-none">Weight trends</CardTitle>
@@ -122,7 +122,7 @@ export default function WeightsPage() {
                     </CardHeader>
 
                     <CardContent className="min-h-0 flex-1">
-                        <div className="h-full min-h-0">
+                        <div className="min-h-0">
                             {isLoading ? (
                                 <Spinner center text="Loading weights..." size={32} className="h-[330px] min-h-[330px]" />
                             ) : (
