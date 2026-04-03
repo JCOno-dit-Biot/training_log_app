@@ -96,7 +96,7 @@ export default function ActivityFilterPanel({
                     <AvatarImage
                       src={
                         runner?.image_url
-                          ? `/profile_picture/runners/${runner.image_url}`
+                          ? `${runner.image_url}`
                           : DEFAULT_AVATAR
                       }
                       alt={runner.name}
@@ -132,7 +132,7 @@ export default function ActivityFilterPanel({
                 <div className="flex items-center gap-2">
                   <Avatar className="h-9 w-9 border">
                     <AvatarImage
-                      src={dog.image_url ? `/profile_picture/dogs/${dog.image_url}` : DEFAULT_AVATAR}
+                      src={dog.image_url ? `${dog.image_url}` : DEFAULT_AVATAR}
                       alt={dog.name}
                     />
                     <AvatarFallback>{dog.name?.slice(0, 2).toUpperCase()}</AvatarFallback>
