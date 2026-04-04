@@ -195,7 +195,7 @@ export default function ActivityFeed() {
               >
                 <div
                   ref={mobilePanelRef}
-                  className="sm:hidden fixed inset-x-4 top-20 bottom-24 z-50 overflow-y-auto rounded-lg border border-neutral-500 bg-card p-4 shadow-lg"
+                  className="sm:hidden fixed inset-x-4 top-20 bottom-20 z-50 overflow-y-auto rounded-lg border border-neutral-500 bg-card p-4 shadow-lg"
                 >
                   <ActivityFilterPanel
                     filters={filters}
