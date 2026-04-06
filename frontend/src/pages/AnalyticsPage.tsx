@@ -110,7 +110,9 @@ function AnalyticsPageInner() {
                             <Skeleton className="h-full w-full rounded-md border" />
                             // <div className="h-[360px] rounded-md border bg-neutral-50" />
                         ) : (
-                            <LocationBubbleClusterMap data={locationPoints} />
+                            <div className="h-[280px] w-full lg:h-full">
+                                <LocationBubbleClusterMap data={locationPoints} />
+                            </div>
                         )}
                     </div>
                 </div>
@@ -132,7 +134,7 @@ function AnalyticsPageInner() {
                             <CardTitle className="text-base">Weekly mileage (km)</CardTitle>
                         </CardHeader>
                         <CardContent className="flex-1">
-                            <div className="h-full">
+                            <div className="h-[200px] lg:h-full">
                                 <WeeklyMileageStackedArea data={weeklyMileage} loading={isMileageLoading} dogsData={dogs} />
                             </div>
                         </CardContent>
