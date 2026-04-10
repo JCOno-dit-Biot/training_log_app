@@ -62,17 +62,17 @@ export default function WeightsPage() {
 
     return (
         <div className="min-h-full w-full bg-neutral-25">
-            <div className="mx-auto flex w-full flex-col gap-3 p-6">
+            <div className="mx-auto flex w-full flex-col gap-3 py-6 sm:px-6 ">
                 {/* Row 1: Latest cards */}
                 <LatestGrid latest={latest} dogs={sortedDogs} unit={unit} params={params} />
 
                 {/* Row 2: Filters + chart */}
                 <Card className="flex min-h-[360px] sm:min-h-[400px] flex-1 flex-col">
                     <CardHeader className="pb-2">
-                        <div className="grid gap-3 sm:grid-cols-[1fr_auto] sm:items-end">
+                        <div className="grid gap-3 lg:grid-cols-[1fr_auto] sm:items-end">
                             <CardTitle className="text-xl font-semibold leading-none">Weight trends</CardTitle>
 
-                            <div className="flex w-full grid-cols-1 gap-3 sm:w-auto sm:grid-cols-3 sm:justify-self-end">
+                            <div className="flex w-full grid-cols-1 gap-3 sm:w-auto sm:grid-cols-3 lg:justify-self-end">
                                 {/* Dog Select */}
                                 <div className="flex flex-col gap-1.5">
                                     <Label>Dog</Label>
@@ -80,7 +80,7 @@ export default function WeightsPage() {
                                         value={dogId == null ? "all" : String(dogId)}
                                         onValueChange={(v) => setDogId(v === "all" ? undefined : Number(v))}
                                     >
-                                        <SelectTrigger className="w-full sm:w-[180px] bg-neutral-25">
+                                        <SelectTrigger className="w-full px-4 gap-3 bg-neutral-25">
                                             <SelectValue placeholder="All dogs" />
                                         </SelectTrigger>
                                         <SelectContent>

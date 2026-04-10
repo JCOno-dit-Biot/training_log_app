@@ -18,7 +18,7 @@ export function AnalyticsHeader({
   const { range } = useDateRange();
 
   return (
-    <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+    <div className="flex gap-2 flex-row md:items-center justify-between">
       <div className="min-w-0">
         {/* Breadcrumbs */}
         <div className="flex items-center gap-2">
