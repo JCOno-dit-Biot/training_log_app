@@ -6,12 +6,14 @@ import { Button } from '@/shared/ui/button';
 type ActivityHeaderProps = {
   onOpenCreate: () => void; // opens your existing "create activity" modal
   onOpenFilter: () => void; // opens your filter UI (sheet/modal)
+  filterButtonRef?: React.RefObject<HTMLButtonElement | null>;
   className?: string;
 };
 
 export function ActivityHeader({
   onOpenCreate,
   onOpenFilter,
+  filterButtonRef,
   className = '',
 }: ActivityHeaderProps) {
   const [atTop, setAtTop] = useState(true);
@@ -55,6 +57,7 @@ export function ActivityHeader({
           <div className="flex justify-end">
             <Button
               onClick={onOpenFilter}
+              ref={filterButtonRef}
               variant="default"
             >
               <SlidersHorizontal className="h-4 w-4" />

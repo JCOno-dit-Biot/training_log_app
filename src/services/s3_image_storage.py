@@ -9,18 +9,12 @@ class S3ImageStorage:
         *,
         bucket_name: str,
         region: str,
-        public_base_url: str,
-        aws_access_key_id: str,
-        aws_secret_access_key: str,
     ) -> None:
         self._bucket_name = bucket_name
         self._region = region
-        self._public_base_url = public_base_url.rstrip("/")
         self._client = boto3.client(
             "s3",
-            region_name=region,
-            aws_access_key_id=aws_access_key_id,
-            aws_secret_access_key=aws_secret_access_key,
+            region_name=region
         )
 
     def upload_profile_image(

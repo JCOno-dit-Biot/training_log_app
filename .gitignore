@@ -138,6 +138,7 @@ secret/
 #connect bash
 connect.sh
 sync_vm.sh
+copy-db-backups.sh
 
 # Environments
 config/

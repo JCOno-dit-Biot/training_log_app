@@ -34,13 +34,20 @@ export default function ActivityFeed() {
   const [showFilters, setShowFilters] = useState(false);
   const [filters, setFilters] = useState<ActivityFilter>({}); // should we use useMemo()?
   const [editActivity, setEditActivity] = useState<Activity | null>(null);
-  const panelRef = useRef(null);
+  const [panelPosition, setPanelPosition] = useState<{ top: number; left: number } | null>(null);
+  const filterButtonRef = useRef<HTMLButtonElement | null>(null);
+  const panelRef = useRef<HTMLDivElement | null>(null);
+  const mobilePanelRef = useRef<HTMLDivElement | null>(null);
 
   //set defaults for pagination
   const limit = 10;
   const [offset, setOffset] = useState<number>(0);
 
-  useClickAwayIgnoringRadix(panelRef, () => setShowFilters(false), showFilters);
+  useClickAwayIgnoringRadix(
+    [panelRef, mobilePanelRef, filterButtonRef],
+    () => setShowFilters(false),
+    showFilters
+  );
 
   const { byId: sports } = useSports();
   const { byId: dogs } = useDogs();
@@ -63,6 +70,33 @@ export default function ActivityFeed() {
     offset: offset + limit,
     filters: filtersForQuery,
   });
+
+  // this will make the pannel follow the button while scrolling
+  useEffect(() => {
+    if (!showFilters || !filterButtonRef.current) return;
+
+    const updatePosition = () => {
+      const rect = filterButtonRef.current!.getBoundingClientRect();
+      const panelWidth = 288; // w-72 = 18rem = 288px
+      const gap = 8;
+
+      let left = rect.right - panelWidth;
+      let top = rect.bottom + gap;
+
+      left = Math.max(16, Math.min(left, window.innerWidth - panelWidth - 16));
+
+      setPanelPosition({ top, left });
+    };
+
+    updatePosition();
+    window.addEventListener("scroll", updatePosition, true);
+    window.addEventListener("resize", updatePosition);
+
+    return () => {
+      window.removeEventListener("scroll", updatePosition, true);
+      window.removeEventListener("resize", updatePosition);
+    };
+  }, [showFilters]);
 
   useEffect(() => {
     if (!page || !hasNext) return;
@@ -132,8 +166,51 @@ export default function ActivityFeed() {
               <ActivityHeader
                 onOpenCreate={() => setShowModal(true)}
                 onOpenFilter={() => setShowFilters((v) => !v)}
+                filterButtonRef={filterButtonRef}
               />
-              <div className="relative">
+
+              {/* Mobile backdrop */}
+              <Transition
+                as="div"
+                show={showFilters}
+                enter="transition ease-out duration-150"
+                enterFrom="opacity-0"
+                enterTo="opacity-100"
+                leave="transition ease-in duration-100"
+                leaveFrom="opacity-100"
+                leaveTo="opacity-0"
+                className="sm:hidden fixed inset-0 z-40 bg-black/30"
+                onClick={() => setShowFilters(false)}
+              />
+
+              {/* Mobile sheet */}
+              <Transition
+                show={showFilters}
+                enter="transition ease-out duration-150"
+                enterFrom="opacity-0 scale-95"
+                enterTo="opacity-100 scale-100"
+                leave="transition ease-in duration-100"
+                leaveFrom="opacity-100 scale-100"
+                leaveTo="opacity-0 scale-95"
+              >
+                <div
+                  ref={mobilePanelRef}
+                  className="sm:hidden fixed inset-x-4 top-20 bottom-20 z-50 overflow-y-auto rounded-lg border border-neutral-500 bg-card p-4 shadow-lg"
+                >
+                  <ActivityFilterPanel
+                    filters={filters}
+                    setFilters={setFilters}
+                    runners={runners}
+                    dogs={dogs}
+                    sports={sports}
+                    onApply={applyFilters}
+                    onClear={() => setFilters({})}
+                  />
+                </div>
+              </Transition>
+
+              {/* Desktop popover */}
+              {panelPosition && (
                 <Transition
                   show={showFilters}
                   enter="transition ease-out duration-150"
@@ -142,10 +219,15 @@ export default function ActivityFeed() {
                   leave="transition ease-in duration-100"
                   leaveFrom="opacity-100 scale-100"
                   leaveTo="opacity-0 scale-95"
+                  ref={panelRef}
+                  style={{
+                    top: panelPosition.top,
+                    left: panelPosition.left,
+                  }}
                 >
                   <div
                     ref={panelRef}
-                    className="absolute top-full right-0 z-10 w-72 rounded-lg border border-neutral-500 bg-card p-4 shadow-lg"
+                    className="hidden sm:block fixed z-50 w-72 rounded-lg border border-neutral-500 bg-card p-4 shadow-lg"
                   >
                     <ActivityFilterPanel
                       filters={filters}
@@ -154,13 +236,11 @@ export default function ActivityFeed() {
                       dogs={dogs}
                       sports={sports}
                       onApply={applyFilters}
-                      onClear={() => {
-                        setFilters({});
-                      }}
+                      onClear={() => setFilters({})}
                     />
                   </div>
                 </Transition>
-              </div>
+              )}
               <div className="w-full mx-auto max-w-2xl space-y-4">
                 {activities.map((activity) => (
                   <ActivityCard
@@ -208,7 +288,7 @@ export default function ActivityFeed() {
             <RightSidebar dogs={dogs} filters={filters} setFilters={setFilters} />
           </aside>
         </div>
-      </div>
+      </div >
     </section >
   );
 }

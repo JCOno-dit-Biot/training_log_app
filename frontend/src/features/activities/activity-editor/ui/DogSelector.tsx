@@ -37,7 +37,7 @@ const DogSelector: React.FC<DogSelectorProps> = ({ selectedDogs, setSelectedDogs
               onClick={() => handleDogToggle(dog.id)}
             >
               <img
-                src={`/profile_picture/dogs/${dog.image_url || 'default.png'}`}
+                src={`${dog.image_url || 'default.png'}`}
                 alt={dog.name}
                 className="mx-auto h-16 w-16 rounded-full object-cover"
               />
