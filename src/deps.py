@@ -78,10 +78,7 @@ def get_profile_image_service(
 
     image_storage = S3ImageStorage(
         bucket_name=settings.AWS_S3_BUCKET_NAME,
-        region=settings.AWS_REGION,
-        public_base_url=settings.AWS_S3_PUBLIC_BASE_URL,
-        aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
-        aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
+        region=settings.AWS_REGION
     )
 
     return ProfileImageService(
@@ -96,10 +93,7 @@ def get_dog_service(dog_repository = Depends(get_dog_repo)):
 
     image_storage = S3ImageStorage(
         bucket_name=settings.AWS_S3_BUCKET_NAME,
-        region=settings.AWS_REGION,
-        public_base_url=settings.AWS_S3_PUBLIC_BASE_URL,
-        aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
-        aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
+        region=settings.AWS_REGION
     )
 
     return DogService(
@@ -111,10 +105,7 @@ def get_runner_service(runner_repository = Depends(get_runner_repo)):
 
     image_storage = S3ImageStorage(
         bucket_name=settings.AWS_S3_BUCKET_NAME,
-        region=settings.AWS_REGION,
-        public_base_url=settings.AWS_S3_PUBLIC_BASE_URL,
-        aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
-        aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
+        region=settings.AWS_REGION
     )
 
     return RunnerService(
