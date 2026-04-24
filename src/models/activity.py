@@ -24,6 +24,7 @@ class Activity(BaseModel):
     speed: Optional[float] = Field(None, description="Speed in km per hours")
     pace: Optional[str] = Field(None, description="Pace in min per km")
     comment_count: Optional[int] = Field(None, description="number of comment for an activity")
+    has_heat_data: bool = False
 
     @model_validator(mode="after")
     def ensure_at_least_one_metric(self):
@@ -100,7 +101,7 @@ class ActivityCreate(BaseModel):
     workout: bool = False
     dogs: List["ActivityDogsCreate"]
     weather: Optional[Weather] = Field(None, description="Weather entry for the training")
-    laps: Optional[List[ActivityLaps]] = Field([], description="list of laps with pace or speed")
+    laps: List["ActivityLaps"] = Field(default_factory=list, description="list of laps with pace or speed")
     speed: Optional[float] = Field(None, description="Speed in km per hours")
     pace: Optional[str] = Field(None, description="Pace in min per km")
 
