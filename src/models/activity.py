@@ -1,6 +1,6 @@
 from pydantic import BaseModel, Field, field_validator, model_validator
 from datetime import datetime, timedelta
-from typing import Optional, List
+from typing import Optional, List, Literal
 from .runner import Runner
 from .sport import Sport
 from .dog import Dog
@@ -156,3 +156,47 @@ class ActivityDogsCreate(BaseModel):
     id: Optional[int] = None
     dog_id: int
     rating: Optional[int] = Field(None, description="Training rating out of 10", ge=0, le=10)
+    cooling_method: Optional[str] = None
+    temperatures: List["DogTemperatureCreate"] = Field(default_factory=list)
+
+## Heat related classes
+
+class DogTemperatureCreate(BaseModel):
+    phase: Literal["before", "after", "recovery"]
+    recovery_minute: Optional[int] = None
+    temperature_c: float
+    measurement_method: Optional[str] = None
+
+    @model_validator(mode="after")
+    def validate_phase_and_recovery(self):
+        if self.phase == "recovery" and self.recovery_minute is None:
+            raise ValueError(
+                'Dog temperature measurement in recovery phase must have a recovery time specified'
+            )
+
+        if self.phase in ("before", "after") and self.recovery_minute is not None:
+            raise ValueError(
+                'Dog temperature measurement before and after activity cannot have a recovery time specified'
+            )
+
+        return self
+    
+class ActivityDogTemperature(BaseModel):
+    id: int
+    phase: str
+    recovery_minute: Optional[int] = None
+    temperature_c: float
+    measurement_method: Optional[str] = None
+
+
+class ActivityDogHeat(BaseModel):
+    activity_dog_id: int
+    dog_id: int
+    rating: Optional[int] = None
+    cooling_method: Optional[str] = None
+    temperatures: List[ActivityDogTemperature] = Field(default_factory=list)
+
+
+class ActivityHeat(BaseModel):
+    activity_id: int
+    dogs: List[ActivityDogHeat] = Field(default_factory=list)

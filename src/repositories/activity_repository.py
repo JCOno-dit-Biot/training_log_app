@@ -171,6 +171,56 @@ class activity_repository(abstract_repository):
             self._connection.rollback()
             return None
         
+    def get_heat_data_by_activity_id(self, activity_id: int) -> ActivityHeat | None:
+        with self._connection.cursor(cursor_factory= RealDictCursor) as cur:
+            try:
+                query = """
+                    SELECT 
+                        a.id AS activity_id,
+
+                        json_agg(
+                            jsonb_build_object(
+                                'activity_dog_id', ad.id,
+                                'dog_id', ad.dog_id,
+                                'rating', ad.rating,
+                                'cooling_method', ho.cooling_method,
+
+                                'temperatures', (
+                                    SELECT json_agg(
+                                        jsonb_build_object(
+                                            'id', tm.id,
+                                            'phase', tm.phase,
+                                            'recovery_minute', tm.recovery_minute,
+                                            'temperature_c', tm.temperature_c,
+                                            'measurement_method', tm.measurement_method
+                                        )
+                                        ORDER BY tm.phase, tm.recovery_minute NULLS FIRST
+                                    )
+                                    FROM activity_dog_temperature_measurements tm
+                                    WHERE tm.activity_dog_id = ad.id
+                                )
+                            )
+                        ) FILTER (WHERE ad.id IS NOT NULL) AS dogs
+
+                    FROM activities a
+                    LEFT JOIN activity_dogs ad ON ad.activity_id = a.id
+                    LEFT JOIN dogs d ON d.id = ad.dog_id
+                    LEFT JOIN activity_dog_heat_observations ho ON ho.activity_dog_id = ad.id
+
+                    WHERE a.id = %s
+
+                    GROUP BY a.id;
+                """
+                cur.execute(query, (activity_id,))
+                row = cur.fetchone()
+                activity_heat_data = ActivityHeat(**row)
+                
+            except Exception as e:
+                print(e)
+                self._connection.rollback()
+                return None
+
+
     def create(self, activity: ActivityCreate) -> int:
         with self._connection.cursor(cursor_factory= RealDictCursor) as cur:
             try:

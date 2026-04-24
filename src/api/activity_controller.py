@@ -2,7 +2,7 @@ from fastapi import Depends, APIRouter, Request, HTTPException, Body
 from fastapi.requests import Request
 from fastapi_utils.cbv import cbv
 from src.repositories.activity_repository import activity_repository
-from src.models.activity import Activity, ActivityCreate, ActivityUpdate
+from src.models.activity import Activity, ActivityCreate, ActivityUpdate, ActivityHeat
 from src.deps import get_activity_repo
 from src.utils.pagination import paginate_results
 from src.models.common import PaginationParams, ActivityQueryFilters
@@ -26,6 +26,11 @@ class ActivityController:
     def get_activity_by_id(self, request: Request, activity_id:int):
         activity = self.repo.get_by_id(activity_id)
         return activity
+    
+    @router.get("/activities/{actitivty_id}/heat", response_model=ActivityHeat, status_code=200)
+    def get_activity_heat_data_by_id(self, request: Request, activity_id):
+        activity_heat = self.repo.get_heat_data_by_activity_id(activity_id)
+        return activity_heat
     
     @router.post("/activities", status_code=201)
     def create_activity(self, activity_entry: ActivityCreate):
