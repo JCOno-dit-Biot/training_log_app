@@ -1,5 +1,5 @@
 from src.models.runner import Runner
-from src.models.activity import Activity, ActivityLaps, ActivityCreate, ActivityDogsCreate
+from src.models.activity import Activity, ActivityLaps, ActivityCreate, ActivityDogsCreate, ActivityHeat
 from src.models.weather import Weather
 from src.parsers.activity_parser import parse_activity_from_row
 from .abstract_repository import abstract_repository
@@ -246,7 +246,40 @@ class activity_repository(abstract_repository):
                     cur.execute("""
                         INSERT INTO activity_dogs (activity_id, dog_id, rating)
                         VALUES (%s, %s, %s)
+                        RETURNING id
                     """, (activity_id, dog.dog_id, dog.rating)) #this assumes dogs have their id set, they should from the frontend
+
+                    activity_dog_id = cur.fetchone()["id"]
+                    if dog.cooling_method:
+                        cur.execute(
+                            """
+                            INSERT INTO activity_dog_heat_observations (activity_dog_id, cooling_method)
+                            VALUES (%s, %s)
+                            """,
+                            (activity_dog_id, dog.cooling_method),
+                        )
+                    
+                    for temp in dog.temperatures:
+                        cur.execute(
+                            """
+                            INSERT INTO activity_dog_temperature_measurements (
+                                activity_dog_id,
+                                phase,
+                                recovery_minute,
+                                temperature_c,
+                                measurement_method
+                            )
+                            VALUES (%s, %s, %s, %s, %s)
+                            """,
+                            (
+                                activity_dog_id,
+                                temp.phase,
+                                temp.recovery_minute,
+                                temp.temperature_c,
+                                temp.measurement_method,
+                            ),
+                        )
+
 
                 if len(activity.laps) > 0:
                     for lap in activity.laps:
@@ -260,16 +293,15 @@ class activity_repository(abstract_repository):
                         INSERT INTO weather_entries (activity_id, temperature, humidity, condition)
                         VALUES (%s, %s, %s, %s)
                     """, (activity_id, activity.weather.temperature, activity.weather.humidity, activity.weather.condition,))
+
+                self._connection.commit()
+                return activity_id
             
             except Exception as e:
                 print(e)
                 self._connection.rollback()
                 return None
-            finally:
-                self._connection.commit()
-                return activity_id
-        
-
+            
     def delete(self, activity_id: int):
         with self._connection.cursor(cursor_factory= RealDictCursor) as cur:
             try:

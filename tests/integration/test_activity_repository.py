@@ -6,7 +6,6 @@ from psycopg2.extras import RealDictCursor
 
 @pytest.fixture
 def activity_repo(test_db_conn):
-    print(test_db_conn)
     return activity_repository(test_db_conn)
 
 def test_get_by_id(activity_repo):
@@ -22,11 +21,11 @@ def test_get_by_id(activity_repo):
     assert activity.weather.humidity == .67
     assert activity.weather.condition == "sunny"
     assert activity.comment_count == 1
+    assert activity.has_heat_data == False
     
 
 def test_get_all(activity_repo):
     activities = activity_repo.get_all(kennel_id=2, filters= ActivityQueryFilters(), limit = 10, offset = 0, )
-    print(activities)
     assert isinstance(activities, list)
     assert len(activities) == 8
     for activity in activities:
@@ -113,6 +112,68 @@ def test_create_activity(test_activity_create, activity_repo):
         assert weather[2] == 9.5
         assert weather[3] == 0.85
         assert weather[4] == "rainy"
+
+def test_create_activity_with_temps(test_activity_create_with_temperature_measurements, activity_repo):
+    id = activity_repo.create(test_activity_create_with_temperature_measurements)
+    assert id is not None
+    with activity_repo._connection.cursor() as cur:
+        cur.execute("""SELECT * FROM activities WHERE id = %s""", (id,))
+        activity = cur.fetchone()
+        assert activity[0] == id
+        assert activity[3] == datetime(2026, 4, 1, 9, 30, tzinfo=timezone.utc)
+
+        cur.execute("""SELECT * FROM workout_laps WHERE activity_id = %s""", (id,))
+        laps = cur.fetchall()
+        assert len(laps) == 0
+
+        cur.execute("""SELECT * FROM activity_dogs WHERE activity_id = %s""", (id,))
+        dogs =  cur.fetchall()
+        assert len(dogs) == 2
+        dog_activity_ids=[(dog[0], dog[2]) for dog in dogs]
+        
+        expected_temps = {
+            1: {
+                ("before", None): 38.7,
+                ("after", None): 40.7,
+            },
+            2: {
+                ("before", None): 38.5,
+                ("after", None): 40.5,
+                ("recovery", 10): 39.5,
+            },
+        }
+        for dog_activity_id, dog_id in dog_activity_ids:
+            cur.execute("""SELECT cooling_method FROM activity_dog_heat_observations WHERE activity_dog_id = %s""", (dog_activity_id,))
+            cooling=cur.fetchone()
+
+            assert cooling is not None
+            assert cooling[0]=='lake'
+
+            cur.execute("""
+                SELECT phase, recovery_minute, temperature_c, measurement_method
+                FROM activity_dog_temperature_measurements
+                WHERE activity_dog_id = %s
+                ORDER BY phase, recovery_minute NULLS FIRST
+            """, (dog_activity_id,))
+            temps=cur.fetchall()
+            
+            expected_for_dog = expected_temps[dog_id]
+
+            assert len(temps) == len(expected_for_dog)
+
+            for phase, recovery_minute, temperature_c, measurement_method in temps:
+                key = (phase, recovery_minute)
+
+                assert key in expected_for_dog
+                assert float(temperature_c) == expected_for_dog[key]
+                assert measurement_method == "Ear"
+
+        cur.execute("""SELECT * FROM weather_entries WHERE activity_id = %s""", (id,))
+        weather = cur.fetchone()
+        assert weather is not None
+        assert weather[2] == 5
+        assert weather[3] == 0.85
+        assert weather[4] == "sunny"
 
 def test_delete_activity(activity_repo, test_activity):
     activity_repo.delete(test_activity.id)
