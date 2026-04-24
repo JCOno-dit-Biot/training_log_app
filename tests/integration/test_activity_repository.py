@@ -22,8 +22,11 @@ def test_get_by_id(activity_repo):
     assert activity.weather.condition == "sunny"
     assert activity.comment_count == 1
     assert activity.has_heat_data == False
-    
 
+def test_activity_has_heat_data(activity_repo):
+    activity = activity_repo.get_by_id(5)
+    assert activity.has_heat_data == True
+    
 def test_get_all(activity_repo):
     activities = activity_repo.get_all(kennel_id=2, filters= ActivityQueryFilters(), limit = 10, offset = 0, )
     assert isinstance(activities, list)
@@ -87,6 +90,62 @@ def test_get_total_count(activity_repo, filter, expected_count):
     activity_count = activity_repo.get_total_count(kennel_id = 2, filters=filter)
     assert activity_count == expected_count
 
+def test_get_heat_data(activity_repo):
+    activity_heat_data = activity_repo.get_heat_data_by_activity_id(5)
+    print(activity_heat_data)
+    assert activity_heat_data.activity_id == 5
+    assert len(activity_heat_data.dogs) == 2
+
+    dogs_by_id = {dog.dog_id: dog for dog in activity_heat_data.dogs}
+
+    assert set(dogs_by_id.keys()) == {1, 2}
+
+    dog_1 = dogs_by_id[1]
+    assert dog_1.activity_dog_id == 6
+    assert dog_1.rating == 9
+    assert dog_1.cooling_method == "lake"
+    assert len(dog_1.temperatures) == 2
+
+    dog_1_temps = {
+        (temp.phase, temp.recovery_minute): temp
+        for temp in dog_1.temperatures
+    }
+
+    assert set(dog_1_temps.keys()) == {
+        ("before", None),
+        ("after", None),
+    }
+
+    assert dog_1_temps[("before", None)].temperature_c == 38.5
+    assert dog_1_temps[("before", None)].measurement_method == "ear"
+    assert dog_1_temps[("after", None)].temperature_c == 40.5
+    assert dog_1_temps[("after", None)].measurement_method == "ear"
+
+    dog_2 = dogs_by_id[2]
+    assert dog_2.activity_dog_id == 7
+    assert dog_2.rating == 6
+    assert dog_2.cooling_method == "lake"
+    assert len(dog_2.temperatures) == 3
+
+    dog_2_temps = {
+        (temp.phase, temp.recovery_minute): temp
+        for temp in dog_2.temperatures
+    }
+
+    assert set(dog_2_temps.keys()) == {
+        ("before", None),
+        ("after", None),
+        ("recovery", 10),
+    }
+
+    assert dog_2_temps[("before", None)].temperature_c == 38.4
+    assert dog_2_temps[("before", None)].measurement_method == "ear"
+
+    assert dog_2_temps[("after", None)].temperature_c == 40.8
+    assert dog_2_temps[("after", None)].measurement_method == "ear"
+
+    assert dog_2_temps[("recovery", 10)].temperature_c == 39.7
+    assert dog_2_temps[("recovery", 10)].measurement_method == "ear"
 
 def test_create_activity(test_activity_create, activity_repo):
     id = activity_repo.create(test_activity_create)
@@ -166,7 +225,7 @@ def test_create_activity_with_temps(test_activity_create_with_temperature_measur
 
                 assert key in expected_for_dog
                 assert float(temperature_c) == expected_for_dog[key]
-                assert measurement_method == "Ear"
+                assert measurement_method == "ear"
 
         cur.execute("""SELECT * FROM weather_entries WHERE activity_id = %s""", (id,))
         weather = cur.fetchone()

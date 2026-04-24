@@ -117,6 +117,16 @@ INSERT INTO activity_dogs (activity_id, dog_id, rating) VALUES
 (5, 1, 9),
 (5, 2, 6);
 
+INSERT INTO activity_dog_heat_observations(activity_dog_id, cooling_method) VALUES
+(6, 'lake'),
+(7, 'lake');
+
+INSERT INTO activity_dog_temperature_measurements(activity_dog_id, phase, recovery_minute, temperature_c, measurement_method) VALUES
+(6, 'before', NULL, 38.5, 'ear'),
+(6, 'after', NULL, 40.5, 'ear'),
+(7, 'before', NULL, 38.4, 'ear'),
+(7, 'after', NULL, 40.8, 'ear'),
+(7, 'recovery', 10, 39.7, 'ear');
 
 -- Activity 6 (on-snow sport)
 INSERT INTO activities (
