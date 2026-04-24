@@ -34,7 +34,12 @@ def test_get_all(activity_repo):
     for activity in activities:
         assert all([x.dog.kennel.name == 'Les Gaulois' for x in activity.dogs])
         assert activity.sport.name =='Canicross'
-    
+
+        if activity.id == 5:
+            assert activity.has_heat_data == True
+        else:
+            assert activity.has_heat_data == False
+
     act2 = next((activity for activity in activities if activity.id == 2), None)
     assert act2.laps == []
     assert act2.workout == False
