@@ -46,7 +46,7 @@ class activity_repository(abstract_repository):
                                 WHERE ad2.activity_id = a.id
                                 AND tm.id IS NOT NULL
                             ) AS has_heat_data,
-
+                            
                             -- Aggregate dogs
                             json_agg(DISTINCT jsonb_build_object(
                                 'id', d.id,
@@ -113,6 +113,17 @@ class activity_repository(abstract_repository):
                             w.temperature, w.humidity, w.condition,
                             l.name AS location,
                             COUNT(DISTINCT ac.id) as comment_count,
+
+                            -- exist statement to indicate existing heat data
+                            EXISTS (
+                                SELECT 1
+                                FROM activity_dogs ad2
+                                LEFT JOIN activity_dog_temperature_measurements tm
+                                    ON tm.activity_dog_id = ad2.id
+                                WHERE ad2.activity_id = a.id
+                                AND tm.id IS NOT NULL
+                            ) AS has_heat_data,
+
                             -- Aggregate dogs
                             json_agg(DISTINCT jsonb_build_object(
                                 'id', d.id,
@@ -214,7 +225,7 @@ class activity_repository(abstract_repository):
                 cur.execute(query, (activity_id,))
                 row = cur.fetchone()
                 activity_heat_data = ActivityHeat(**row)
-                
+                return activity_heat_data
             except Exception as e:
                 print(e)
                 self._connection.rollback()
@@ -256,7 +267,7 @@ class activity_repository(abstract_repository):
                             INSERT INTO activity_dog_heat_observations (activity_dog_id, cooling_method)
                             VALUES (%s, %s)
                             """,
-                            (activity_dog_id, dog.cooling_method),
+                            (activity_dog_id, dog.cooling_method.lower()),
                         )
                     
                     for temp in dog.temperatures:
@@ -276,7 +287,7 @@ class activity_repository(abstract_repository):
                                 temp.phase,
                                 temp.recovery_minute,
                                 temp.temperature_c,
-                                temp.measurement_method,
+                                temp.measurement_method.lower(),
                             ),
                         )
 
