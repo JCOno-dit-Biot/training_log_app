@@ -37,7 +37,32 @@ export interface Activity {
   laps: Lap[];
   weather?: Weather;
   comment_count: number;
+  has_heat_data: boolean;
 }
+
+export type TemperaturePhase = "before" | "after" | "recovery";
+
+export interface ActivityDogTemperature {
+  id: number;
+  phase: TemperaturePhase;
+  recovery_minute: number | null;
+  temperature_c: number;
+  measurement_method: string | null;
+};
+
+export interface ActivityDogHeat {
+  activity_dog_id: number;
+  dog_id: number;
+  dog_name: string;
+  rating: number | null;
+  cooling_method: string | null;
+  temperatures: ActivityDogTemperature[];
+};
+
+export interface ActivityHeatData {
+  activity_id: number;
+  dogs: ActivityDogHeat[];
+};
 
 export interface PaginatedActivities {
   data: Activity[];

@@ -1,6 +1,6 @@
 import { useAuth } from '@app/auth/auth-context';
 import { qk } from '@shared/api/keys';
-import { getActivities } from '@entities/activities/api/activities';
+import { getActivities, getActivityHeatData } from '@entities/activities/api/activities';
 import type { ActivityFilter } from '@entities/activities/model';
 
 import { useQuery, useQueryClient } from '@tanstack/react-query';
@@ -51,4 +51,12 @@ export function usePrefetchActivitiesOffset({
       queryFn: () => getActivities({ limit, offset, filters }),
       staleTime: 60_000,
     });
+}
+
+export function useActivityHeatData(activityId: number, enabled: boolean) {
+  return useQuery({
+    queryKey: qk.activityHeat(activityId),
+    queryFn: () => getActivityHeatData(activityId),
+    enabled,
+  });
 }

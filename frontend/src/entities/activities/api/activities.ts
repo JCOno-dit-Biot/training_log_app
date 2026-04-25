@@ -2,8 +2,9 @@ import axios from '@shared/api/axios';
 import type {
   Activity,
   ActivityFilter,
+  ActivityHeatData,
   ActivityPayload,
-  PaginatedActivities,
+  PaginatedActivities
 } from '@entities/activities/model';
 
 type FetchActivitiesOptions = {
@@ -42,6 +43,11 @@ export const getActivities = async ({
 
 export const getActivity = async (activity_id: number): Promise<Activity> => {
   const res = await axios.get(`/activities/${activity_id}`);
+  return res.data;
+};
+
+export const getActivityHeatData = async (activity_id: number): Promise<ActivityHeatData> => {
+  const res = await axios.get(`/activities/${activity_id}/heat`);
   return res.data;
 };
 
