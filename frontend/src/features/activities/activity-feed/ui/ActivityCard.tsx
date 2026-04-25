@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import React from 'react';
-import { MessageCircle, MoreHorizontal, Send } from 'lucide-react';
+import { MessageCircle, MoreHorizontal, Send, ThermometerSun } from 'lucide-react';
 
 import { useAuth } from '@app/auth/auth-context';
 import { getRatingColor } from '@shared/util/GetRatingColor';
@@ -14,6 +14,7 @@ import { useDogs } from '@features/dogs/model/useDogs';
 import { useRunners } from '@features/runners/model/useRunners';
 import { useSports } from '@features/sports/model/useSports';
 import type { Activity } from '@/entities/activities/model';
+import type { ActivityDogHeat, ActivityDogTemperature } from "@/entities/activities/model";
 import { Badge } from '@/shared/ui/badge';
 import { Button } from "@/shared/ui/button"
 import { Card, CardContent, CardFooter, CardHeader } from "@/shared/ui/card"
@@ -29,6 +30,7 @@ import { formatActivityDate } from '@/shared/util/FormatDate';
 import { formatLocationLabel } from '@/shared/util/formatLocationLabel';
 
 import { CommentItem } from '../../activity-comment/ui/CommentItem';
+import { useActivityHeatData } from '../model/useActivities';
 
 export default function ActivityCard({
   activity,
@@ -44,11 +46,16 @@ export default function ActivityCard({
   const [showComments, setShowComments] = useState(false);
   const [newComment, setNewComment] = useState('');
   const [showLaps, setShowLaps] = useState(false);
+  const [showHeat, setShowHeat] = useState(false);
 
   const [commentCount, setCommentCount] = useState<number>(activity.comment_count);
 
   const { user } = useAuth();
 
+  const { data: heatData, isLoading: loadingHeat } = useActivityHeatData(
+    activity.id,
+    showHeat
+  );
   const { data: comments = [], isLoading: loadingComments } = useActivityComments(
     activity.id,
     showComments,
@@ -79,6 +86,7 @@ export default function ActivityCard({
 
   const { byId: sports } = useSports();
   const { byId: dogs } = useDogs();
+  console.log(dogs.get(3).name)
   const { byId: runners } = useRunners();
 
   const date = formatActivityDate(activity.timestamp);
@@ -141,6 +149,27 @@ export default function ActivityCard({
   }
 
   const weatherLine = formatWeather(activity.weather)
+
+  // Handle heat data
+  function getTemp(
+    dog: ActivityDogHeat,
+    phase: "before" | "after" | "recovery"
+  ) {
+    return dog.temperatures.find((t) => t.phase === phase);
+  }
+
+  function formatTemp(value?: number | null) {
+    return value == null ? "—" : `${value.toFixed(1)}°C`;
+  }
+
+  function formatRecovery(temp?: ActivityDogTemperature) {
+    if (!temp) return "—";
+
+    const minute =
+      temp.recovery_minute == null ? "" : ` (${temp.recovery_minute} min)`;
+
+    return `${formatTemp(temp.temperature_c)}${minute}`;
+  }
   return (
     <Card className="w-full">
       {/* Header: Sport + subtitle + menu */}
@@ -253,10 +282,59 @@ export default function ActivityCard({
           </div>
         )
       }
+      {/* Heat data */}
+      {showHeat && (
+        <div className="px-6 pb-2">
+          <div className="rounded-md border bg-secondary/20 px-4 py-3">
+            {loadingHeat ? (
+              <div className="text-sm italic text-muted-foreground">
+                Loading temperature data...
+              </div>
+            ) : heatData?.dogs?.length ? (
+              <div className="grid grid-cols-4 gap-2 text-center text-sm">
+                <div className="font-semibold text-primary">Dog</div>
+                <div className="font-semibold text-primary">Before</div>
+                <div className="font-semibold text-primary">After</div>
+                <div className="font-semibold text-primary">Recovery</div>
+
+                {heatData.dogs.map((dog) => {
+                  const before = getTemp(dog, "before");
+                  const after = getTemp(dog, "after");
+                  const recovery = getTemp(dog, "recovery");
+
+                  return (
+                    <React.Fragment key={dog.activity_dog_id}>
+                      <div className="font-medium">{dogs.get(dog.dog_id)?.name}</div>
+                      <div>{formatTemp(before?.temperature_c)}</div>
+                      <div>{formatTemp(after?.temperature_c)}</div>
+                      <div>{formatRecovery(recovery)}</div>
+                    </React.Fragment>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="text-sm italic text-muted-foreground">
+                No temperature data recorded.
+              </div>
+            )}
+          </div>
+        </div>
+      )}
       {/* Footer: comments */}
       <CardFooter className="flex flex-col gap-1 pt-0">
         <div className="flex mx-6 border-t" />
         <div className="flex w-full items-center justify-end">
+          {activity.has_heat_data && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="gap-2"
+              onClick={() => setShowHeat((v) => !v)}
+              title="Show temperature data">
+              <ThermometerSun className="h-4 w-4" />
+            </Button>
+          )
+          }
           <Button variant="ghost" size="sm" onClick={() => setShowComments((v) => !v)} className="gap-2">
             <MessageCircle className="h-4 w-4" />
             <span>{commentCount ?? 0}</span>
