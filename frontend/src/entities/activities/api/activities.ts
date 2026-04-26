@@ -46,11 +46,6 @@ export const getActivity = async (activity_id: number): Promise<Activity> => {
   return res.data;
 };
 
-export const getActivityHeatData = async (activity_id: number): Promise<ActivityHeatData> => {
-  const res = await axios.get(`/activities/${activity_id}/heat`);
-  return res.data;
-};
-
 export const postActivity = async (formData: ActivityPayload): Promise<number> => {
   const payload = {
     ...formData,
@@ -71,4 +66,11 @@ export const updateActivity = async (
 ): Promise<{ success: boolean }> => {
   const response = await axios.put(`/activities/${id}`, changes);
   return response.data;
+};
+
+// activity heat endpoints
+
+export const getActivityHeatData = async (activity_id: number): Promise<ActivityHeatData> => {
+  const res = await axios.get(`/activities/${activity_id}/heat`);
+  return res.data;
 };
