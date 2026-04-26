@@ -1,4 +1,4 @@
-import type { Dog, SelectedDog } from '@entities/dogs/model';
+import type { Dog } from '@entities/dogs/model';
 import type { Runner } from '@entities/runners/model';
 import type { Sport } from '@entities/sports/model';
 
@@ -9,6 +9,13 @@ interface DogActivityRead {
   dog: Dog;
   id?: number;
   rating: number;
+}
+
+export interface SelectedDog {
+  dog_id: number;
+  rating: number;
+  cooling_method?: string | null;
+  temperatures?: DogTemperaturePayload[];
 }
 
 export interface Location {
@@ -41,6 +48,13 @@ export interface Activity {
 }
 
 export type TemperaturePhase = "before" | "after" | "recovery";
+
+export interface DogTemperaturePayload {
+  phase: TemperaturePhase;
+  recovery_minute?: number | null;
+  temperature_c: number;
+  measurement_method?: string | null;
+}
 
 export interface ActivityDogTemperature {
   id: number;
@@ -87,7 +101,7 @@ export interface ActivityForm {
   timestamp: string;
   runner_id: number | null;
   sport_id: number | null;
-  dogs: SelectedDog[];
+  dogs: ActivityDogForm[];
   distance: number;
   speed?: number;
   pace?: string;
@@ -95,6 +109,19 @@ export interface ActivityForm {
   workout: boolean;
   laps: Lap[];
   location_id: number | null;
+  measurement_method?: string;
+}
+
+export interface ActivityDogForm {
+  dog_id: number;
+  rating: number;
+
+  cooling_method?: string;
+
+  temperature_before?: string;
+  temperature_after?: string;
+  temperature_recovery?: string;
+  recovery_minute?: string;
 }
 
 // Only difference is the weather has temperature and humidity as number
