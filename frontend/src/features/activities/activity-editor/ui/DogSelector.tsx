@@ -1,11 +1,12 @@
 import React from 'react';
 import { useState } from 'react';
 
-import type { Dog, SelectedDog } from '@entities/dogs/model';
+import type { Dog } from '@entities/dogs/model';
+import type { ActivityDogForm } from '@/entities/activities/model';
 
 interface DogSelectorProps {
-  selectedDogs: SelectedDog[];
-  setSelectedDogs: (dogs: SelectedDog[]) => void;
+  selectedDogs: ActivityDogForm[];
+  setSelectedDogs: (dogs: ActivityDogForm[]) => void;
   dogs: Map<number, Dog>;
 }
 

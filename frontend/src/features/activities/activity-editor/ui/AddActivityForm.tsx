@@ -33,6 +33,7 @@ import { toPayload } from '../util/toPayload';
 import { validateActivityForm } from '../util/validateActivityForm';
 
 import DogSelector from './DogSelector';
+import { DogTemperatureFields } from './DogTemperatureFields';
 import LapEditor from './LapEditor';
 import { LocationCombobox } from './LocationCombobox';
 
@@ -84,8 +85,11 @@ export default function AddActivityForm({ onClose, onSuccess, initialData }: Add
         },
         workout: false,
         laps: [],
+        measurement_method: 'ear'
       },
   );
+
+  const [showHeatFields, setShowHeatFields] = useState<boolean>(false)
 
   // inside your component
   const [dateStr, setDateStr] = useState<string>('');
@@ -149,6 +153,7 @@ export default function AddActivityForm({ onClose, onSuccess, initialData }: Add
         },
         workout: false,
         laps: [],
+        measurement_method: 'ear'
       });
     }
   }, [initialData]);
@@ -445,33 +450,70 @@ export default function AddActivityForm({ onClose, onSuccess, initialData }: Add
                   onChange={(e) => handleWeatherChange("condition", e.target.value)}
                 />
               </div>
+              <div className="flex justify-between gap-2 sm:col-span-1 ">
+                <div className="space-y-2">
+                  <Label htmlFor="temperature">T (°C)</Label>
+                  <Input
+                    id="temperature"
+                    type="number"
+                    value={formData.weather?.temperature ?? ""}
+                    onChange={(e) => handleWeatherChange("temperature", e.target.value)}
+                    aria-invalid={!!fieldErrors.temperature}
+                  />
+                  <FieldError msg={fieldErrors.temperature} />
+                </div>
 
-              <div className="space-y-2 sm:col-span-1">
-                <Label htmlFor="temperature">T (°C)</Label>
-                <Input
-                  id="temperature"
-                  type="number"
-                  value={formData.weather?.temperature ?? ""}
-                  onChange={(e) => handleWeatherChange("temperature", e.target.value)}
-                  aria-invalid={!!fieldErrors.temperature}
-                />
-                <FieldError msg={fieldErrors.temperature} />
+                <div className="space-y-2">
+                  <Label htmlFor="humidity">Humidity (%)</Label>
+                  <Input
+                    id="humidity"
+                    type="number"
+                    step="1"
+                    value={formData.weather?.humidity ?? ""}
+                    onChange={(e) => handleWeatherChange("humidity", e.target.value)}
+                    aria-invalid={!!fieldErrors.humidity}
+                  />
+                  <FieldError msg={fieldErrors.humidity} />
+                </div>
               </div>
 
-              <div className="space-y-2 sm:col-span-1">
-                <Label htmlFor="humidity">Humidity (%)</Label>
-                <Input
-                  id="humidity"
-                  type="number"
-                  step="1"
-                  value={formData.weather?.humidity ?? ""}
-                  onChange={(e) => handleWeatherChange("humidity", e.target.value)}
-                  aria-invalid={!!fieldErrors.humidity}
+              <div className="flex items-center justify-between rounded-md border p-3 sm:col-span-1">
+                <div className="space-y-0.5">
+                  <Label htmlFor="heat" className="text-sm">
+                    Dog Temperature
+                  </Label>
+                </div>
+                <Switch
+                  id="dog heat"
+                  checked={showHeatFields}
+                  onCheckedChange={setShowHeatFields}
                 />
-                <FieldError msg={fieldErrors.humidity} />
               </div>
             </div>
           </div>
+
+          {showHeatFields && formData.dogs.length === 0 && (
+            <div className="p-3 text-sm text-muted-foreground">
+              Please select at least one dog to record temperature data.
+            </div>
+          )}
+
+          {showHeatFields && formData.dogs.length > 0 && (
+            <DogTemperatureFields
+              selectedDogs={formData.dogs}
+              setSelectedDogs={(dogs) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  dogs,
+                }))
+              }
+              measurementMethod={formData.measurement_method}
+              setMeasurementMethod={(val) =>
+                setFormData((prev) => ({ ...prev, measurement_method: val }))
+              }
+              dogs={dogs}
+            />
+          )}
         </CardContent>
 
         <CardFooter className="flex items-center justify-end gap-2 mt-4">
@@ -483,6 +525,6 @@ export default function AddActivityForm({ onClose, onSuccess, initialData }: Add
           </Button>
         </CardFooter>
       </form>
-    </Card>
+    </Card >
   );
 }
