@@ -8,17 +8,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 interface DogTemperatureFieldsProps {
     selectedDogs: ActivityDogForm[];
     setSelectedDogs: (dogs: ActivityDogForm[]) => void;
-    measurementMethod: string | undefined;
-    setMeasurementMethod: (val: string) => void;
     dogs: Map<number, Dog>;
 }
 
 export function DogTemperatureFields({
     selectedDogs,
     setSelectedDogs,
-    measurementMethod,
-    setMeasurementMethod,
-    dogs,
+    dogs
 }: DogTemperatureFieldsProps) {
     const updateDog = (dogId: number, patch: Partial<ActivityDogForm>) => {
         setSelectedDogs(
@@ -57,7 +53,7 @@ export function DogTemperatureFields({
                                         temperature_before: e.target.value,
                                     })
                                 }
-                                className="h-8 text-center"
+                                className="h-8 text-center text-sm"
                             />
 
                             <Input
@@ -70,7 +66,7 @@ export function DogTemperatureFields({
                                         temperature_after: e.target.value,
                                     })
                                 }
-                                className="h-8 text-center"
+                                className="h-8 text-center text-sm"
                             />
 
                             <Input
@@ -83,7 +79,7 @@ export function DogTemperatureFields({
                                         temperature_recovery: e.target.value,
                                     })
                                 }
-                                className="h-8 text-center"
+                                className="h-8 text-center text-sm"
                             />
 
                             <Input
@@ -95,7 +91,7 @@ export function DogTemperatureFields({
                                         recovery_minute: e.target.value,
                                     })
                                 }
-                                className="h-8 text-center"
+                                className="h-8 text-center text-sm"
                             />
                         </React.Fragment>
                     );
@@ -104,10 +100,17 @@ export function DogTemperatureFields({
 
             <div className="flex gap-3 mt-3">
                 <Select
-                    value={measurementMethod}
-                    onValueChange={setMeasurementMethod}
+                    value={selectedDogs[0]?.measurement_method ?? "ear"}
+                    onValueChange={(value) => {
+                        setSelectedDogs(
+                            selectedDogs.map((dog) => ({
+                                ...dog,
+                                measurement_method: value,
+                            }))
+                        );
+                    }}
                 >
-                    <SelectTrigger aria-invalid={!!measurementMethod}>
+                    <SelectTrigger>
                         <SelectValue placeholder="Select temperature measurement method" />
                     </SelectTrigger>
                     <SelectContent>

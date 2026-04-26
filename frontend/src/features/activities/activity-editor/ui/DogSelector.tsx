@@ -18,7 +18,7 @@ const DogSelector: React.FC<DogSelectorProps> = ({ selectedDogs, setSelectedDogs
     if (exists) {
       setSelectedDogs(selectedDogs.filter((d) => d.dog_id !== dog_id));
     } else {
-      setSelectedDogs([...selectedDogs, { dog_id, rating: 10 }]);
+      setSelectedDogs([...selectedDogs, { dog_id, rating: 10, measurement_method: 'ear' }]);
     }
   };
 

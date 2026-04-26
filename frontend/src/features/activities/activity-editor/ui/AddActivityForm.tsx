@@ -84,8 +84,7 @@ export default function AddActivityForm({ onClose, onSuccess, initialData }: Add
           condition: '',
         },
         workout: false,
-        laps: [],
-        measurement_method: 'ear'
+        laps: []
       },
   );
 
@@ -152,8 +151,7 @@ export default function AddActivityForm({ onClose, onSuccess, initialData }: Add
           condition: '',
         },
         workout: false,
-        laps: [],
-        measurement_method: 'ear'
+        laps: []
       });
     }
   }, [initialData]);
@@ -506,10 +504,6 @@ export default function AddActivityForm({ onClose, onSuccess, initialData }: Add
                   ...prev,
                   dogs,
                 }))
-              }
-              measurementMethod={formData.measurement_method}
-              setMeasurementMethod={(val) =>
-                setFormData((prev) => ({ ...prev, measurement_method: val }))
               }
               dogs={dogs}
             />

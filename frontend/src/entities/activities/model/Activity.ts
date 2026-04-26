@@ -109,7 +109,6 @@ export interface ActivityForm {
   workout: boolean;
   laps: Lap[];
   location_id: number | null;
-  measurement_method?: string;
 }
 
 export interface ActivityDogForm {
@@ -117,6 +116,7 @@ export interface ActivityDogForm {
   rating: number;
 
   cooling_method?: string;
+  measurement_method?: string;
 
   temperature_before?: string;
   temperature_after?: string;
