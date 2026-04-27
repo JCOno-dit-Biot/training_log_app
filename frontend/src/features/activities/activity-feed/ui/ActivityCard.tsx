@@ -86,7 +86,6 @@ export default function ActivityCard({
 
   const { byId: sports } = useSports();
   const { byId: dogs } = useDogs();
-  console.log(dogs.get(3).name)
   const { byId: runners } = useRunners();
 
   const date = formatActivityDate(activity.timestamp);

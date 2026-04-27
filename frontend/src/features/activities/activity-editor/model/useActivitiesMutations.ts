@@ -31,7 +31,8 @@ export function useCreateActivity() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (payload: ActivityPayload) => createActivityApi(payload) as Promise<number>,
-    onSuccess: async (id: number) => {
+    onSuccess: async (id) => {
+
       // Hydrate detail cache so if you navigate to it the data is instant
       try {
         const detail = await getActivity(id);

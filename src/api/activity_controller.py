@@ -22,7 +22,7 @@ class ActivityController:
 
         return paginate_results(activities, entry_count, request, pagination.limit, pagination.offset)
     
-    @router.get("/activities/{activity_id}", response_model=dict, status_code=200)
+    @router.get("/activities/{activity_id}", response_model=Activity, status_code=200)
     def get_activity_by_id(self, request: Request, activity_id:int):
         activity = self.repo.get_by_id(activity_id)
         return activity

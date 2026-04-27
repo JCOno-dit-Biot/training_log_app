@@ -52,7 +52,7 @@ export const postActivity = async (formData: ActivityPayload): Promise<number> =
   };
   console.log(payload);
   const response = await axios.post('/activities', payload);
-  return response.data;
+  return response.data.id;
 };
 
 export const deleteActivity = async (activity_id: number): Promise<{ success: boolean }> => {
