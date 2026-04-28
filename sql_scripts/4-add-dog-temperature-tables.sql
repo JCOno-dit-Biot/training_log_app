@@ -33,4 +33,7 @@ CREATE TABLE IF NOT EXISTS activity_dog_temperature_measurements (
 CREATE UNIQUE INDEX IF NOT EXISTS uq_activity_dog_temp_phase_once
 ON activity_dog_temperature_measurements (activity_dog_id, phase, recovery_minute);
 
+CREATE UNIQUE INDEX IF NOT EXISTS uq_activity_dog_entry_per_dog
+ON activity_dogs (activity_id, dog_id);
+
 COMMIT;
