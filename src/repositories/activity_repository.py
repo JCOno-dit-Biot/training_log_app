@@ -1,5 +1,5 @@
 from src.models.runner import Runner
-from src.models.activity import Activity, ActivityLaps, ActivityCreate, ActivityDogsCreate, ActivityHeat
+from src.models.activity import Activity, ActivityLaps, ActivityCreate, ActivityDogsUpdate, ActivityHeat
 from src.models.weather import Weather
 from src.parsers.activity_parser import parse_activity_from_row
 from .abstract_repository import abstract_repository
@@ -402,15 +402,77 @@ class activity_repository(abstract_repository):
                             (activity_id, weather.temperature, weather.humidity, weather.condition),
                         )
                 # Dogs update — e.g., clear and re-insert
-                if dogs:
-                    
-                    cur.execute("DELETE FROM activity_dogs WHERE activity_id = %s", (activity_id,))
-                    for dog in dogs:
-                        dog = ActivityDogsCreate(**dog)
-                        cur.execute("""
-                            INSERT INTO activity_dogs (activity_id, dog_id, rating)
-                            VALUES (%s, %s, %s)
-                        """, (activity_id, dog.dog_id, dog.rating))
+                if dogs is not None:
+                    for dog_data in dogs:
+                        dog = ActivityDogsUpdate(**dog_data)
+
+                        print(f"updated dog {dog}")
+
+                        if dog.rating is not None:
+                            cur.execute("""
+                                INSERT INTO activity_dogs (activity_id, dog_id, rating)
+                                VALUES (%s, %s, %s)
+                                ON CONFLICT (activity_id, dog_id)
+                                DO UPDATE SET rating = EXCLUDED.rating
+                                RETURNING id
+                            """, (activity_id, dog.dog_id, dog.rating))
+
+                            activity_dog_id = cur.fetchone()["id"]
+
+                            if activity_dog_id is None:
+                                raise ValueError("Activity dog not found for this activity")
+
+                        else:
+                            cur.execute("""
+                                SELECT id from activity_dogs WHERE activity_id = %s and dog_id = %s
+                            """, (activity_id, dog.dog_id))
+                            activity_dog_id = cur.fetchone()["id"]
+
+                        if dog.cooling_method is not None:
+                            cur.execute("""
+                                INSERT INTO activity_dog_heat_observations (
+                                    activity_dog_id,
+                                    cooling_method
+                                )
+                                VALUES (%s, %s)
+                                ON CONFLICT (activity_dog_id)
+                                DO UPDATE SET cooling_method = EXCLUDED.cooling_method
+                            """, (activity_dog_id, dog.cooling_method))
+
+                        if dog.temperatures is not None:
+                            for temp in dog.temperatures:
+                                cur.execute("""
+                                    DELETE FROM activity_dog_temperature_measurements
+                                    WHERE activity_dog_id = %s
+                                    AND phase = %s
+                                    AND (
+                                        (recovery_minute IS NULL AND %s IS NULL)
+                                        OR recovery_minute = %s
+                                    )
+                                """, (
+                                    activity_dog_id,
+                                    temp.phase,
+                                    temp.recovery_minute,
+                                    temp.recovery_minute,
+                                ))
+
+                                cur.execute("""
+                                    INSERT INTO activity_dog_temperature_measurements (
+                                        activity_dog_id,
+                                        phase,
+                                        recovery_minute,
+                                        temperature_c,
+                                        measurement_method
+                                    )
+                                    VALUES (%s, %s, %s, %s, %s)
+                                """, (
+                                    activity_dog_id,
+                                    temp.phase,
+                                    temp.recovery_minute,
+                                    temp.temperature_c,
+                                    temp.measurement_method,
+                                ))
+                        
                 self._connection.commit()
                 return cur.rowcount > 0
             

@@ -324,14 +324,169 @@ def test_update_dogs(activity_repo):
             {"dog_id": 1, "rating": 5}
         ]
     }
-    activity_repo.update(1, fields)
+    updated = activity_repo.update(1, fields)
 
+    assert updated == True
     with activity_repo._connection.cursor(cursor_factory=RealDictCursor) as cur:
-        cur.execute("SELECT dog_id, rating FROM activity_dogs WHERE activity_id = 1")
+        cur.execute("SELECT dog_id, rating FROM activity_dogs WHERE activity_id = 1 AND dog_id = 1")
         result = cur.fetchone()
         assert result["dog_id"] == 1
         assert result["rating"] == 5
 
+
+@pytest.mark.parametrize(
+    "payload,expected_rating,expected_cooling,expected_temps",
+    [
+        pytest.param(
+            {
+                "dogs": [
+                    {
+                        "dog_id": 1,
+                        "rating": 7,
+                    }
+                ]
+            },
+            7,
+            "lake",
+            {
+                ("before", None): (38.5, "ear"),
+                ("after", None): (40.5, "ear"),
+            },
+            id="rating-only-keeps-heat-data",
+        ),
+        pytest.param(
+            {
+                "dogs": [
+                    {
+                        "dog_id": 1,
+                        "cooling_method": "walk + water",
+                    }
+                ]
+            },
+            7, #changed on previous test
+            "walk + water",
+            {
+                ("before", None): (38.5, "ear"),
+                ("after", None): (40.5, "ear"),
+            },
+            id="cooling-only-keeps-rating-and-temps",
+        ),
+        pytest.param(
+            {
+                "dogs": [
+                    {
+                        "dog_id": 1,
+                        "temperatures": [
+                            {
+                                "phase": "after",
+                                "temperature_c": 40.1,
+                                "measurement_method": "ear",
+                            }
+                        ],
+                    }
+                ]
+            },
+            7,
+            "walk + water", #changed on previous test
+            {
+                ("before", None): (38.5, "ear"),
+                ("after", None): (40.1, "ear"),
+            },
+            id="update-one-temperature-only",
+        ),
+        pytest.param(
+            {
+                "dogs": [
+                    {
+                        "dog_id": 1,
+                        "rating": 6,
+                        "cooling_method": "lake + walk",
+                        "temperatures": [
+                            {
+                                "phase": "before",
+                                "temperature_c": 38.8,
+                                "measurement_method": "rectal",
+                            },
+                            {
+                                "phase": "after",
+                                "temperature_c": 40.9,
+                                "measurement_method": "rectal",
+                            },
+                            {
+                                "phase": "recovery",
+                                "recovery_minute": 10,
+                                "temperature_c": 39.4,
+                                "measurement_method": "rectal",
+                            },
+                        ],
+                    }
+                ]
+            },
+            6,
+            "lake + walk",
+            {
+                ("before", None): (38.8, "rectal"),
+                ("after", None): (40.9, "rectal"),
+                ("recovery", 10): (39.4, "rectal"),
+            },
+            id="update-all-dog-heat-fields",
+        ),
+    ],
+)
+def test_update_dogs_with_temperatures(
+    activity_repo,
+    payload,
+    expected_rating,
+    expected_cooling,
+    expected_temps,
+):
+    updated = activity_repo.update(5, payload)
+
+    assert updated is True
+
+    with activity_repo._connection.cursor() as cur:
+        cur.execute(
+            """
+            SELECT rating
+            FROM activity_dogs
+            WHERE id = %s AND activity_id = %s
+            """,
+            (6, 5),
+        )
+        rating = cur.fetchone()
+
+        assert rating is not None
+        assert rating[0] == expected_rating
+
+        cur.execute(
+            """
+            SELECT cooling_method
+            FROM activity_dog_heat_observations
+            WHERE activity_dog_id = %s
+            """,
+            (6,),
+        )
+        cooling = cur.fetchone()
+
+        assert cooling is not None
+        assert cooling[0] == expected_cooling
+
+        cur.execute(
+            """
+            SELECT phase, recovery_minute, temperature_c, measurement_method
+            FROM activity_dog_temperature_measurements
+            WHERE activity_dog_id = %s
+            """,
+            (6,),
+        )
+        temps = cur.fetchall()
+
+        actual_temps = {
+            (phase, recovery_minute): (float(temperature_c), measurement_method)
+            for phase, recovery_minute, temperature_c, measurement_method in temps
+        }
+
+        assert actual_temps == expected_temps
 
 def test_update_all_components(activity_repo):
     fields = {

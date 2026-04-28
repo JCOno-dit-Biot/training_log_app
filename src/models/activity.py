@@ -129,7 +129,7 @@ class ActivityUpdate(BaseModel):
     location_id: Optional[int] = None
     distance: Optional[float] = None
     workout: Optional[bool] = None
-    dogs: Optional[List["ActivityDogsCreate"]] = None
+    dogs: Optional[List["ActivityDogsUpdate"]] = None
     weather: Optional[Weather] = None
     laps: Optional[List[ActivityLaps]] = None
     speed: Optional[float] = None
@@ -159,6 +159,12 @@ class ActivityDogsCreate(BaseModel):
     cooling_method: Optional[str] = None
     temperatures: List["DogTemperatureCreate"] = Field(default_factory=list)
 
+class ActivityDogsUpdate(BaseModel):
+    id: Optional[int] = None
+    dog_id: int
+    rating: Optional[int] = Field(None, description="Training rating out of 10", ge=0, le=10)
+    cooling_method: Optional[str] = None
+    temperatures: Optional[List["DogTemperatureCreate"]] = None
 ## Heat related classes
 
 class DogTemperatureCreate(BaseModel):
