@@ -41,8 +41,7 @@ class ActivityController:
     
     @router.put("/activities/{activity_id}", status_code=200)
     def update_activity(self, request: Request, activity_id: int, activity_update: ActivityUpdate):
-        updated_fields = activity_update.model_dump(exclude_none=True)
-        print(not updated_fields)
+        updated_fields = activity_update.model_dump(exclude_unset=True)
         if not updated_fields:
             raise HTTPException(status_code=400, detail="No data to update")
 

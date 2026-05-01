@@ -196,7 +196,7 @@ class activity_repository(abstract_repository):
                                 'rating', ad.rating,
                                 'cooling_method', ho.cooling_method,
 
-                                'temperatures', (
+                                'temperatures', COALESCE((
                                     SELECT json_agg(
                                         jsonb_build_object(
                                             'id', tm.id,
@@ -209,7 +209,7 @@ class activity_repository(abstract_repository):
                                     )
                                     FROM activity_dog_temperature_measurements tm
                                     WHERE tm.activity_dog_id = ad.id
-                                )
+                                ), '[]'::json)
                             )
                         ) FILTER (WHERE ad.id IS NOT NULL) AS dogs
 
