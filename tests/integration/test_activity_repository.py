@@ -505,6 +505,42 @@ def test_update_all_components(activity_repo):
         assert lap["speed"] == 13.5
 
 
+def test_update_empty_temp_list(activity_repo):
+
+    expected_temps = {
+                ("before", None): (38.8, "rectal"),
+                ("after", None): (40.9, "rectal"),
+                ("recovery", 10): (39.4, "rectal"),
+            }
+    
+    fields = {
+        "dogs": [
+            {"dog_id": 1, 'temperature': []}
+        ]
+    }
+
+    activity_repo.update(5, fields)
+    
+    # verify that the temperatures were not updated
+    with activity_repo._connection.cursor() as cur:
+        cur.execute(
+                """
+                SELECT phase, recovery_minute, temperature_c, measurement_method
+                FROM activity_dog_temperature_measurements
+                WHERE activity_dog_id = %s
+                """,
+                (6,),
+            )
+        temps = cur.fetchall()
+
+        actual_temps = {
+            (phase, recovery_minute): (float(temperature_c), measurement_method)
+            for phase, recovery_minute, temperature_c, measurement_method in temps
+        }
+
+        assert len(temps) == 3 
+        assert actual_temps == expected_temps
+        
 def test_update_invalid_id(activity_repo):
     fields = {"location_id": 3}
     activity_repo.update(99999, fields)  # Should not fail, but shouldn't affect data

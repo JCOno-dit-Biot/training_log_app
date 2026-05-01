@@ -406,8 +406,6 @@ class activity_repository(abstract_repository):
                     for dog_data in dogs:
                         dog = ActivityDogsUpdate(**dog_data)
 
-                        print(f"updated dog {dog}")
-
                         if dog.rating is not None:
                             cur.execute("""
                                 INSERT INTO activity_dogs (activity_id, dog_id, rating)
