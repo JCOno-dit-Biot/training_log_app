@@ -7,6 +7,7 @@ export type {
   ActivityForm,
   ActivityHeatData,
   ActivityPayload,
+  DogTemperaturePayload,
   Location,
   LocationCreate,
   PaginatedActivities,

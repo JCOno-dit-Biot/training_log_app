@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 
 import type { Activity, ActivityForm } from '@entities/activities/model';
 import type { WeatherForm } from '@entities/activities/model';
+import type { ActivityHeatData } from '@entities/activities/model';
 import {
   useCreateActivity,
   useUpdateActivity,
@@ -27,7 +28,7 @@ import {
 import { Switch } from "@/shared/ui/switch";
 import { combineLocalDateTimeToUTCISO } from '@/shared/util/dates';
 
-import { activityToPayload, convertToFormData } from '../util/convertToFormData';
+import { convertToFormData } from '../util/convertToFormData';
 import { getActivityChanges } from '../util/getActivityChanges';
 import { toPayload } from '../util/toPayload';
 import { validateActivityForm } from '../util/validateActivityForm';
@@ -40,7 +41,8 @@ import { LocationCombobox } from './LocationCombobox';
 type AddActivityFormProps = {
   onClose: () => void;
   onSuccess?: () => void;
-  initialData?: Activity;
+  initialData?: Activity | null;
+  initialHeatData?: ActivityHeatData | null;
 };
 
 const pad2 = (n: number) => n.toString().padStart(2, '0');
@@ -50,7 +52,25 @@ function FieldError({ msg }: { msg?: string }) {
   return <p className="mt-1 text-xs text-destructive">{msg}</p>;
 }
 
-export default function AddActivityForm({ onClose, onSuccess, initialData }: AddActivityFormProps) {
+const emptyActivityForm = (): ActivityForm => ({
+  timestamp: new Date().toISOString(),
+  runner_id: null,
+  sport_id: null,
+  dogs: [],
+  location_id: null,
+  distance: 0,
+  speed: undefined,
+  pace: "",
+  weather: {
+    temperature: "",
+    humidity: "",
+    condition: "",
+  },
+  workout: false,
+  laps: [],
+});
+
+export default function AddActivityForm({ onClose, onSuccess, initialData, initialHeatData }: AddActivityFormProps) {
 
 
   const [_error, setError] = useState<string | null>(null);
@@ -67,25 +87,7 @@ export default function AddActivityForm({ onClose, onSuccess, initialData }: Add
   );
 
   const [formData, setFormData] = useState<ActivityForm>(() =>
-    initialData
-      ? convertToFormData(initialData)
-      : {
-        timestamp: new Date().toISOString(),
-        runner_id: null,
-        sport_id: null,
-        dogs: [],
-        location_id: null,
-        distance: 0,
-        speed: undefined,
-        pace: '',
-        weather: {
-          temperature: '',
-          humidity: '',
-          condition: '',
-        },
-        workout: false,
-        laps: []
-      },
+    initialData ? convertToFormData(initialData, initialHeatData) : emptyActivityForm()
   );
 
   const [showHeatFields, setShowHeatFields] = useState<boolean>(false)
@@ -134,27 +136,13 @@ export default function AddActivityForm({ onClose, onSuccess, initialData }: Add
 
   useEffect(() => {
     if (initialData) {
-      setFormData(convertToFormData(initialData));
+      setFormData(convertToFormData(initialData, initialHeatData));
+      setShowHeatFields(Boolean(initialHeatData?.dogs?.length));
     } else {
-      setFormData({
-        timestamp: new Date().toISOString(),
-        runner_id: null,
-        sport_id: null,
-        dogs: [],
-        location_id: null,
-        distance: 0,
-        speed: undefined,
-        pace: '',
-        weather: {
-          temperature: '',
-          humidity: '',
-          condition: '',
-        },
-        workout: false,
-        laps: []
-      });
+      setFormData(emptyActivityForm());
+      setShowHeatFields(false);
     }
-  }, [initialData]);
+  }, [initialData, initialHeatData]);
 
   const handleInputChange = (field: keyof ActivityForm, value: any) => {
     if ((field === 'distance' || field === 'speed') && value !== '') {
@@ -231,9 +219,11 @@ export default function AddActivityForm({ onClose, onSuccess, initialData }: Add
     setValidationMsg(null);
     try {
       if (isEdit && initialData) {
-        const original = activityToPayload(initialData);
+        const originalForm = convertToFormData(initialData, initialHeatData);
+        const original = toPayload(originalForm);
         const updatedPayload = toPayload(formData);
-        const diff = getActivityChanges(original, updatedPayload); // what your API expects
+
+        const diff = getActivityChanges(original, updatedPayload);
         console.log(diff)
         await updateMutation.mutateAsync({ id: initialData.id, diff });
       } else {
