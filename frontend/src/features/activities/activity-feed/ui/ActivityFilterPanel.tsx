@@ -18,6 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/shared/ui/select";
+import { Switch } from "@/shared/ui/switch";
 
 import { useLocations } from '../../activity-editor/model/useLocations';
 import { LocationCombobox } from "../../activity-editor/ui/LocationCombobox";
@@ -146,29 +147,46 @@ export default function ActivityFilterPanel({
       </div>
 
       {/* Sport */}
-      <div className="space-y-2">
-        <Label>Sport</Label>
-        <Select
-          value={filters.sport_id ? String(filters.sport_id) : "all"}
-          onValueChange={(v) =>
-            setFilters((f) => ({
-              ...f,
-              sport_id: v === "all" ? undefined : Number(v),
-            }))
-          }
-        >
-          <SelectTrigger>
-            <SelectValue placeholder="All sports" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All sports</SelectItem>
-            {[...sports.entries()].map(([id, sport]) => (
-              <SelectItem key={id} value={String(id)}>
-                {sport.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+      <div className="flex items-end gap-4">
+        <div className="flex-1 min-w-0 space-y-2">
+          <Label>Sport</Label>
+          <Select
+            value={filters.sport_id ? String(filters.sport_id) : "all"}
+            onValueChange={(v) =>
+              setFilters((f) => ({
+                ...f,
+                sport_id: v === "all" ? undefined : Number(v),
+              }))
+            }
+          >
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="All sports" className="truncate" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All sports</SelectItem>
+              {[...sports.entries()].map(([id, sport]) => (
+                <SelectItem key={id} value={String(id)}>
+                  {sport.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="flex items-center gap-3 rounded-md border border-neutral-500 px-3 py-2">
+          <Label htmlFor="filter-workout" className="text-sm">
+            Workout
+          </Label>
+          <Switch
+            id="filter workout"
+            checked={filters.workout ?? false}
+            onCheckedChange={(v) =>
+              setFilters((f) => ({
+                ...f,
+                workout: v,
+              }))
+            }
+          />
+        </div>
       </div>
 
       {/* Location */}
