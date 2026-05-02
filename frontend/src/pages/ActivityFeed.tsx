@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 
 // optional for clean click-out
 import Pagination from '@shared/ui/pagination';
-import type { Activity, ActivityFilter } from '@entities/activities/model';
+import type { Activity, ActivityFilter, ActivityHeatData } from '@entities/activities/model';
 import { useDeleteActivity } from '@features/activities/activity-editor/model/useActivitiesMutations';
 import AddActivityForm from '@features/activities/activity-editor/ui/AddActivityForm';
 import {
@@ -16,6 +16,7 @@ import { RightSidebar } from '@features/activities/activity-stats/ui/stats_sideb
 import { useDogs } from '@features/dogs/model/useDogs';
 import { useRunners } from '@features/runners/model/useRunners';
 import { useSports } from '@features/sports/model/useSports';
+import { getActivityHeatData } from '@/entities/activities/api/activities';
 import {
   Dialog,
   DialogContent,
@@ -33,7 +34,10 @@ export default function ActivityFeed() {
   const [showModal, setShowModal] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
   const [filters, setFilters] = useState<ActivityFilter>({}); // should we use useMemo()?
+  // edit states
   const [editActivity, setEditActivity] = useState<Activity | null>(null);
+  const [editHeatData, setEditHeatData] = useState<ActivityHeatData | null>(null);
+  const [loadingEdit, setLoadingEdit] = useState(false);
   const [panelPosition, setPanelPosition] = useState<{ top: number; left: number } | null>(null);
   const filterButtonRef = useRef<HTMLButtonElement | null>(null);
   const panelRef = useRef<HTMLDivElement | null>(null);
@@ -131,10 +135,23 @@ export default function ActivityFeed() {
     qc.invalidateQueries({ queryKey: ['activities'], refetchType: 'active' });
   };
 
-  const openEditModal = (activity: Activity) => {
-    setEditActivity(activity);
-    setShowModal(true);
+  const openEditModal = async (activity: Activity) => {
+    setLoadingEdit(true);
+    try {
+      let heatData: ActivityHeatData | null = null;
+
+      if (activity.has_heat_data && activity.id != null) {
+        heatData = await getActivityHeatData(activity.id);
+      }
+
+      setEditActivity(activity);
+      setEditHeatData(heatData);
+      setShowModal(true);
+    } finally {
+      setLoadingEdit(false);
+    }
   };
+
 
   const applyFilters = () => {
     setOffset(0);
@@ -277,6 +294,7 @@ export default function ActivityFeed() {
                       onSuccess={handleSuccess}
                       onClose={handleClose}
                       initialData={editActivity}
+                      initialHeatData={editHeatData}
                     />
                   </div>
                 </DialogContent>

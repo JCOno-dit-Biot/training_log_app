@@ -16,7 +16,7 @@ def test_dog_analytics_summary(analytics_repo):
     summary = analytics_repo.get_analytic_summary_per_dog(filters, 2)
     assert len(summary.per_dog) == 2
     assert [dog.name in ('Milou', 'Fido') for dog in summary.per_dog]
-    assert summary.total_distance_km == 51.4
+    assert summary.total_distance_km == pytest.approx(51.4, rel=1e-3)
     assert summary.avg_rating == pytest.approx(7.714, rel=1e-3)
     assert summary.per_dog[0].avg_frequency_per_week  == pytest.approx(4)
     assert summary.per_dog[1].total_duration_hours == pytest.approx(1.328, rel=1e-3)

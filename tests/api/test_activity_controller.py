@@ -81,7 +81,7 @@ def test_update_activity_no_update_field(test_app):
     update = ActivityUpdate()
     client=TestClient(test_app)
     response = client.put("/activities/2",
-                data = update.model_dump_json())
+                data = update.model_dump_json(exclude_unset=True))
     
     assert response.status_code == 400
     assert response.json() == {"detail": "No data to update"}

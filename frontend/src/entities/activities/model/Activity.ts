@@ -1,4 +1,4 @@
-import type { Dog, SelectedDog } from '@entities/dogs/model';
+import type { Dog } from '@entities/dogs/model';
 import type { Runner } from '@entities/runners/model';
 import type { Sport } from '@entities/sports/model';
 
@@ -9,6 +9,13 @@ interface DogActivityRead {
   dog: Dog;
   id?: number;
   rating: number;
+}
+
+export interface SelectedDog {
+  dog_id: number;
+  rating: number;
+  cooling_method?: string | null;
+  temperatures?: DogTemperaturePayload[];
 }
 
 export interface Location {
@@ -37,7 +44,39 @@ export interface Activity {
   laps: Lap[];
   weather?: Weather;
   comment_count: number;
+  has_heat_data: boolean;
 }
+
+export type TemperaturePhase = "before" | "after" | "recovery";
+
+export interface DogTemperaturePayload {
+  phase: TemperaturePhase;
+  recovery_minute?: number | null;
+  temperature_c: number;
+  measurement_method?: string | null;
+}
+
+export interface ActivityDogTemperature {
+  id: number;
+  phase: TemperaturePhase;
+  recovery_minute: number | null;
+  temperature_c: number;
+  measurement_method: string | null;
+};
+
+export interface ActivityDogHeat {
+  activity_dog_id: number;
+  dog_id: number;
+  dog_name: string;
+  rating: number | null;
+  cooling_method: string | null;
+  temperatures: ActivityDogTemperature[];
+};
+
+export interface ActivityHeatData {
+  activity_id: number;
+  dogs: ActivityDogHeat[];
+};
 
 export interface PaginatedActivities {
   data: Activity[];
@@ -53,6 +92,7 @@ export interface ActivityFilter {
   dog_id?: number;
   runner_id?: number;
   sport_id?: number;
+  workout?: boolean;
   location_id?: number;
   start_date?: string; // ISO format
   end_date?: string;
@@ -62,7 +102,7 @@ export interface ActivityForm {
   timestamp: string;
   runner_id: number | null;
   sport_id: number | null;
-  dogs: SelectedDog[];
+  dogs: ActivityDogForm[];
   distance: number;
   speed?: number;
   pace?: string;
@@ -70,6 +110,19 @@ export interface ActivityForm {
   workout: boolean;
   laps: Lap[];
   location_id: number | null;
+}
+
+export interface ActivityDogForm {
+  dog_id: number;
+  rating: number;
+
+  cooling_method?: string;
+  measurement_method?: string;
+
+  temperature_before?: string;
+  temperature_after?: string;
+  temperature_recovery?: string;
+  recovery_minute?: string;
 }
 
 // Only difference is the weather has temperature and humidity as number

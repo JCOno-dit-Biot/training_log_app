@@ -1,6 +1,6 @@
 from pydantic import BaseModel, Field, field_validator, model_validator
 from datetime import datetime, timedelta
-from typing import Optional, List
+from typing import Optional, List, Literal
 from .runner import Runner
 from .sport import Sport
 from .dog import Dog
@@ -24,6 +24,7 @@ class Activity(BaseModel):
     speed: Optional[float] = Field(None, description="Speed in km per hours")
     pace: Optional[str] = Field(None, description="Pace in min per km")
     comment_count: Optional[int] = Field(None, description="number of comment for an activity")
+    has_heat_data: bool = False
 
     @model_validator(mode="after")
     def ensure_at_least_one_metric(self):
@@ -100,7 +101,7 @@ class ActivityCreate(BaseModel):
     workout: bool = False
     dogs: List["ActivityDogsCreate"]
     weather: Optional[Weather] = Field(None, description="Weather entry for the training")
-    laps: Optional[List[ActivityLaps]] = Field([], description="list of laps with pace or speed")
+    laps: List["ActivityLaps"] = Field(default_factory=list, description="list of laps with pace or speed")
     speed: Optional[float] = Field(None, description="Speed in km per hours")
     pace: Optional[str] = Field(None, description="Pace in min per km")
 
@@ -128,7 +129,7 @@ class ActivityUpdate(BaseModel):
     location_id: Optional[int] = None
     distance: Optional[float] = None
     workout: Optional[bool] = None
-    dogs: Optional[List["ActivityDogsCreate"]] = None
+    dogs: Optional[List["ActivityDogsUpdate"]] = None
     weather: Optional[Weather] = None
     laps: Optional[List[ActivityLaps]] = None
     speed: Optional[float] = None
@@ -155,3 +156,53 @@ class ActivityDogsCreate(BaseModel):
     id: Optional[int] = None
     dog_id: int
     rating: Optional[int] = Field(None, description="Training rating out of 10", ge=0, le=10)
+    cooling_method: Optional[str] = None
+    temperatures: List["DogTemperatureCreate"] = Field(default_factory=list)
+
+class ActivityDogsUpdate(BaseModel):
+    id: Optional[int] = None
+    dog_id: int
+    rating: Optional[int] = Field(None, description="Training rating out of 10", ge=0, le=10)
+    cooling_method: Optional[str] = None
+    temperatures: Optional[List["DogTemperatureCreate"]] = None
+## Heat related classes
+
+class DogTemperatureCreate(BaseModel):
+    phase: Literal["before", "after", "recovery"]
+    recovery_minute: Optional[int] = None
+    temperature_c: float
+    measurement_method: Optional[str] = None
+
+    @model_validator(mode="after")
+    def validate_phase_and_recovery(self):
+        if self.phase == "recovery" and self.recovery_minute is None:
+            raise ValueError(
+                'Dog temperature measurement in recovery phase must have a recovery time specified'
+            )
+
+        if self.phase in ("before", "after") and self.recovery_minute is not None:
+            raise ValueError(
+                'Dog temperature measurement before and after activity cannot have a recovery time specified'
+            )
+
+        return self
+    
+class ActivityDogTemperature(BaseModel):
+    id: int
+    phase: str
+    recovery_minute: Optional[int] = None
+    temperature_c: float
+    measurement_method: Optional[str] = None
+
+
+class ActivityDogHeat(BaseModel):
+    activity_dog_id: int
+    dog_id: int
+    rating: Optional[int] = None
+    cooling_method: Optional[str] = None
+    temperatures: List[ActivityDogTemperature] = Field(default_factory=list)
+
+
+class ActivityHeat(BaseModel):
+    activity_id: int
+    dogs: List[ActivityDogHeat] = Field(default_factory=list)

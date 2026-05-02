@@ -2,8 +2,9 @@ import axios from '@shared/api/axios';
 import type {
   Activity,
   ActivityFilter,
+  ActivityHeatData,
   ActivityPayload,
-  PaginatedActivities,
+  PaginatedActivities
 } from '@entities/activities/model';
 
 type FetchActivitiesOptions = {
@@ -51,7 +52,7 @@ export const postActivity = async (formData: ActivityPayload): Promise<number> =
   };
   console.log(payload);
   const response = await axios.post('/activities', payload);
-  return response.data;
+  return response.data.id;
 };
 
 export const deleteActivity = async (activity_id: number): Promise<{ success: boolean }> => {
@@ -65,4 +66,11 @@ export const updateActivity = async (
 ): Promise<{ success: boolean }> => {
   const response = await axios.put(`/activities/${id}`, changes);
   return response.data;
+};
+
+// activity heat endpoints
+
+export const getActivityHeatData = async (activity_id: number): Promise<ActivityHeatData> => {
+  const res = await axios.get(`/activities/${activity_id}/heat`);
+  return res.data;
 };

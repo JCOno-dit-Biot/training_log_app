@@ -19,6 +19,7 @@ export const qk = {
     ['activities', { filters, page, limit }] as const,
   // Detailed activity
   activity: (id: number) => ['activity', id] as const,
+  activityHeat: (activityId: number) => ['activity-heat', activityId] as const,
   // Comments per activity
   activityComments: (activityId: number) => ['activity', activityId, 'comments'] as const,
   weights: (p: FetchWeightsParams) => ['weights', serializeKey(p)] as const,

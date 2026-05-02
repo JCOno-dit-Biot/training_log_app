@@ -9,8 +9,3 @@ export interface Dog {
   image_url: string;
   color: string;
 }
-
-export interface SelectedDog {
-  dog_id: number;
-  rating: number;
-}

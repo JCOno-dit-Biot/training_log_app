@@ -1,11 +1,17 @@
 export type {
   Activity,
+  ActivityDogForm,
+  ActivityDogHeat,
+  ActivityDogTemperature,
   ActivityFilter,
   ActivityForm,
+  ActivityHeatData,
   ActivityPayload,
+  DogTemperaturePayload,
   Location,
   LocationCreate,
   PaginatedActivities,
+  SelectedDog
 } from './Activity';
 export type { Comment } from './Comment';
 export type { Lap } from './Lap';

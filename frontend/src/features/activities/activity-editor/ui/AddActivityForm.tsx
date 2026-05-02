@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 
 import type { Activity, ActivityForm } from '@entities/activities/model';
 import type { WeatherForm } from '@entities/activities/model';
+import type { ActivityHeatData } from '@entities/activities/model';
 import {
   useCreateActivity,
   useUpdateActivity,
@@ -27,19 +28,21 @@ import {
 import { Switch } from "@/shared/ui/switch";
 import { combineLocalDateTimeToUTCISO } from '@/shared/util/dates';
 
-import { activityToPayload, convertToFormData } from '../util/convertToFormData';
+import { convertToFormData } from '../util/convertToFormData';
 import { getActivityChanges } from '../util/getActivityChanges';
 import { toPayload } from '../util/toPayload';
 import { validateActivityForm } from '../util/validateActivityForm';
 
 import DogSelector from './DogSelector';
+import { DogTemperatureFields } from './DogTemperatureFields';
 import LapEditor from './LapEditor';
 import { LocationCombobox } from './LocationCombobox';
 
 type AddActivityFormProps = {
   onClose: () => void;
   onSuccess?: () => void;
-  initialData?: Activity;
+  initialData?: Activity | null;
+  initialHeatData?: ActivityHeatData | null;
 };
 
 const pad2 = (n: number) => n.toString().padStart(2, '0');
@@ -49,7 +52,25 @@ function FieldError({ msg }: { msg?: string }) {
   return <p className="mt-1 text-xs text-destructive">{msg}</p>;
 }
 
-export default function AddActivityForm({ onClose, onSuccess, initialData }: AddActivityFormProps) {
+const emptyActivityForm = (): ActivityForm => ({
+  timestamp: new Date().toISOString(),
+  runner_id: null,
+  sport_id: null,
+  dogs: [],
+  location_id: null,
+  distance: 0,
+  speed: undefined,
+  pace: "",
+  weather: {
+    temperature: "",
+    humidity: "",
+    condition: "",
+  },
+  workout: false,
+  laps: [],
+});
+
+export default function AddActivityForm({ onClose, onSuccess, initialData, initialHeatData }: AddActivityFormProps) {
 
 
   const [_error, setError] = useState<string | null>(null);
@@ -66,26 +87,10 @@ export default function AddActivityForm({ onClose, onSuccess, initialData }: Add
   );
 
   const [formData, setFormData] = useState<ActivityForm>(() =>
-    initialData
-      ? convertToFormData(initialData)
-      : {
-        timestamp: new Date().toISOString(),
-        runner_id: null,
-        sport_id: null,
-        dogs: [],
-        location_id: null,
-        distance: 0,
-        speed: undefined,
-        pace: '',
-        weather: {
-          temperature: '',
-          humidity: '',
-          condition: '',
-        },
-        workout: false,
-        laps: [],
-      },
+    initialData ? convertToFormData(initialData, initialHeatData) : emptyActivityForm()
   );
+
+  const [showHeatFields, setShowHeatFields] = useState<boolean>(false)
 
   // inside your component
   const [dateStr, setDateStr] = useState<string>('');
@@ -131,27 +136,13 @@ export default function AddActivityForm({ onClose, onSuccess, initialData }: Add
 
   useEffect(() => {
     if (initialData) {
-      setFormData(convertToFormData(initialData));
+      setFormData(convertToFormData(initialData, initialHeatData));
+      setShowHeatFields(Boolean(initialHeatData?.dogs?.length));
     } else {
-      setFormData({
-        timestamp: new Date().toISOString(),
-        runner_id: null,
-        sport_id: null,
-        dogs: [],
-        location_id: null,
-        distance: 0,
-        speed: undefined,
-        pace: '',
-        weather: {
-          temperature: '',
-          humidity: '',
-          condition: '',
-        },
-        workout: false,
-        laps: [],
-      });
+      setFormData(emptyActivityForm());
+      setShowHeatFields(false);
     }
-  }, [initialData]);
+  }, [initialData, initialHeatData]);
 
   const handleInputChange = (field: keyof ActivityForm, value: any) => {
     if ((field === 'distance' || field === 'speed') && value !== '') {
@@ -228,9 +219,11 @@ export default function AddActivityForm({ onClose, onSuccess, initialData }: Add
     setValidationMsg(null);
     try {
       if (isEdit && initialData) {
-        const original = activityToPayload(initialData);
+        const originalForm = convertToFormData(initialData, initialHeatData);
+        const original = toPayload(originalForm);
         const updatedPayload = toPayload(formData);
-        const diff = getActivityChanges(original, updatedPayload); // what your API expects
+
+        const diff = getActivityChanges(original, updatedPayload);
         console.log(diff)
         await updateMutation.mutateAsync({ id: initialData.id, diff });
       } else {
@@ -445,33 +438,66 @@ export default function AddActivityForm({ onClose, onSuccess, initialData }: Add
                   onChange={(e) => handleWeatherChange("condition", e.target.value)}
                 />
               </div>
+              <div className="flex justify-between gap-2 sm:col-span-1 ">
+                <div className="space-y-2">
+                  <Label htmlFor="temperature">T (°C)</Label>
+                  <Input
+                    id="temperature"
+                    type="number"
+                    value={formData.weather?.temperature ?? ""}
+                    onChange={(e) => handleWeatherChange("temperature", e.target.value)}
+                    aria-invalid={!!fieldErrors.temperature}
+                  />
+                  <FieldError msg={fieldErrors.temperature} />
+                </div>
 
-              <div className="space-y-2 sm:col-span-1">
-                <Label htmlFor="temperature">T (°C)</Label>
-                <Input
-                  id="temperature"
-                  type="number"
-                  value={formData.weather?.temperature ?? ""}
-                  onChange={(e) => handleWeatherChange("temperature", e.target.value)}
-                  aria-invalid={!!fieldErrors.temperature}
-                />
-                <FieldError msg={fieldErrors.temperature} />
+                <div className="space-y-2">
+                  <Label htmlFor="humidity">Humidity (%)</Label>
+                  <Input
+                    id="humidity"
+                    type="number"
+                    step="1"
+                    value={formData.weather?.humidity ?? ""}
+                    onChange={(e) => handleWeatherChange("humidity", e.target.value)}
+                    aria-invalid={!!fieldErrors.humidity}
+                  />
+                  <FieldError msg={fieldErrors.humidity} />
+                </div>
               </div>
 
-              <div className="space-y-2 sm:col-span-1">
-                <Label htmlFor="humidity">Humidity (%)</Label>
-                <Input
-                  id="humidity"
-                  type="number"
-                  step="1"
-                  value={formData.weather?.humidity ?? ""}
-                  onChange={(e) => handleWeatherChange("humidity", e.target.value)}
-                  aria-invalid={!!fieldErrors.humidity}
+              <div className="flex items-center justify-between rounded-md border p-3 sm:col-span-1">
+                <div className="space-y-0.5">
+                  <Label htmlFor="heat" className="text-sm">
+                    Dog Temperature
+                  </Label>
+                </div>
+                <Switch
+                  id="dog heat"
+                  checked={showHeatFields}
+                  onCheckedChange={setShowHeatFields}
                 />
-                <FieldError msg={fieldErrors.humidity} />
               </div>
             </div>
           </div>
+
+          {showHeatFields && formData.dogs.length === 0 && (
+            <div className="p-3 text-sm text-muted-foreground">
+              Please select at least one dog to record temperature data.
+            </div>
+          )}
+
+          {showHeatFields && formData.dogs.length > 0 && (
+            <DogTemperatureFields
+              selectedDogs={formData.dogs}
+              setSelectedDogs={(dogs) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  dogs,
+                }))
+              }
+              dogs={dogs}
+            />
+          )}
         </CardContent>
 
         <CardFooter className="flex items-center justify-end gap-2 mt-4">
@@ -483,6 +509,6 @@ export default function AddActivityForm({ onClose, onSuccess, initialData }: Add
           </Button>
         </CardFooter>
       </form>
-    </Card>
+    </Card >
   );
 }

@@ -1,5 +1,5 @@
 from src.models.runner import Runner
-from src.models.activity import Activity, ActivityLaps, ActivityCreate, ActivityDogsCreate
+from src.models.activity import Activity, ActivityLaps, ActivityCreate, ActivityDogsUpdate, ActivityHeat
 from src.models.weather import Weather
 from src.parsers.activity_parser import parse_activity_from_row
 from .abstract_repository import abstract_repository
@@ -36,6 +36,17 @@ class activity_repository(abstract_repository):
                             w.temperature, w.humidity, w.condition,
                             l.name AS location,
                             COUNT(ac.id) as comment_count,
+
+                            -- exist statement to indicate existing heat data
+                            EXISTS (
+                                SELECT 1
+                                FROM activity_dogs ad2
+                                LEFT JOIN activity_dog_temperature_measurements tm
+                                    ON tm.activity_dog_id = ad2.id
+                                WHERE ad2.activity_id = a.id
+                                AND tm.id IS NOT NULL
+                            ) AS has_heat_data,
+                            
                             -- Aggregate dogs
                             json_agg(DISTINCT jsonb_build_object(
                                 'id', d.id,
@@ -102,6 +113,17 @@ class activity_repository(abstract_repository):
                             w.temperature, w.humidity, w.condition,
                             l.name AS location,
                             COUNT(DISTINCT ac.id) as comment_count,
+
+                            -- exist statement to indicate existing heat data
+                            EXISTS (
+                                SELECT 1
+                                FROM activity_dogs ad2
+                                LEFT JOIN activity_dog_temperature_measurements tm
+                                    ON tm.activity_dog_id = ad2.id
+                                WHERE ad2.activity_id = a.id
+                                AND tm.id IS NOT NULL
+                            ) AS has_heat_data,
+
                             -- Aggregate dogs
                             json_agg(DISTINCT jsonb_build_object(
                                 'id', d.id,
@@ -160,6 +182,56 @@ class activity_repository(abstract_repository):
             self._connection.rollback()
             return None
         
+    def get_heat_data_by_activity_id(self, activity_id: int) -> ActivityHeat | None:
+        with self._connection.cursor(cursor_factory= RealDictCursor) as cur:
+            try:
+                query = """
+                    SELECT 
+                        a.id AS activity_id,
+
+                        json_agg(
+                            jsonb_build_object(
+                                'activity_dog_id', ad.id,
+                                'dog_id', ad.dog_id,
+                                'rating', ad.rating,
+                                'cooling_method', ho.cooling_method,
+
+                                'temperatures', COALESCE((
+                                    SELECT json_agg(
+                                        jsonb_build_object(
+                                            'id', tm.id,
+                                            'phase', tm.phase,
+                                            'recovery_minute', tm.recovery_minute,
+                                            'temperature_c', tm.temperature_c,
+                                            'measurement_method', tm.measurement_method
+                                        )
+                                        ORDER BY tm.phase, tm.recovery_minute NULLS FIRST
+                                    )
+                                    FROM activity_dog_temperature_measurements tm
+                                    WHERE tm.activity_dog_id = ad.id
+                                ), '[]'::json)
+                            )
+                        ) FILTER (WHERE ad.id IS NOT NULL) AS dogs
+
+                    FROM activities a
+                    LEFT JOIN activity_dogs ad ON ad.activity_id = a.id
+                    LEFT JOIN dogs d ON d.id = ad.dog_id
+                    LEFT JOIN activity_dog_heat_observations ho ON ho.activity_dog_id = ad.id
+
+                    WHERE a.id = %s
+
+                    GROUP BY a.id;
+                """
+                cur.execute(query, (activity_id,))
+                row = cur.fetchone()
+                activity_heat_data = ActivityHeat(**row)
+                return activity_heat_data
+            except Exception as e:
+                print(e)
+                self._connection.rollback()
+                return None
+
+
     def create(self, activity: ActivityCreate) -> int:
         with self._connection.cursor(cursor_factory= RealDictCursor) as cur:
             try:
@@ -185,7 +257,40 @@ class activity_repository(abstract_repository):
                     cur.execute("""
                         INSERT INTO activity_dogs (activity_id, dog_id, rating)
                         VALUES (%s, %s, %s)
+                        RETURNING id
                     """, (activity_id, dog.dog_id, dog.rating)) #this assumes dogs have their id set, they should from the frontend
+
+                    activity_dog_id = cur.fetchone()["id"]
+                    if dog.cooling_method:
+                        cur.execute(
+                            """
+                            INSERT INTO activity_dog_heat_observations (activity_dog_id, cooling_method)
+                            VALUES (%s, %s)
+                            """,
+                            (activity_dog_id, dog.cooling_method.lower()),
+                        )
+                    
+                    for temp in dog.temperatures:
+                        cur.execute(
+                            """
+                            INSERT INTO activity_dog_temperature_measurements (
+                                activity_dog_id,
+                                phase,
+                                recovery_minute,
+                                temperature_c,
+                                measurement_method
+                            )
+                            VALUES (%s, %s, %s, %s, %s)
+                            """,
+                            (
+                                activity_dog_id,
+                                temp.phase,
+                                temp.recovery_minute,
+                                temp.temperature_c,
+                                temp.measurement_method.lower(),
+                            ),
+                        )
+
 
                 if len(activity.laps) > 0:
                     for lap in activity.laps:
@@ -199,16 +304,15 @@ class activity_repository(abstract_repository):
                         INSERT INTO weather_entries (activity_id, temperature, humidity, condition)
                         VALUES (%s, %s, %s, %s)
                     """, (activity_id, activity.weather.temperature, activity.weather.humidity, activity.weather.condition,))
+
+                self._connection.commit()
+                return activity_id
             
             except Exception as e:
                 print(e)
                 self._connection.rollback()
                 return None
-            finally:
-                self._connection.commit()
-                return activity_id
-        
-
+            
     def delete(self, activity_id: int):
         with self._connection.cursor(cursor_factory= RealDictCursor) as cur:
             try:
@@ -298,15 +402,75 @@ class activity_repository(abstract_repository):
                             (activity_id, weather.temperature, weather.humidity, weather.condition),
                         )
                 # Dogs update — e.g., clear and re-insert
-                if dogs:
-                    
-                    cur.execute("DELETE FROM activity_dogs WHERE activity_id = %s", (activity_id,))
-                    for dog in dogs:
-                        dog = ActivityDogsCreate(**dog)
-                        cur.execute("""
-                            INSERT INTO activity_dogs (activity_id, dog_id, rating)
-                            VALUES (%s, %s, %s)
-                        """, (activity_id, dog.dog_id, dog.rating))
+                if dogs is not None:
+                    for dog_data in dogs:
+                        dog = ActivityDogsUpdate(**dog_data)
+
+                        if dog.rating is not None:
+                            cur.execute("""
+                                INSERT INTO activity_dogs (activity_id, dog_id, rating)
+                                VALUES (%s, %s, %s)
+                                ON CONFLICT (activity_id, dog_id)
+                                DO UPDATE SET rating = EXCLUDED.rating
+                                RETURNING id
+                            """, (activity_id, dog.dog_id, dog.rating))
+
+                            activity_dog_id = cur.fetchone()["id"]
+
+                            if activity_dog_id is None:
+                                raise ValueError("Activity dog not found for this activity")
+
+                        else:
+                            cur.execute("""
+                                SELECT id from activity_dogs WHERE activity_id = %s and dog_id = %s
+                            """, (activity_id, dog.dog_id))
+                            activity_dog_id = cur.fetchone()["id"]
+
+                        if dog.cooling_method is not None:
+                            cur.execute("""
+                                INSERT INTO activity_dog_heat_observations (
+                                    activity_dog_id,
+                                    cooling_method
+                                )
+                                VALUES (%s, %s)
+                                ON CONFLICT (activity_dog_id)
+                                DO UPDATE SET cooling_method = EXCLUDED.cooling_method
+                            """, (activity_dog_id, dog.cooling_method))
+
+                        if dog.temperatures is not None:
+                            for temp in dog.temperatures:
+                                cur.execute("""
+                                    DELETE FROM activity_dog_temperature_measurements
+                                    WHERE activity_dog_id = %s
+                                    AND phase = %s
+                                    AND (
+                                        (recovery_minute IS NULL AND %s IS NULL)
+                                        OR recovery_minute = %s
+                                    )
+                                """, (
+                                    activity_dog_id,
+                                    temp.phase,
+                                    temp.recovery_minute,
+                                    temp.recovery_minute,
+                                ))
+
+                                cur.execute("""
+                                    INSERT INTO activity_dog_temperature_measurements (
+                                        activity_dog_id,
+                                        phase,
+                                        recovery_minute,
+                                        temperature_c,
+                                        measurement_method
+                                    )
+                                    VALUES (%s, %s, %s, %s, %s)
+                                """, (
+                                    activity_dog_id,
+                                    temp.phase,
+                                    temp.recovery_minute,
+                                    temp.temperature_c,
+                                    temp.measurement_method,
+                                ))
+                        
                 self._connection.commit()
                 return cur.rowcount > 0
             

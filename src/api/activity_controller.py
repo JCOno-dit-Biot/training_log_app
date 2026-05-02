@@ -2,7 +2,7 @@ from fastapi import Depends, APIRouter, Request, HTTPException, Body
 from fastapi.requests import Request
 from fastapi_utils.cbv import cbv
 from src.repositories.activity_repository import activity_repository
-from src.models.activity import Activity, ActivityCreate, ActivityUpdate
+from src.models.activity import Activity, ActivityCreate, ActivityUpdate, ActivityHeat
 from src.deps import get_activity_repo
 from src.utils.pagination import paginate_results
 from src.models.common import PaginationParams, ActivityQueryFilters
@@ -22,10 +22,15 @@ class ActivityController:
 
         return paginate_results(activities, entry_count, request, pagination.limit, pagination.offset)
     
-    @router.get("/activities/{activity_id}", response_model=dict, status_code=200)
+    @router.get("/activities/{activity_id}", response_model=Activity, status_code=200)
     def get_activity_by_id(self, request: Request, activity_id:int):
         activity = self.repo.get_by_id(activity_id)
         return activity
+    
+    @router.get("/activities/{activity_id}/heat", response_model=ActivityHeat, status_code=200)
+    def get_activity_heat_data_by_id(self, request: Request, activity_id:int):
+        activity_heat = self.repo.get_heat_data_by_activity_id(activity_id)
+        return activity_heat
     
     @router.post("/activities", status_code=201)
     def create_activity(self, activity_entry: ActivityCreate):
@@ -36,8 +41,7 @@ class ActivityController:
     
     @router.put("/activities/{activity_id}", status_code=200)
     def update_activity(self, request: Request, activity_id: int, activity_update: ActivityUpdate):
-        updated_fields = activity_update.model_dump(exclude_none=True)
-        print(not updated_fields)
+        updated_fields = activity_update.model_dump(exclude_unset=True)
         if not updated_fields:
             raise HTTPException(status_code=400, detail="No data to update")
 

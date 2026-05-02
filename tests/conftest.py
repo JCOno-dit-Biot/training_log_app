@@ -2,7 +2,7 @@ import pytest
 from dotenv import load_dotenv
 import os
 from datetime import date, timezone, datetime, timedelta
-from src.models.activity import Activity, ActivityLaps, ActivityDogs, ActivityCreate, ActivityDogsCreate
+from src.models.activity import Activity, ActivityLaps, ActivityDogs, ActivityCreate, ActivityDogsCreate, DogTemperatureCreate
 from src.models.location import Location
 from src.models.dog import Dog
 from src.models.runner import Runner
@@ -123,6 +123,70 @@ def test_activity_create():
             temperature=9.5,
             humidity=0.85,
             condition = "rainy"
+        )
+
+    )
+    return test_activity
+
+@pytest.fixture()
+def test_activity_create_with_temperature_measurements():
+    test_activity = ActivityCreate(
+        id=None,
+        timestamp=datetime(2026, 4, 1, 9, 30, tzinfo=timezone.utc),
+        runner_id=2,
+        sport_id=1,
+        location_id = 2,
+        distance=4.5,
+        workout=False,
+        speed=20.3,
+        dogs=[
+            ActivityDogsCreate(
+            id=None,
+            dog_id=1,
+            rating=9,
+            cooling_method='lake',
+            temperatures=[
+                DogTemperatureCreate(
+                    phase = 'before',
+                    temperature_c=38.7,
+                    measurement_method='Ear'
+                ),
+                DogTemperatureCreate(
+                    phase = 'after',
+                    temperature_c=40.7,
+                    measurement_method='Ear'
+                )
+            ]
+            ),
+            ActivityDogsCreate(
+                id=None,
+                dog_id = 2,
+                rating=8,
+                cooling_method='lake',
+            temperatures=[
+                DogTemperatureCreate(
+                    phase = 'before',
+                    temperature_c=38.5,
+                    measurement_method='Ear'
+                ),
+                DogTemperatureCreate(
+                    phase = 'after',
+                    temperature_c=40.5,
+                    measurement_method='Ear'
+                ),
+                DogTemperatureCreate(
+                    phase = 'recovery',
+                    recovery_minute=10,
+                    temperature_c=39.5,
+                    measurement_method='Ear'
+                )
+            ]
+            )
+        ],
+        weather=Weather(
+            temperature=5,
+            humidity=0.85,
+            condition = "sunny"
         )
 
     )

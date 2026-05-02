@@ -1,11 +1,12 @@
 import React from 'react';
 import { useState } from 'react';
 
-import type { Dog, SelectedDog } from '@entities/dogs/model';
+import type { Dog } from '@entities/dogs/model';
+import type { ActivityDogForm } from '@/entities/activities/model';
 
 interface DogSelectorProps {
-  selectedDogs: SelectedDog[];
-  setSelectedDogs: (dogs: SelectedDog[]) => void;
+  selectedDogs: ActivityDogForm[];
+  setSelectedDogs: (dogs: ActivityDogForm[]) => void;
   dogs: Map<number, Dog>;
 }
 
@@ -17,7 +18,7 @@ const DogSelector: React.FC<DogSelectorProps> = ({ selectedDogs, setSelectedDogs
     if (exists) {
       setSelectedDogs(selectedDogs.filter((d) => d.dog_id !== dog_id));
     } else {
-      setSelectedDogs([...selectedDogs, { dog_id, rating: 10 }]);
+      setSelectedDogs([...selectedDogs, { dog_id, rating: 10, measurement_method: 'ear' }]);
     }
   };
 

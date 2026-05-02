@@ -49,5 +49,6 @@ def parse_activity_from_row(row: dict) -> Dog:
         workout=row['workout'],
         laps = laps,
         dogs = dogs,
-        comment_count=row['comment_count']
+        comment_count=row['comment_count'],
+        has_heat_data=row.get('has_heat_data', False)
     )
