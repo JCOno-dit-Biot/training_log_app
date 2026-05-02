@@ -135,7 +135,7 @@ def test_activity_create_with_temperature_measurements():
         timestamp=datetime(2026, 4, 1, 9, 30, tzinfo=timezone.utc),
         runner_id=2,
         sport_id=1,
-        location_id = 1,
+        location_id = 2,
         distance=4.5,
         workout=False,
         speed=20.3,
