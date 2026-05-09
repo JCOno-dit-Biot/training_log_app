@@ -269,13 +269,16 @@ export default function ActivityCard({
                 <div className="font-semibold text-primary">Distance</div>
                 <div className="font-semibold text-primary">Time</div>
 
-                {activity.laps.map((lap) => (
-                  <React.Fragment key={lap.lap_number}>
-                    <div>Lap {lap.lap_number + 1}</div>
-                    <div>{lap.lap_distance} km</div>
-                    <div>{lap.lap_time}</div>
-                  </React.Fragment>
-                ))}
+                {activity.laps
+                  .slice()
+                  .sort((a, b) => a.lap_number - b.lap_number)
+                  .map((lap) => (
+                    <React.Fragment key={lap.lap_number}>
+                      <div>Lap {lap.lap_number}</div>
+                      <div>{lap.lap_distance} km</div>
+                      <div>{lap.lap_time}</div>
+                    </React.Fragment>
+                  ))}
               </div>
             </div>
           </div>

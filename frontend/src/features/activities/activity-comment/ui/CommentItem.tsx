@@ -93,7 +93,7 @@ export function CommentItem({ comment, currentUsername, onError }: CommentItemPr
           {!isEditing ? (
             <>
               <button
-                className="bg-white text-gray-500 hover:text-gray-700"
+                className="text-gray-500 hover:text-gray-700"
                 onClick={startEdit}
                 title="Edit"
                 aria-label="Edit comment"
@@ -101,7 +101,7 @@ export function CommentItem({ comment, currentUsername, onError }: CommentItemPr
                 <Pencil className="h-4 w-4" />
               </button>
               <button
-                className="bg-white text-red-500 hover:text-red-600 disabled:opacity-50"
+                className="text-red-500 hover:text-red-600 disabled:opacity-50"
                 onClick={remove}
                 disabled={deleting}
                 title="Delete"
