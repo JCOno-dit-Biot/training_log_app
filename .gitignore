@@ -136,6 +136,7 @@ secret/
 *.pem
 
 #connect bash
+frontend/*.sh
 connect.sh
 sync_vm.sh
 copy-db-backups.sh
