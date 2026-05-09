@@ -35,7 +35,7 @@ class activity_repository(abstract_repository):
                             k.id as kennel_id,
                             w.temperature, w.humidity, w.condition,
                             l.name AS location,
-                            COUNT(ac.id) as comment_count,
+                            COUNT(DISTINCT ac.id) as comment_count,
 
                             -- exist statement to indicate existing heat data
                             EXISTS (
