@@ -132,6 +132,9 @@ data/
 secret/
 *.csv
 
+# exclude notebooks for now
+**/*.ipynb
+
 #certificates/keys
 *.pem
 
@@ -140,6 +143,7 @@ frontend/*.sh
 connect.sh
 sync_vm.sh
 copy-db-backups.sh
+frontend/build-frontend.sh
 
 # Environments
 config/
