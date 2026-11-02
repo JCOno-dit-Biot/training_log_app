@@ -84,8 +84,10 @@ def test_create_weight_entry(test_app, mock_repo, dog_fixture):
         weight = 20.1
     )
     payload = dog_weight_entry.model_dump_json()
-    response = client.post(url="/dogs/2/weights", data = payload)
-    assert response.status_code == 200
+    response = client.post(url="/dogs/2/weights",
+                            content = payload,
+                            headers={"Content-Type": "application/json"})
+    assert response.status_code == 200, response.json()
     assert response.json()==10
     mock_repo.create.assert_called_once()
     mock_repo.create.assert_called_with(dog_weight_entry, 2)
@@ -101,15 +103,15 @@ def test_delete_comment(test_app, mock_repo):
 def test_update_weight(test_app, mock_repo):
     client = TestClient(test_app)
     payload= DogWeightUpdate(date = date(2025,2,25)).model_dump_json()
-    response = client.put("/dogs/weights/10", data = payload)
+    response = client.put("/dogs/weights/10", content = payload, headers={"Content-Type": "application/json"},)
     mock_repo.update.assert_called_once()
     mock_repo.update.assert_called_with(10, DogWeightUpdate(date = date(2025,2,25)).model_dump(exclude_none=True))
     assert response.json()["success"] == True
 
 def test_update_no_fields_raise(test_app, mock_repo):
     client = TestClient(test_app)
-    payload= DogWeightUpdate().model_dump_json()
-    response = client.put("/dogs/weights/10", data = payload)
+    payload= DogWeightUpdate().model_dump()
+    response = client.put("/dogs/weights/10", json = payload)
     assert response.status_code == 400
     assert response.json()["detail"] == 'No data to update'
     

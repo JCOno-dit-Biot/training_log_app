@@ -1,6 +1,6 @@
 # ---- Build the SPA ----
 # If your Pi is 32-bit and this fails, switch to: node:20-bullseye-slim
-FROM node:20-alpine AS build
+FROM node:26.12.1-alpine AS build
 WORKDIR /app
 COPY frontend/package*.json ./
 RUN npm ci
