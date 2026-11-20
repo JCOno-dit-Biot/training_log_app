@@ -20,3 +20,4 @@ sync_vm.sh
 .git
 .gitignore
 
+**/.DS_Store

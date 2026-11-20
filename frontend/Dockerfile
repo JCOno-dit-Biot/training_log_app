@@ -9,7 +9,7 @@ COPY frontend/. .
 RUN npm run build
 
 # ---- Serve with Nginx ----
-FROM nginx:1.27-alpine
+FROM nginx:1.30.7-alpine
 # Copy our Nginx config
 COPY frontend/nginx.conf /etc/nginx/conf.d/default.conf
 # Copy built assets
